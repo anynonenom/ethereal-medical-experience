@@ -1,4 +1,13 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
+
+function ProgressDot({ progress, from, to }: { progress: MotionValue<number>; from: number; to: number }) {
+  const scaleX = useTransform(progress, [from, to], [0, 1]);
+  return (
+    <div className="w-12 h-0.5 bg-cream/20 overflow-hidden">
+      <motion.div className="h-full bg-primary origin-left" style={{ scaleX }} />
+    </div>
+  );
+}
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Shield, HeartHandshake, Plane, Building2, Stethoscope, Hotel } from "lucide-react";
