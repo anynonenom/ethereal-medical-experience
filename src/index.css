@@ -2,104 +2,141 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Medical Bay — Brand Design System
+   All colors HSL. Tokens only — never hardcode in components. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand */
+    --teal:        172 63% 45%;     /* #2BBAA5 */
+    --teal-deep:   174 64% 35%;     /* #1F9187 */
+    --teal-light:  171 56% 56%;     /* #4DCFBB */
+    --mist:        171 38% 93%;     /* #E8F5F3 */
+    --silver:      170 25% 80%;     /* #C4D8D5 */
+    --steel:       172 16% 60%;
+    --cream:       80 50% 98%;      /* #FAFDF8 */
+    --off:         180 25% 97%;
+    --ink:         170 35% 8%;      /* #0D1A18 */
+    --slate:       172 15% 19%;
+
+    /* Semantic — light mode (cream paper) */
+    --background: var(--cream);
+    --foreground: var(--ink);
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: var(--ink);
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: var(--ink);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: var(--teal);
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--mist);
+    --secondary-foreground: var(--ink);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: var(--off);
+    --muted-foreground: 172 10% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: var(--teal-light);
+    --accent-foreground: var(--ink);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 170 20% 88%;
+    --input: 170 20% 88%;
+    --ring: var(--teal);
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Effects */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--teal)) 0%, hsl(var(--teal-deep)) 100%);
+    --gradient-glow: radial-gradient(60% 60% at 50% 40%, hsl(var(--teal-light) / 0.35), transparent 70%);
+    --shadow-soft: 0 30px 60px -30px hsl(var(--ink) / 0.15);
+    --shadow-glow: 0 0 80px hsl(var(--teal) / 0.35);
+    --easing: cubic-bezier(0.22, 1, 0.36, 1);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: var(--cream);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--teal);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--mist);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: 170 20% 88%;
+    --sidebar-ring: var(--teal);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: var(--ink);
+    --foreground: 80 50% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 172 28% 11%;
+    --card-foreground: 80 50% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 172 28% 11%;
+    --popover-foreground: 80 50% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: var(--teal);
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 172 22% 14%;
+    --secondary-foreground: 80 50% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 172 22% 14%;
+    --muted-foreground: 172 10% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: var(--teal);
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --border: 172 20% 18%;
+    --input: 172 20% 18%;
+    --ring: var(--teal);
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --shadow-soft: 0 30px 60px -30px hsl(0 0% 0% / 0.6);
+
+    --sidebar-background: var(--ink);
+    --sidebar-foreground: 80 50% 98%;
+    --sidebar-accent: 172 22% 14%;
+    --sidebar-accent-foreground: 80 50% 98%;
+    --sidebar-border: 172 20% 18%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+  ::selection { background: hsl(var(--teal) / 0.25); color: hsl(var(--ink)); }
+  .dark ::selection { color: hsl(var(--cream)); }
+}
+
+@layer components {
+  .display { font-family: 'Montserrat', sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 0.92; }
+  .serif-it { font-family: 'Cormorant Garamond', serif; font-style: italic; }
+  .eyebrow {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    @apply text-primary inline-flex items-center gap-3;
+  }
+  .eyebrow::before { content:''; width:24px; height:2px; background: currentColor; border-radius:2px; }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-4 rounded-none bg-primary text-primary-foreground font-medium tracking-widest text-xs uppercase transition-all duration-300 hover:shadow-[var(--shadow-glow)] hover:-translate-y-0.5;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-7 py-4 border border-foreground/20 text-foreground text-xs uppercase tracking-widest font-medium transition-all hover:border-primary hover:text-primary;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
   }
 }
