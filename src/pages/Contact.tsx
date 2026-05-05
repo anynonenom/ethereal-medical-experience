@@ -53,7 +53,7 @@ function Form() {
     }, 800);
   };
 
-  const Field = ({ name, label, type = "text" }: { name: keyof typeof form; label: string; type?: string }) => (
+  const field = (name: keyof typeof form, label: string, type = "text") => (
     <label className="block group">
       <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">{label}</span>
       <input
@@ -81,12 +81,12 @@ function Form() {
 
       <form onSubmit={submit} className="lg:col-span-7 grid gap-8">
         <div className="grid md:grid-cols-2 gap-8">
-          <Field name="nom" label="Nom" />
-          <Field name="prenom" label="Prénom" />
+          {field("nom", "Nom")}
+          {field("prenom", "Prénom")}
         </div>
         <div className="grid md:grid-cols-2 gap-8">
-          <Field name="email" label="Email" type="email" />
-          <Field name="phone" label="Téléphone" type="tel" />
+          {field("email", "Email", "email")}
+          {field("phone", "Téléphone", "tel")}
         </div>
         <label className="block">
           <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Message</span>
