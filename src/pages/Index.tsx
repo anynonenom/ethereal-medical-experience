@@ -127,9 +127,7 @@ function StickyCarousel() {
         </motion.div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
           {slides.map((_, i) => (
-            <div key={i} className="w-12 h-0.5 bg-cream/20 overflow-hidden">
-              <motion.div className="h-full bg-primary origin-left" style={{ scaleX: useTransform(scrollYProgress, [i / slides.length, (i + 1) / slides.length], [0, 1]) }} />
-            </div>
+            <ProgressDot key={i} progress={scrollYProgress} from={i / slides.length} to={(i + 1) / slides.length} />
           ))}
         </div>
       </div>
