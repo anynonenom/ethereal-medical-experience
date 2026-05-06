@@ -2,104 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Medical Bay — Brand Design System
-   All colors HSL. Tokens only — never hardcode in components. */
+/* Medical Bay — Brand Design System 2026
+   Colors sourced from official brand guidelines.
+   Site is always light — dark mode variables mirror light. */
 
 @layer base {
   :root {
-    /* Brand */
-    --teal:        172 63% 45%;     /* #2BBAA5 */
-    --teal-deep:   174 64% 35%;     /* #1F9187 */
-    --teal-light:  171 56% 56%;     /* #4DCFBB */
-    --mist:        171 38% 93%;     /* #E8F5F3 */
-    --silver:      170 25% 80%;     /* #C4D8D5 */
-    --steel:       172 16% 60%;
-    --cream:       80 50% 98%;      /* #FAFDF8 */
-    --off:         180 25% 97%;
-    --ink:         170 35% 8%;      /* #0D1A18 */
-    --slate:       172 15% 19%;
+    /* ── Brand palette ─────────────────────────────── */
+    --teal:        171 62% 45%;   /* #2BBAA5 – Primary */
+    --teal-deep:   175 65% 34%;   /* #1F9187 – Deep */
+    --teal-light:  171 58% 56%;   /* #4DCFBB – Light */
+    --cream:       100 25% 98%;   /* #FAFDF8 – Background */
+    --off:         180 20% 97%;   /* #F5FAFA – Alt bg */
+    --mist:        168 42% 93%;   /* #E8F5F3 – Surface */
+    --silver:      172 22% 81%;   /* #C4D8D5 – Border */
+    --steel:       173 14% 60%;   /* #8AADA8 – Muted text */
+    --ink:         168 33% 8%;    /* #0D1A18 – Text */
+    --slate:       175 16% 20%;   /* #2A3A38 – Dark text */
+    --gold:        44 100% 65%;   /* Stars */
 
-    /* Semantic — light mode (cream paper) */
-    --background: var(--cream);
-    --foreground: var(--ink);
+    /* ── Semantic tokens – LIGHT ───────────────────── */
+    --background:          var(--cream);
+    --foreground:          var(--ink);
 
-    --card: 0 0% 100%;
-    --card-foreground: var(--ink);
+    --card:                0 0% 100%;
+    --card-foreground:     var(--ink);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: var(--ink);
+    --popover:             0 0% 100%;
+    --popover-foreground:  var(--ink);
 
-    --primary: var(--teal);
-    --primary-foreground: 0 0% 100%;
+    --primary:             var(--teal);
+    --primary-foreground:  0 0% 100%;
 
-    --secondary: var(--mist);
+    --secondary:           var(--off);
     --secondary-foreground: var(--ink);
 
-    --muted: var(--off);
-    --muted-foreground: 172 10% 40%;
+    --muted:               var(--mist);
+    --muted-foreground:    172 14% 42%;
 
-    --accent: var(--teal-light);
-    --accent-foreground: var(--ink);
+    --accent:              var(--teal-light);
+    --accent-foreground:   var(--ink);
 
-    --destructive: 0 75% 55%;
+    --destructive:         0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 20% 88%;
-    --input: 170 20% 88%;
-    --ring: var(--teal);
+    --border:              172 18% 88%;
+    --input:               172 18% 88%;
+    --ring:                var(--teal);
 
-    --radius: 0.25rem;
+    --radius: 0;
 
-    /* Effects */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--teal)) 0%, hsl(var(--teal-deep)) 100%);
-    --gradient-glow: radial-gradient(60% 60% at 50% 40%, hsl(var(--teal-light) / 0.35), transparent 70%);
-    --shadow-soft: 0 30px 60px -30px hsl(var(--ink) / 0.15);
-    --shadow-glow: 0 0 80px hsl(var(--teal) / 0.35);
+    --shadow-soft: 0 20px 60px -20px hsl(168 33% 8% / 0.1);
     --easing: cubic-bezier(0.22, 1, 0.36, 1);
 
-    --sidebar-background: var(--cream);
-    --sidebar-foreground: var(--ink);
-    --sidebar-primary: var(--teal);
+    --sidebar-background:  var(--cream);
+    --sidebar-foreground:  var(--ink);
+    --sidebar-primary:     var(--teal);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: var(--mist);
+    --sidebar-accent:      var(--mist);
     --sidebar-accent-foreground: var(--ink);
-    --sidebar-border: 170 20% 88%;
-    --sidebar-ring: var(--teal);
+    --sidebar-border:      172 18% 88%;
+    --sidebar-ring:        var(--teal);
   }
 
+  /* Dark class mirrors light — theme toggle has no effect */
   .dark {
-    --background: var(--ink);
-    --foreground: 80 50% 98%;
-
-    --card: 172 28% 11%;
-    --card-foreground: 80 50% 98%;
-
-    --popover: 172 28% 11%;
-    --popover-foreground: 80 50% 98%;
-
-    --primary: var(--teal);
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 172 22% 14%;
-    --secondary-foreground: 80 50% 98%;
-
-    --muted: 172 22% 14%;
-    --muted-foreground: 172 10% 65%;
-
-    --accent: var(--teal);
-    --accent-foreground: 0 0% 100%;
-
-    --border: 172 20% 18%;
-    --input: 172 20% 18%;
-    --ring: var(--teal);
-
-    --shadow-soft: 0 30px 60px -30px hsl(0 0% 0% / 0.6);
-
-    --sidebar-background: var(--ink);
-    --sidebar-foreground: 80 50% 98%;
-    --sidebar-accent: 172 22% 14%;
-    --sidebar-accent-foreground: 80 50% 98%;
-    --sidebar-border: 172 20% 18%;
+    --background:          var(--cream);
+    --foreground:          var(--ink);
+    --card:                0 0% 100%;
+    --card-foreground:     var(--ink);
+    --primary:             var(--teal);
+    --primary-foreground:  0 0% 100%;
+    --secondary:           var(--off);
+    --secondary-foreground: var(--ink);
+    --muted:               var(--mist);
+    --muted-foreground:    172 14% 42%;
+    --border:              172 18% 88%;
+    --input:               172 18% 88%;
+    --ring:                var(--teal);
   }
 }
 
@@ -107,36 +87,91 @@
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', sans-serif;
     font-feature-settings: "ss01", "cv01";
   }
-  ::selection { background: hsl(var(--teal) / 0.25); color: hsl(var(--ink)); }
-  .dark ::selection { color: hsl(var(--cream)); }
+  ::selection { background: hsl(var(--teal) / 0.2); color: hsl(var(--ink)); }
 }
 
 @layer components {
-  .display { font-family: 'Montserrat', sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 0.92; }
-  .serif-it { font-family: 'Cormorant Garamond', serif; font-style: italic; }
-  .eyebrow {
+  /* ── Display / Heading — Montserrat 800 */
+  .display {
     font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+  }
+
+  /* ── Serif italic accent — Cormorant Garamond */
+  .serif-it {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ── Eyebrow */
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
-    letter-spacing: 0.35em;
+    letter-spacing: 0.38em;
     text-transform: uppercase;
     @apply text-primary inline-flex items-center gap-3;
   }
   .eyebrow::before { content:''; width:24px; height:2px; background: currentColor; border-radius:2px; }
 
+  /* ── Label */
+  .label {
+    @apply inline-flex items-center gap-3 text-[10px] tracking-[0.45em] uppercase font-bold text-muted-foreground;
+  }
+  .label-primary { @apply label text-primary; }
+
+  /* ── Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-7 py-4 rounded-none bg-primary text-primary-foreground font-medium tracking-widest text-xs uppercase transition-all duration-300 hover:shadow-[var(--shadow-glow)] hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-none bg-primary text-white font-bold tracking-[0.2em] text-[10px] uppercase transition-all duration-300 hover:bg-[hsl(var(--teal-deep))] hover:text-white;
   }
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-7 py-4 border border-foreground/20 text-foreground text-xs uppercase tracking-widest font-medium transition-all hover:border-primary hover:text-primary;
+    @apply inline-flex items-center gap-2 px-8 py-4 border border-foreground/20 rounded-none text-foreground text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:border-primary hover:text-primary;
+  }
+  .btn-ghost-white {
+    @apply inline-flex items-center gap-2 px-8 py-4 border border-white/30 rounded-none text-white text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:border-white hover:bg-white/10;
+  }
+  .btn-ghost-teal {
+    @apply inline-flex items-center gap-2 px-8 py-4 border border-primary/40 rounded-none text-primary text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:border-primary;
+    background: transparent;
+  }
+  .btn-ghost-teal:hover {
+    background: hsl(var(--teal) / 0.08);
   }
 
+  /* ── Grid lines */
   .grid-lines {
     background-image:
       linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
       linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px);
     background-size: 80px 80px;
   }
+
+  /* ── Glow */
+  .glow-primary { box-shadow: 0 0 60px hsl(var(--primary) / 0.2); }
+
+  /* ── Divider */
+  .divider { @apply w-full h-px bg-border; }
+
+  /* ── Stat card */
+  .stat-card {
+    @apply border-l-2 border-primary/30 pl-5 hover:border-primary transition-colors;
+  }
+}
+
+/* ── Grain texture ─────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.018;
+  pointer-events: none;
+  z-index: 9998;
+  mix-blend-mode: multiply;
 }

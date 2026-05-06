@@ -1,81 +1,189 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import Layout from "@/components/Layout";
-import { Link } from "react-router-dom";
-import { ArrowRight, Plus, Minus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import veneer from "@/assets/veneer-macro.jpg";
 import clinic from "@/assets/clinic-interior.jpg";
-import smile from "@/assets/hero-smile.jpg";
+import { openBooking } from "@/components/BookingModal";
+import smileMacro from "@/assets/smile-macro.jpg";
+import blanchimentLaser from "@/assets/blanchiment-laser.jpg";
 
-const services = [
-  { id: "smile-design", name: "Smile Design", short: "Conception harmonieuse", body: "Le smile design est un processus de conception et d'amélioration du sourire, souvent réalisé par des professionnels de la dentisterie esthétique. Création d'un sourire harmonieux en prenant en compte la forme, la couleur, l'alignement et la position des dents par rapport aux lèvres et au visage." },
-  { id: "facettes", name: "Facettes", short: "Fines pellicules en Emax", body: "Solution pour améliorer l'apparence des dents qui ont perdu leur éclat. Choix de la couleur : du blanc « HOLLYWOOD SMILE » au blanc étincelant, en passant par un blanc naturel. Personnalisation totale de votre sourire." },
-  { id: "couronne", name: "Couronne en porcelaine", short: "Prothèse céramique", body: "Conçue pour recouvrir une dent existante, être fixée sur un implant dentaire ou servir de maillon central dans un bridge. Polyvalence d'utilisation dans divers cas de figure." },
-  { id: "zirconium", name: "Zirconium", short: "Sans métal", body: "Couronne Zirconium, prothèse céramique sans métal — solution polyvalente adaptée à diverses situations, y compris la création d'un HOLLYWOOD SMILE, même sur dents irrégulières, endommagées ou espacées." },
-  { id: "implant", name: "Implant dentaire", short: "Racine en titane", body: "Racine artificielle en titane insérée dans l'os de la mâchoire pour remplacer une dent manquante. Compatible avec le corps humain, durabilité égale à celle des dents naturelles." },
-  { id: "blanchiment", name: "Blanchiment", short: "Méthode au laser", body: "Méthode au laser utilisant des agents peroxydés pour restaurer la blancheur naturelle des dents qui ont perdu leur éclat ou présentent des taches." },
-  { id: "aligneurs", name: "Aligneurs", short: "Orthodontie invisible", body: "Correction des problèmes d'alignement dentaire grâce aux aligneurs invisibles ou appareils traditionnels." },
+const treatments = [
+  { id: "design",     label: "01 · DESIGN",     title: "DIGITAL SMILE DESIGN",     desc: "La planification virtuelle de votre futur sourire. Technologies de pointe pour simuler le résultat avant toute intervention.",   features: ["SIMULATION 3D", "ANALYSE FACIALE", "PERSONNALISATION TOTALE"], img: smileMacro },
+  { id: "facettes",   label: "02 · FACETTES",   title: "FACETTES PORCELAINE E-MAX",  desc: "De fines pellicules de céramique haute performance pour corriger la teinte, la forme et l'alignement de vos dents.",           features: ["ULTRA-FINES", "RENDU NATUREL", "DURABILITÉ EXTRÊME"],          img: veneer },
+  { id: "couronne",   label: "03 · COURONNES",  title: "COURONNES CÉRAMIQUES",       desc: "Restauration complète pour les dents abîmées, offrant une esthétique identique à l'émail naturel sans liseré métallique.",       features: ["SANS MÉTAL", "BIOCOMPATIBLE", "ESTHÉTIQUE PREMIUM"],           img: clinic },
+  { id: "zirconium",  label: "04 · ZIRCONE",    title: "PROTHÈSES EN ZIRCONE",       desc: "Le summum de la résistance et de la translucidité. Idéal pour les bridges et couronnes sur dents postérieures ou antérieures.", features: ["HAUTE RÉSISTANCE", "TRANSLUCIDITÉ", "SOLIDITÉ PROUVÉE"],       img: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=900" },
+  { id: "implant",    label: "05 · IMPLANTS",   title: "IMPLANTOLOGIE DE POINTE",    desc: "Remplacez vos dents manquantes par des racines en titane biocompatibles. Solution fixe et durable pour retrouver le confort.", features: ["SOLUTION FIXE", "OS PRÉSERVÉ", "GARANTIE LONGUE DURÉE"],       img: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=900" },
+  { id: "blanchiment",label: "06 · BLANCHIMENT",title: "BLANCHIMENT LASER",          desc: "Gagnez plusieurs teintes en une seule séance grâce à nos protocoles de blanchiment sécurisés et totalement indolores.",        features: ["RÉSULTAT IMMÉDIAT", "SÉCURISÉ", "ÉCLAT DURABLE"],              img: blanchimentLaser },
 ];
 
+// ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
-
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center pt-32 overflow-hidden bg-ink text-cream">
-      <motion.img src={veneer} alt="" style={{ scale }} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/30" />
-      <div className="container relative">
-        <div className="eyebrow mb-6 !text-primary">Dentisterie esthétique</div>
-        <h1 className="display text-[clamp(48px,9vw,140px)] text-cream max-w-5xl">
-          Révélez l'éclat <em className="serif-it font-normal text-primary not-italic">de votre sourire.</em>
+    <section className="relative min-h-[85vh] flex items-end overflow-hidden bg-ink text-white">
+      <motion.img src={veneer} alt="" initial={{ scale: 1.08 }} animate={{ scale: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="absolute inset-0 w-full h-full object-cover opacity-35" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20" />
+
+      <div className="container relative z-10 pb-24 pt-40">
+        <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}
+          className="flex items-center gap-4 mb-12">
+          <div className="w-10 h-px bg-primary" />
+          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-primary">Dentisterie Esthétique</span>
+        </motion.div>
+        <h1 className="display text-[clamp(52px,9vw,140px)] leading-[0.82] tracking-[-0.03em] text-white max-w-5xl">
+          <motion.span initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.9, ease: [0.22, 1, 0.36, 1] }} className="block">L'excellence</motion.span>
+          <motion.span initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.9, ease: [0.22, 1, 0.36, 1] }} className="block text-primary serif-it font-normal not-italic">sur-mesure.</motion.span>
         </h1>
-        <p className="mt-8 max-w-xl text-cream/70 text-lg leading-relaxed">
-          Soins dentaires de qualité au sein de Medical Bay, à Agadir. Une équipe de dentistes qualifiés, des traitements adaptés à vos besoins, dans un environnement moderne et rassurant.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          {services.map((s) => (
-            <a key={s.id} href={`#${s.id}`} className="text-xs uppercase tracking-[0.2em] border border-cream/30 px-4 py-2 hover:border-primary hover:text-primary transition-colors">
-              {s.name}
-            </a>
-          ))}
-        </div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="mt-12">
+          <button onClick={openBooking} className="btn-primary group">
+            PRENDRE RENDEZ-VOUS <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function ServiceList() {
-  const [open, setOpen] = useState<string>(services[0].id);
+// ─── HOOK ─────────────────────────────────────────────────────────────────────
+function Hook() {
   return (
-    <section className="container py-32 grid lg:grid-cols-12 gap-12">
-      <div className="lg:col-span-5 lg:sticky lg:top-32 self-start">
-        <div className="eyebrow mb-4">Nos soins</div>
-        <h2 className="display text-4xl md:text-6xl mb-8">Sept soins, <em className="serif-it font-normal text-primary not-italic">une excellence.</em></h2>
-        <div className="aspect-[4/5] overflow-hidden bg-mist">
-          <img src={smile} alt="" className="w-full h-full object-cover" loading="lazy" />
+    <section className="bg-background py-24 border-b border-border">
+      <div className="container grid lg:grid-cols-3 gap-px bg-border border border-border">
+        {[
+          { n: "6", t: "Spécialités", d: "Du smile design à l'implantologie, tous vos besoins couverts." },
+          { n: "3×", t: "Moins cher", d: "Tarifs jusqu'à 3 fois inférieurs à ceux pratiqués en Europe." },
+          { n: "5j", t: "Résultats", d: "Des transformations complètes avant votre retour au pays." },
+        ].map((s) => (
+          <div key={s.n} className="bg-background p-12 group hover:bg-mist/60 transition-colors">
+            <div className="display text-6xl text-primary mb-3">{s.n}</div>
+            <div className="display text-lg mb-3 tracking-tight">{s.t}</div>
+            <div className="text-muted-foreground text-sm font-light leading-relaxed">{s.d}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── TREATMENTS — Accordion ───────────────────────────────────────────────────
+function TreatmentAccordion() {
+  const [active, setActive] = useState<string>(treatments[0].id);
+
+  return (
+    <section className="bg-background border-b border-border">
+
+      {/* ── Section header ─────────────────────────────────────── */}
+      <div className="container py-24 border-b border-border">
+        <div className="grid lg:grid-cols-12 gap-10 items-end">
+          <div className="lg:col-span-7">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-8 h-px bg-primary" />
+              <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Nos Spécialités</span>
+            </div>
+            <h2 className="display text-[clamp(40px,7vw,96px)] leading-[0.88] tracking-[-0.025em]">
+              Précision<br /><em className="serif-it font-normal not-italic text-primary">absolue.</em>
+            </h2>
+          </div>
+          <p className="lg:col-span-5 text-muted-foreground text-lg font-light leading-relaxed border-l-2 border-border pl-6">
+            Chaque soin est calibré selon votre anatomie, votre teinte naturelle et vos objectifs esthétiques personnels.
+          </p>
         </div>
       </div>
-      <div className="lg:col-span-7 divide-y divide-border border-y border-border">
-        {services.map((s, i) => {
-          const isOpen = open === s.id;
+
+      {/* ── Accordion rows ─────────────────────────────────────── */}
+      <div className="divide-y divide-border">
+        {treatments.map((tr, i) => {
+          const isOpen = active === tr.id;
           return (
-            <div key={s.id} id={s.id}>
-              <button onClick={() => setOpen(isOpen ? "" : s.id)} className="w-full text-left py-8 flex items-start justify-between gap-6 group">
-                <div className="flex items-baseline gap-6">
-                  <span className="text-xs tracking-[0.3em] uppercase text-primary">0{i + 1}</span>
-                  <span className="display text-3xl md:text-4xl group-hover:text-primary transition-colors">{s.name}</span>
-                </div>
-                <div className="w-10 h-10 grid place-items-center border border-border text-primary mt-2 shrink-0">
-                  {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            <div key={tr.id}>
+
+              {/* Row trigger */}
+              <button
+                onClick={() => setActive(tr.id)}
+                className="w-full flex items-center gap-6 md:gap-14 px-6 md:px-16 py-7 md:py-9 text-left group transition-colors hover:bg-mist/50"
+              >
+                {/* Ghost number */}
+                <span className={`display text-5xl md:text-7xl font-black shrink-0 w-14 md:w-20 text-right transition-colors duration-300 ${isOpen ? "text-primary" : "text-foreground/8 group-hover:text-foreground/15"}`}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+
+                {/* Title */}
+                <span className={`display text-xl sm:text-2xl md:text-4xl tracking-tight flex-1 transition-colors duration-300 ${isOpen ? "text-primary" : "group-hover:text-foreground"}`}>
+                  {tr.title}
+                </span>
+
+                {/* Tag (hidden on xs) + toggle icon */}
+                <div className="flex items-center gap-6 shrink-0">
+                  <span className="hidden lg:block text-[9px] tracking-[0.4em] uppercase font-black text-muted-foreground/40">
+                    {tr.label.replace(/^\d+\s·\s/, "")}
+                  </span>
+                  <motion.div
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className={`w-10 h-10 border flex items-center justify-center shrink-0 transition-colors duration-300 ${isOpen ? "border-primary text-primary bg-primary/8" : "border-border group-hover:border-primary group-hover:text-primary"}`}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </motion.div>
                 </div>
               </button>
-              <motion.div initial={false} animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }} className="overflow-hidden">
-                <div className="pb-8 pl-12 pr-4">
-                  <p className="text-muted-foreground text-lg leading-relaxed">{s.body}</p>
-                </div>
-              </motion.div>
+
+              {/* Expanded panel */}
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden border-t border-border"
+                  >
+                    <div className="grid lg:grid-cols-2 min-h-[400px]">
+
+                      {/* Text side */}
+                      <div className="flex flex-col justify-center p-8 md:p-14 lg:p-20 border-b lg:border-b-0 lg:border-r border-border">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15, duration: 0.5 }}>
+                          <p className="text-lg text-muted-foreground font-light leading-relaxed mb-12">
+                            {tr.desc}
+                          </p>
+                          <div className="flex flex-wrap gap-x-10 gap-y-6 mb-14">
+                            {tr.features.map((f) => (
+                              <div key={f} className="flex flex-col gap-2">
+                                <div className="w-6 h-px bg-primary" />
+                                <span className="text-[9px] font-black tracking-[0.35em] uppercase">{f}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <button onClick={openBooking} className="btn-primary group self-start">
+                            CONFIGURER CE SOIN
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                          </button>
+                        </motion.div>
+                      </div>
+
+                      {/* Image side */}
+                      <div className="relative overflow-hidden min-h-[280px] lg:min-h-0">
+                        <motion.img
+                          key={tr.id}
+                          src={tr.img}
+                          alt={tr.title}
+                          initial={{ scale: 1.1, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {/* Teal corner accent */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
+                      </div>
+
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             </div>
           );
         })}
@@ -84,24 +192,32 @@ function ServiceList() {
   );
 }
 
+// ─── PROCESS ─────────────────────────────────────────────────────────────────
 function Process() {
   const steps = [
-    { n: "01", t: "Consultation", b: "Échange initial, étude de votre cas, devis transparent." },
-    { n: "02", t: "Planification", b: "Smile design numérique, choix des matériaux et couleurs." },
-    { n: "03", t: "Soins", b: "Intervention dans nos cliniques partenaires modernes." },
-    { n: "04", t: "Suivi", b: "Accompagnement post-opératoire et garanties." },
+    { n: "01", t: "CONSULTATION", b: "Échange initial, étude de votre cas, devis transparent et sans engagement." },
+    { n: "02", t: "PLANIFICATION", b: "Smile design numérique, choix des matériaux et validation des teintes." },
+    { n: "03", t: "SOINS",         b: "Intervention dans nos cliniques partenaires avec protocole international." },
+    { n: "04", t: "SUIVI",         b: "Accompagnement post-opératoire complet et garanties étendues." },
   ];
   return (
-    <section className="bg-mist dark:bg-card py-32">
+    <section className="bg-[hsl(var(--off))] py-32 border-y border-border">
       <div className="container">
-        <div className="eyebrow mb-4">Méthode</div>
-        <h2 className="display text-5xl md:text-7xl mb-16">Quatre étapes <em className="serif-it font-normal text-primary not-italic">vers votre sourire.</em></h2>
-        <div className="grid md:grid-cols-4 gap-px bg-border">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-8 h-px bg-primary" />
+          <span className="text-[10px] tracking-[0.55em] uppercase font-bold text-muted-foreground">Méthode</span>
+        </div>
+        <h2 className="display text-[clamp(40px,7vw,96px)] leading-[0.88] text-foreground mb-24">
+          Un protocole<br /><em className="serif-it font-normal not-italic text-primary">millimétré.</em>
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
           {steps.map((s, i) => (
-            <motion.div key={s.n} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.12 }} className="bg-background p-10">
-              <div className="display text-6xl text-primary/20 mb-4">{s.n}</div>
-              <h3 className="display text-xl mb-3">{s.t}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{s.b}</p>
+            <motion.div key={s.n} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className="bg-background p-12 hover:bg-primary transition-all duration-500 group">
+              <div className="display text-6xl text-foreground/8 mb-8 group-hover:text-white/20 transition-colors">{s.n}</div>
+              <h3 className="display text-xl mb-4 text-foreground group-hover:text-white tracking-tight transition-colors">{s.t}</h3>
+              <p className="text-muted-foreground text-sm font-light leading-relaxed group-hover:text-white/70 transition-colors">{s.b}</p>
             </motion.div>
           ))}
         </div>
@@ -110,47 +226,172 @@ function Process() {
   );
 }
 
-function ColorChoice() {
-  const swatches = [
-    { name: "Hollywood", hex: "#FFFFFF" },
-    { name: "Étincelant", hex: "#F8F8F2" },
-    { name: "Lumineux", hex: "#F1ECDC" },
-    { name: "Naturel", hex: "#E9DEC3" },
-    { name: "Chaud", hex: "#DDC9A2" },
-  ];
+// ─── PRICE COMPARISON — Visual bars ──────────────────────────────────────────
+const prices = [
+  { soin: "Facettes porcelaine",   europe: "800 – 1 200 €",     maroc: "200 – 350 €",     pct: 25 },
+  { soin: "Implant dentaire",      europe: "1 500 – 3 000 €",   maroc: "500 – 800 €",     pct: 30 },
+  { soin: "Couronne zircone",      europe: "900 – 1 400 €",     maroc: "220 – 380 €",     pct: 28 },
+  { soin: "Smile Design complet",  europe: "8 000 – 20 000 €",  maroc: "2 500 – 6 000 €", pct: 32 },
+  { soin: "Blanchiment laser",     europe: "400 – 800 €",       maroc: "100 – 200 €",     pct: 25 },
+  { soin: "Prothèse en zircone",   europe: "1 200 – 2 000 €",   maroc: "350 – 600 €",     pct: 30 },
+];
+
+function PriceComparison() {
   return (
-    <section className="container py-32">
-      <div className="grid lg:grid-cols-12 gap-12 mb-12">
-        <div className="lg:col-span-6">
-          <div className="eyebrow mb-4">Personnalisation</div>
-          <h2 className="display text-5xl md:text-7xl">Choisissez la teinte <em className="serif-it font-normal text-primary not-italic">de votre sourire.</em></h2>
-        </div>
-        <p className="lg:col-span-5 lg:col-start-8 self-end text-muted-foreground text-lg">
-          Du blanc HOLLYWOOD SMILE au blanc naturel, des dizaines de nuances pour révéler votre personnalité.
-        </p>
+    <section className="py-32 bg-background border-y border-border relative overflow-hidden">
+      {/* Ghost watermark */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
+        <span className="display text-[20vw] text-foreground/[0.025] font-black whitespace-nowrap tracking-tighter">
+          −75%
+        </span>
       </div>
-      <div className="flex h-72 gap-1">
-        {swatches.map((sw) => (
-          <div key={sw.name} className="flex-1 hover:flex-[2.4] transition-[flex] duration-500 ease-out flex flex-col justify-end p-6 text-ink relative overflow-hidden" style={{ background: sw.hex }}>
-            <div className="display text-lg">{sw.name}</div>
-            <div className="text-[10px] tracking-[0.3em] uppercase opacity-50">{sw.hex}</div>
+
+      <div className="container relative">
+
+        {/* ── Header ──────────────────────────────────────── */}
+        <div className="grid lg:grid-cols-12 gap-12 items-end mb-20">
+          <div className="lg:col-span-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-8 h-px bg-primary" />
+              <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Transparence tarifaire</span>
+            </div>
+            <h2 className="display text-[clamp(36px,6vw,88px)] leading-[0.88] tracking-[-0.025em]">
+              Jusqu'à 75%<br />moins cher<br />
+              <em className="serif-it font-normal not-italic text-primary">qu'en Europe.</em>
+            </h2>
           </div>
-        ))}
+          <div className="lg:col-span-5 lg:col-start-8 flex flex-col gap-8">
+            <p className="text-muted-foreground text-lg font-light leading-relaxed">
+              Qualité internationale, cliniques certifiées, chirurgiens formés à l'étranger — sans le prix européen.
+            </p>
+            {/* Legend */}
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-2 bg-foreground/15 rounded-full" />
+                <span className="text-[9px] tracking-[0.4em] uppercase font-black text-muted-foreground">En Europe</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-2 bg-primary rounded-full" />
+                <span className="text-[9px] tracking-[0.4em] uppercase font-black text-primary">Medical Bay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bar rows ────────────────────────────────────── */}
+        <div className="divide-y divide-border border-y border-border">
+          {prices.map((row, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="group grid lg:grid-cols-12 gap-x-10 gap-y-4 py-8 px-2 hover:bg-mist/50 transition-colors items-center"
+            >
+              {/* Treatment name */}
+              <div className="lg:col-span-4 flex items-center gap-4">
+                <span className="display text-2xl md:text-3xl tracking-tight group-hover:text-primary transition-colors">
+                  {row.soin}
+                </span>
+              </div>
+
+              {/* Bars */}
+              <div className="lg:col-span-6 flex flex-col gap-3">
+                {/* Europe bar */}
+                <div className="flex items-center gap-4">
+                  <span className="text-[8px] tracking-[0.4em] uppercase font-black text-foreground/30 w-20 shrink-0">EUROPE</span>
+                  <div className="flex-1 h-7 bg-foreground/6 relative overflow-hidden">
+                    <motion.div
+                      className="h-full bg-foreground/12"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "100%" }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08 + 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground/35 line-through">
+                      {row.europe}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Medical Bay bar */}
+                <div className="flex items-center gap-4">
+                  <span className="text-[8px] tracking-[0.4em] uppercase font-black text-primary w-20 shrink-0">MEDICAL BAY</span>
+                  <div className="flex-1 h-7 bg-primary/8 relative overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${row.pct}%` }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08 + 0.4, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-ink z-10 mix-blend-multiply">
+                      {row.maroc}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Saving badge */}
+              <div className="lg:col-span-2 flex lg:justify-end">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 + 0.5, duration: 0.4 }}
+                  className="flex flex-col items-center justify-center w-20 h-20 border-2 border-primary/30 group-hover:border-primary group-hover:bg-primary transition-all duration-300"
+                >
+                  <span className="display text-2xl text-primary group-hover:text-ink transition-colors leading-none">
+                    -{100 - row.pct}%
+                  </span>
+                  <span className="text-[7px] tracking-[0.3em] uppercase font-black text-muted-foreground group-hover:text-ink/60 transition-colors mt-1">
+                    économie
+                  </span>
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── Footer ──────────────────────────────────────── */}
+        <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <p className="text-[10px] tracking-[0.3em] uppercase font-black text-muted-foreground/50">
+            * Tarifs indicatifs · Devis personnalisé gratuit sous 24h
+          </p>
+          <button
+            onClick={openBooking}
+            className="btn-primary group shrink-0"
+          >
+            OBTENIR MON DEVIS EXACT
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+
       </div>
     </section>
   );
 }
 
+// ─── CTA ─────────────────────────────────────────────────────────────────────
 function CTA() {
   return (
-    <section className="relative overflow-hidden">
-      <img src={clinic} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-      <div className="absolute inset-0 bg-primary/85" />
-      <div className="container relative py-32 text-primary-foreground">
-        <h2 className="display text-5xl md:text-7xl max-w-3xl">Prêt à <em className="serif-it font-normal not-italic">transformer</em> votre sourire ?</h2>
-        <Link to="/contact" className="mt-10 inline-flex items-center gap-2 px-7 py-4 bg-ink text-cream text-xs uppercase tracking-[0.2em] font-medium hover:bg-cream hover:text-ink transition-colors">
-          Demander un devis <ArrowRight className="w-4 h-4" />
-        </Link>
+    <section className="relative bg-background overflow-hidden border-t border-border">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <span className="display text-[18vw] text-foreground/[0.03] font-black whitespace-nowrap select-none tracking-tighter">SOURIRE</span>
+      </div>
+      <div className="container py-40 text-center relative">
+        <div className="flex items-center justify-center gap-4 mb-10">
+          <div className="w-8 h-px bg-primary" />
+          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Votre nouveau sourire</span>
+          <div className="w-8 h-px bg-primary" />
+        </div>
+        <h2 className="display text-[clamp(48px,8vw,120px)] leading-[0.85] tracking-[-0.03em] mb-16 max-w-5xl mx-auto">
+          Le futur se dessine<br /><em className="serif-it font-normal not-italic text-primary">aujourd'hui.</em>
+        </h2>
+        <button onClick={openBooking} className="btn-primary group !px-14 !py-6">
+          COMMENCER MON ANALYSE <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+        </button>
       </div>
     </section>
   );
@@ -160,9 +401,10 @@ export default function Dentisterie() {
   return (
     <Layout>
       <Hero />
-      <ServiceList />
+      <Hook />
+      <TreatmentAccordion />
       <Process />
-      <ColorChoice />
+      <PriceComparison />
       <CTA />
     </Layout>
   );

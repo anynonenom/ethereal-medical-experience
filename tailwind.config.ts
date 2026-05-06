@@ -9,8 +9,10 @@ export default {
     extend: {
       fontFamily: {
         display: ["Montserrat", "sans-serif"],
-        body: ["DM Sans", "sans-serif"],
-        serif: ["Cormorant Garamond", "serif"],
+        body: ["Satoshi", "sans-serif"],
+        serif: ["Cormorant Garamond", "Georgia", "serif"],
+        sans: ["Satoshi", "sans-serif"],
+        head: ["Montserrat", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -21,8 +23,12 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          deep: "hsl(var(--teal-deep))",
-          light: "hsl(var(--teal-light))",
+          deep: "hsl(var(--blue-deep))",
+          light: "hsl(var(--blue-light))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          light: "hsl(var(--gold) / 0.15)",
         },
         secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
         destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
