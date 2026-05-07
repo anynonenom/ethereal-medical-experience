@@ -9,9 +9,9 @@ export default {
     extend: {
       fontFamily: {
         display: ["Montserrat", "sans-serif"],
-        body: ["Satoshi", "sans-serif"],
+        body: ["DM Sans", "sans-serif"],
         serif: ["Cormorant Garamond", "Georgia", "serif"],
-        sans: ["Satoshi", "sans-serif"],
+        sans: ["DM Sans", "sans-serif"],
         head: ["Montserrat", "sans-serif"],
       },
       colors: {

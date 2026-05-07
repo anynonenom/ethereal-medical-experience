@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Phone, Mail, MapPin, Send, ArrowRight, MessageCircle, Clock, Star, Quote, ShieldCheck, Users2 } from "lucide-react";
 import { toast } from "sonner";
 import { openBooking } from "@/components/BookingModal";
+import { supabase } from "@/lib/supabase";
 
 // ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero() {
@@ -93,14 +94,28 @@ function ContactFunnel() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ nom: "", prenom: "", email: "", phone: "", message: "" });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from("messages").insert({
+        id: `MSG-${Date.now()}`,
+        name: `${form.prenom} ${form.nom}`.trim(),
+        email: form.email,
+        phone: form.phone,
+        subject: "Message via page Contact",
+        body: form.message,
+        date: new Date().toISOString().slice(0, 10),
+        read: false,
+      });
+      if (error) throw error;
       toast.success("MESSAGE ENVOYÉ", { description: "Notre équipe vous répondra sous 24h." });
-      setLoading(false);
       setForm({ nom: "", prenom: "", email: "", phone: "", message: "" });
-    }, 800);
+    } catch {
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const field = (name: keyof typeof form, label: string, type = "text") => (

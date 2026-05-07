@@ -3,11 +3,12 @@ import { X, ArrowRight, MessageCircle, Check, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import logoMark from "@/assets/medicalbay-logo-mark.png";
+import { supabase } from "@/lib/supabase";
 
 export default function BookingModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ nom: "", prenom: "", phone: "", soin: "", message: "" });
+  const [form, setForm] = useState({ nom: "", prenom: "", email: "", phone: "", soin: "", message: "" });
 
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
@@ -22,17 +23,31 @@ export default function BookingModal() {
 
   const close = () => setIsOpen(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from("messages").insert({
+        id: `MSG-${Date.now()}`,
+        name: `${form.prenom} ${form.nom}`.trim(),
+        email: form.email,
+        phone: form.phone,
+        subject: form.soin ? `Demande RDV — ${form.soin}` : "Demande de rendez-vous",
+        body: form.message || `Demande de rendez-vous pour : ${form.soin || "soin non précisé"}.`,
+        date: new Date().toISOString().slice(0, 10),
+        read: false,
+      });
+      if (error) throw error;
       toast.success("Demande envoyée !", {
         description: "Notre coordinateur vous contacte sous 2h.",
       });
-      setLoading(false);
-      setForm({ nom: "", prenom: "", phone: "", soin: "", message: "" });
+      setForm({ nom: "", prenom: "", email: "", phone: "", soin: "", message: "" });
       close();
-    }, 1500);
+    } catch {
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -155,12 +170,20 @@ export default function BookingModal() {
                         ))}
                       </div>
 
-                      <label className="block group">
-                        <span className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground group-focus-within:text-primary transition-colors font-bold">WHATSAPP / TÉLÉPHONE</span>
-                        <input required type="tel" placeholder="+33 6 00 00 00 00" value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                          className="w-full mt-2 bg-transparent border-b border-border py-3 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
-                      </label>
+                      <div className="grid grid-cols-2 gap-5">
+                        <label className="block group">
+                          <span className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground group-focus-within:text-primary transition-colors font-bold">WHATSAPP / TÉLÉPHONE</span>
+                          <input required type="tel" placeholder="+33 6 00 00 00 00" value={form.phone}
+                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                            className="w-full mt-2 bg-transparent border-b border-border py-3 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+                        </label>
+                        <label className="block group">
+                          <span className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground group-focus-within:text-primary transition-colors font-bold">E-MAIL</span>
+                          <input required type="email" placeholder="jean@gmail.com" value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            className="w-full mt-2 bg-transparent border-b border-border py-3 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+                        </label>
+                      </div>
 
                       <label className="block group">
                         <span className="text-[9px] tracking-[0.4em] uppercase text-muted-foreground group-focus-within:text-primary transition-colors font-bold">SOIN SOUHAITÉ</span>
