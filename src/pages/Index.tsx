@@ -118,7 +118,7 @@ function Hero() {
   const slide = slides[current];
 
   return (
-    <section className="relative h-screen min-h-[500px] overflow-hidden bg-[hsl(var(--ink))]">
+    <section className="relative h-screen min-h-[640px] overflow-hidden bg-[hsl(var(--ink))]">
 
       {/* Background image crossfade */}
       <AnimatePresence initial={false}>
@@ -140,7 +140,7 @@ function Hero() {
         style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
 
       {/* Content */}
-      <div className="absolute inset-0 container flex flex-col justify-between py-28 md:py-36">
+      <div className="absolute inset-0 container flex flex-col justify-between py-16 sm:py-20 md:py-28">
 
         {/* Badge */}
         <AnimatePresence mode="wait">
@@ -166,10 +166,10 @@ function Hero() {
             className="max-w-3xl"
           >
             <h1 className="mb-8">
-              <span className="display block text-[clamp(52px,8vw,118px)] leading-[0.88] text-white">
+              <span className="display block text-[clamp(40px,7vw,118px)] leading-[0.88] text-white">
                 {slide.line1}
               </span>
-              <span className="serif-it block text-[clamp(54px,8.5vw,122px)] leading-[1] text-primary">
+              <span className="serif-it block text-[clamp(42px,7.5vw,122px)] leading-[1] text-primary">
                 {slide.lineEm}
               </span>
             </h1>
@@ -249,7 +249,7 @@ function Manifesto() {
   const { lang } = useLang();
   const m = T[lang].manifesto;
   return (
-    <section className="bg-background py-28 md:py-40 border-b border-border">
+    <section className="bg-background py-16 md:py-24 border-b border-border">
       <div className="container">
         <div className="grid lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-7">
@@ -295,9 +295,9 @@ function Services() {
   const [hovered, setHovered] = useState(0);
 
   return (
-    <section className="bg-[hsl(var(--off))] py-28 border-b border-border">
+    <section className="bg-[hsl(var(--off))] py-16 md:py-24 border-b border-border">
       <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-8 h-px bg-primary" />
@@ -387,7 +387,7 @@ function Testimonials() {
   const item = items[current];
 
   return (
-    <section className="bg-background py-28 border-b border-border overflow-hidden">
+    <section className="bg-background py-16 md:py-24 border-b border-border overflow-hidden">
       <div className="container">
 
         {/* Header */}
@@ -501,9 +501,9 @@ function Process() {
   const icons = [MessageCircle, Check, Plane, Stethoscope];
 
   return (
-    <section className="bg-[hsl(var(--off))] py-28 border-b border-border relative overflow-hidden">
+    <section className="bg-[hsl(var(--off))] py-16 md:py-24 border-b border-border relative overflow-hidden">
       <div className="container relative">
-        <div className="grid lg:grid-cols-12 gap-10 mb-20">
+        <div className="grid lg:grid-cols-12 gap-10 mb-14">
           <div className="lg:col-span-5">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-8 h-px bg-primary" />
@@ -538,7 +538,7 @@ function Process() {
           })}
         </div>
 
-        <div className="mt-20 pt-14 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="mt-14 pt-10 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <p className="display text-2xl text-foreground/35">
             {p.nudge} <span className="serif-it text-primary">{p.nudgeEm}</span>
           </p>
@@ -695,7 +695,7 @@ function FAQ() {
   const { lang } = useLang();
   const f = T[lang].faq;
   return (
-    <section className="bg-background py-28 border-b border-border">
+    <section className="bg-background py-16 md:py-24 border-b border-border">
       <div className="container grid lg:grid-cols-12 gap-16 lg:gap-20">
         <div className="lg:col-span-4">
           <div className="flex items-center gap-4 mb-8">
@@ -728,7 +728,7 @@ function CTASection() {
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
         <span className="display text-[18vw] text-white/[0.07] font-black whitespace-nowrap">MEDICAL BAY</span>
       </div>
-      <div className="container relative py-36 md:py-52 text-center">
+      <div className="container relative py-20 md:py-32 text-center">
         <motion.div initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
           <div className="flex items-center justify-center gap-4 mb-12">
