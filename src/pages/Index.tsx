@@ -140,7 +140,7 @@ function Hero() {
         style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
 
       {/* Content */}
-      <div className="absolute inset-0 container flex flex-col justify-between py-16 sm:py-20 md:py-28">
+      <div className="absolute inset-0 container flex flex-col justify-between pt-24 pb-12 sm:pt-28 sm:pb-16 md:pt-32 md:pb-20">
 
         {/* Badge */}
         <AnimatePresence mode="wait">
