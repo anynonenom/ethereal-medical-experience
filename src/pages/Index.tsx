@@ -139,21 +139,21 @@ function Hero() {
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
 
-      {/* Content */}
-      <div className="absolute inset-0 container flex flex-col justify-between pt-24 pb-12 sm:pt-28 sm:pb-16 md:pt-32 md:pb-20">
-
-        {/* Badge */}
+      {/* Badge — pinned to top, always below navbar */}
+      <div className="absolute top-[80px] sm:top-[88px] md:top-[96px] left-0 right-0 container z-10">
         <AnimatePresence mode="wait">
           <motion.div key={`badge-${current}`}
             initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.4 }}
-            className="flex items-center gap-3 self-start">
+            className="flex items-center gap-3">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse shrink-0" />
             <span className="text-[10px] tracking-[0.55em] uppercase font-bold text-primary">{slide.badge}</span>
           </motion.div>
         </AnimatePresence>
+      </div>
 
-        {/* Main text */}
+      {/* Main text — vertically centered in available space */}
+      <div className="absolute inset-0 container flex items-center z-10">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={`text-${current}`}
@@ -163,42 +163,44 @@ function Hero() {
             animate="center"
             exit="exit"
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-3xl"
+            className="max-w-3xl w-full mt-8 md:mt-4"
           >
-            <h1 className="mb-8">
-              <span className="display block text-[clamp(40px,7vw,118px)] leading-[0.88] text-white">
+            <h1 className="mb-4 sm:mb-6 md:mb-8">
+              <span className="display block text-[clamp(36px,6vw,118px)] leading-[0.88] text-white">
                 {slide.line1}
               </span>
-              <span className="serif-it block text-[clamp(42px,7.5vw,122px)] leading-[1] text-primary">
+              <span className="serif-it block text-[clamp(38px,6.5vw,122px)] leading-[1] text-primary">
                 {slide.lineEm}
               </span>
             </h1>
 
-            <p className="text-white/55 text-base lg:text-xl font-light leading-relaxed max-w-sm mb-12">
+            <p className="text-white/55 text-sm sm:text-base lg:text-xl font-light leading-relaxed max-w-sm mb-6 sm:mb-8 md:mb-12">
               {slide.sub}
             </p>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <button onClick={openBooking}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-bold tracking-[0.2em] text-[10px] uppercase transition-all hover:bg-[hsl(var(--teal-deep))] group">
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-primary text-white font-bold tracking-[0.2em] text-[10px] uppercase transition-all hover:bg-[hsl(var(--teal-deep))] group">
                 {slide.cta1} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
               <Link to={slide.ctaLink}
-                className="inline-flex items-center gap-2 px-8 py-4 border border-white/30 text-white text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:border-white hover:bg-white/10">
+                className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 border border-white/30 text-white text-[10px] uppercase tracking-[0.2em] font-bold transition-all hover:border-white hover:bg-white/10">
                 {slide.cta2} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </motion.div>
         </AnimatePresence>
+      </div>
 
-        {/* Bottom bar: stats + controls */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8">
+      {/* Bottom bar — pinned to bottom */}
+      <div className="absolute bottom-0 left-0 right-0 container pb-6 sm:pb-8 md:pb-10 z-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
 
           {/* Stats */}
-          <div className="flex items-center gap-8 md:gap-12 pt-6 border-t border-white/15">
+          <div className="flex items-center gap-6 md:gap-12 pt-5 border-t border-white/15">
             {h.stats.map(([n, l]) => (
               <div key={l}>
-                <div className="display text-2xl text-primary">{n}</div>
+                <div className="display text-xl md:text-2xl text-primary">{n}</div>
                 <div className="text-[8px] tracking-[0.4em] uppercase text-white/40 font-bold mt-0.5">{l}</div>
               </div>
             ))}
