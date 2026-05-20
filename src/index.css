@@ -9,7 +9,7 @@
 @layer base {
   :root {
     /* ── Brand palette ─────────────────────────────── */
-    --teal:        171 62% 45%;   /* #4bbdbd – Primary */
+    --teal:        180 46% 52%;   /* #4bbdbd – Primary */
     --teal-deep:   175 65% 34%;   /* #1F9187 – Deep */
     --teal-light:  171 58% 56%;   /* #4DCFBB – Light */
     --cream:       100 25% 98%;   /* #FAFDF8 – Background */
