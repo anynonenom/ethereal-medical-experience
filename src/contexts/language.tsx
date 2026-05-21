@@ -162,10 +162,12 @@ export const T = {
       titleEm: "nos réponses.",
       cta: "POSER MA QUESTION",
       items: [
-        { q: "Quels sont les délais pour obtenir un devis ?",  a: "Nous traitons vos demandes sous 24 à 48 heures ouvrées après réception de votre dossier médical complet via formulaire ou WhatsApp." },
-        { q: "Comment se passe l'accueil à l'aéroport ?",     a: "Un membre de notre équipe vous attend personnellement à Agadir Al Massira avec une pancarte nominative pour votre transfert privé vers l'hôtel ou la clinique." },
-        { q: "Les cliniques partenaires sont-elles certifiées ?", a: "Oui, toutes nos cliniques partenaires respectent les normes internationales de sécurité et d'hygiène, avec un équipement à la pointe de la technologie médicale." },
-        { q: "Dois-je parler français ou arabe ?",             a: "Non, tout notre personnel et nos médecins parlent couramment français. Nous garantissons une communication fluide et transparente à chaque étape de votre séjour." },
+        { q: "Pourquoi choisir Medical Bay pour vos soins dentaires ?", a: "Medical Bay vous accompagne dans l'organisation complète de vos soins dentaires avec des cliniques partenaires sélectionnées, un suivi personnalisé et un séjour médical confortable." },
+        { q: "Pourquoi choisir Medical Bay plutôt que d'organiser seul ?", a: "Medical Bay coordonne chaque étape de votre séjour médical pour une expérience sans stress." },
+        { q: "Le séjour et l'hébergement sont-ils inclus dans les packs Medical Bay ?", a: "Oui, Medical Bay propose des solutions d'hébergement et de séjour adaptées selon vos besoins et votre pack choisi." },
+        { q: "Comment Medical Bay sélectionne ses cliniques partenaires ?", a: "Medical Bay sélectionne ses cliniques et médecins partenaires selon des critères stricts de qualité, d'expertise médicale et de confiance afin d'assurer les meilleurs soins aux patients." },
+        { q: "Recevez-vous des patients venant de l'étranger ?", a: "Oui, Medical Bay accompagne et reçoit des patients internationaux en leur proposant une prise en charge médicale et un séjour organisés sur mesure." },
+        { q: "Que se passe-t-il en cas d'annulation ?", a: "En cas d'annulation, Medical Bay vous accompagne selon les conditions prévues afin de proposer la meilleure solution possible pour votre séjour et vos soins." },
       ],
     },
 
@@ -314,10 +316,12 @@ export const T = {
       titleEm: "our answers.",
       cta: "ASK A QUESTION",
       items: [
-        { q: "How quickly will I receive a quote?",           a: "We process all requests within 24 to 48 business hours of receiving your complete medical file via our form or WhatsApp." },
-        { q: "How does airport pick-up work?",                a: "A dedicated team member meets you personally at Agadir Al Massira Airport with a name sign and takes you directly to your hotel or clinic." },
-        { q: "Are your partner clinics certified?",           a: "Yes. Every partner clinic meets international safety and hygiene standards and is equipped with the latest medical technology." },
-        { q: "Do I need to speak French or Arabic?",          a: "Not at all. Our entire team, including all physicians, is fully fluent in English. Clear, transparent communication is guaranteed throughout your stay." },
+        { q: "Why choose Medical Bay for your dental care?", a: "Medical Bay guides you through the complete organisation of your dental care with selected partner clinics, personalised follow-up, and a comfortable medical stay." },
+        { q: "Why choose Medical Bay instead of organising on your own?", a: "Medical Bay coordinates every step of your medical trip so you can enjoy a completely stress-free experience." },
+        { q: "Are accommodation and stay included in Medical Bay packages?", a: "Yes, Medical Bay offers tailored accommodation and stay solutions based on your needs and chosen package." },
+        { q: "How does Medical Bay select its partner clinics?", a: "Medical Bay selects its partner clinics and doctors according to strict criteria of quality, medical expertise, and trustworthiness to ensure the best possible care for patients." },
+        { q: "Do you receive patients from abroad?", a: "Yes, Medical Bay welcomes and supports international patients by providing tailor-made medical care and a fully organised stay." },
+        { q: "What happens in the event of a cancellation?", a: "In the event of a cancellation, Medical Bay will support you according to the agreed terms to find the best possible solution for your stay and your care." },
       ],
     },
 
