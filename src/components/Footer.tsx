@@ -40,6 +40,7 @@ export default function Footer() {
               ["/a-propos", "À Propos"],
               ["/dentisterie-esthetique", "Dentisterie"],
               ["/tourisme-medical", "Tourisme Médical"],
+              ["/packs", "Packs"],
               ["/contact", "Contact"],
             ].map(([to, l]) => (
               <li key={to}>

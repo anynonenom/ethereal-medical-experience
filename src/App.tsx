@@ -11,6 +11,7 @@ import TourismeMedical from "./pages/TourismeMedical.tsx";
 import Contact from "./pages/Contact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import Packs from "./pages/Packs.tsx";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/a-propos" element={<APropos />} />
           <Route path="/dentisterie-esthetique" element={<Dentisterie />} />
           <Route path="/tourisme-medical" element={<TourismeMedical />} />
+          <Route path="/packs" element={<Packs />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />

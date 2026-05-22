@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, Edit3, Save, Plus,
   BarChart3, Zap, Download, Tag,
   PhoneCall, MessageCircle, AtSign, StickyNote,
-  Bell, BellOff, Kanban,
+  Bell, BellOff, Kanban, Menu,
   Send, Copy, CheckCheck, UserPlus, Activity,
   RefreshCw, Loader2,
 } from "lucide-react";
@@ -271,14 +271,14 @@ const CRM_NAV = [
   { id: "patients" as Tab, label: "Patients",       icon: Users },
 ];
 
-function Sidebar({ tab, setTab, unread, onLogout, onNewLead }: {
-  tab: Tab; setTab: (t: Tab) => void; unread: number; onLogout: () => void; onNewLead: () => void;
+function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose }: {
+  tab: Tab; setTab: (t: Tab) => void; unread: number; onLogout: () => void; onNewLead: () => void; onClose?: () => void;
 }) {
   const section = SECTION_OF[tab];
   const NavItem = ({ item }: { item: { id: Tab; label: string; icon: React.ElementType } }) => {
     const active = tab === item.id;
     return (
-      <button onClick={() => setTab(item.id)}
+      <button onClick={() => { setTab(item.id); onClose?.(); }}
         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 ${active ? "bg-primary text-white" : "text-white/40 hover:text-white hover:bg-white/5"}`}>
         <item.icon className="w-4 h-4 shrink-0" />
         <span className="text-[11px] tracking-[0.18em] uppercase font-bold">{item.label}</span>
@@ -290,17 +290,22 @@ function Sidebar({ tab, setTab, unread, onLogout, onNewLead }: {
   };
 
   return (
-    <aside className="w-[240px] shrink-0 bg-[hsl(var(--ink))] flex flex-col h-screen sticky top-0">
+    <aside className="w-[240px] shrink-0 bg-[hsl(var(--ink))] flex flex-col h-full">
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/8">
         <div className="w-9 h-9 bg-primary grid place-items-center shrink-0">
           <img src={logoMark} alt="" className="w-5 h-5 brightness-0 invert" />
         </div>
-        <div>
+        <div className="flex-1">
           <div className="display text-[11px] tracking-[0.2em] text-white font-black">MEDICAL BAY</div>
           <div className="text-[8px] tracking-[0.35em] uppercase font-bold mt-0.5">
             {section === "dashboard" ? <span className="text-white/50">Tableau de bord</span> : <span className="text-primary/80">CRM</span>}
           </div>
         </div>
+        {onClose && (
+          <button onClick={onClose} className="w-7 h-7 border border-white/15 flex items-center justify-center hover:border-primary hover:text-primary transition-colors lg:hidden">
+            <X className="w-3.5 h-3.5 text-white/50" />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-4">
@@ -380,66 +385,73 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
   const unread = messages.filter(m => !m.read).length;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="display text-3xl text-foreground mb-1">Vue d'ensemble</h1>
-        <p className="text-sm text-muted-foreground font-light">Medical Bay CRM · {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
-      </div>
+    <div className="space-y-6">
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Leads totaux",     value: stats.total,                                 sub: "toutes sources",     icon: Zap,          color: "text-primary",     bg: "bg-primary/8" },
-          { label: "Pipeline actif",   value: `${stats.pipeline.toLocaleString("fr")} €`,  sub: "revenus potentiels", icon: TrendingUp,   color: "text-amber-600",   bg: "bg-amber-50" },
-          { label: "Séjours terminés", value: stats.done,                                  sub: "patients traités",   icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "CA réalisé",       value: `${stats.revenue.toLocaleString("fr")} €`,   sub: "séjours clôturés",   icon: BarChart3,    color: "text-primary",     bg: "bg-primary/8" },
+          { label: "Leads totaux",     value: stats.total,                                sub: "toutes sources",     icon: Zap,          color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
+          { label: "Pipeline actif",   value: `${stats.pipeline.toLocaleString("fr")} €`, sub: "revenus potentiels", icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",  iconBg: "bg-amber-50" },
+          { label: "Séjours terminés", value: stats.done,                                 sub: "patients traités",   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500",iconBg: "bg-emerald-50" },
+          { label: "CA réalisé",       value: `${stats.revenue.toLocaleString("fr")} €`,  sub: "séjours clôturés",   icon: BarChart3,    color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            className="bg-background border border-border p-6">
-            <div className={`w-10 h-10 ${s.bg} flex items-center justify-center mb-5`}><s.icon className={`w-5 h-5 ${s.color}`} /></div>
-            <div className={`display text-4xl font-black mb-1 ${s.color}`}>{s.value}</div>
-            <div className="text-[8px] tracking-[0.35em] uppercase font-bold text-muted-foreground">{s.label}</div>
-            <div className="text-[9px] text-muted-foreground/50 mt-0.5">{s.sub}</div>
+            className={`bg-white border border-border border-l-4 ${s.accent} p-5 md:p-6 shadow-sm`}>
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-9 h-9 ${s.iconBg} flex items-center justify-center`}><s.icon className={`w-4 h-4 ${s.color}`} /></div>
+              <span className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground/40">{s.sub}</span>
+            </div>
+            <div className={`display text-3xl md:text-4xl font-black mb-1 ${s.color}`}>{s.value}</div>
+            <div className="text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground">{s.label}</div>
           </motion.div>
         ))}
       </div>
 
-      <div className="space-y-2">
-        {overdueFollowUps.length > 0 && (
-          <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-red-50 border border-red-200 px-6 py-3 hover:border-red-400 transition-colors group text-left">
-            <Bell className="w-4 h-4 text-red-500 shrink-0" />
-            <span className="text-sm font-light text-foreground flex-1"><strong className="font-bold text-red-600">{overdueFollowUps.length} suivi{overdueFollowUps.length > 1 ? "s" : ""} en retard</strong> — {overdueFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
-            <ArrowUpRight className="w-4 h-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-        )}
-        {todayFollowUps.length > 0 && (
-          <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-amber-50 border border-amber-200 px-6 py-3 hover:border-amber-400 transition-colors group text-left">
-            <Bell className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-sm font-light text-foreground flex-1"><strong className="font-bold text-amber-700">{todayFollowUps.length} suivi{todayFollowUps.length > 1 ? "s" : ""} aujourd'hui</strong> — {todayFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
-            <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-        )}
-        {unread > 0 && (
-          <button onClick={() => setTab("messages")} className="w-full flex items-center gap-4 bg-primary/8 border border-primary/25 px-6 py-3 hover:border-primary/50 transition-colors group text-left">
-            <AlertCircle className="w-4 h-4 text-primary shrink-0" />
-            <span className="text-sm font-light text-foreground flex-1"><strong className="font-bold text-primary">{unread} message{unread > 1 ? "s" : ""} non lu{unread > 1 ? "s" : ""}</strong> en attente</span>
-            <ArrowUpRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-        )}
-      </div>
+      {/* Alert banners */}
+      {(overdueFollowUps.length > 0 || todayFollowUps.length > 0 || unread > 0) && (
+        <div className="flex flex-col gap-2">
+          {overdueFollowUps.length > 0 && (
+            <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-red-50 border-l-4 border-l-red-500 border border-red-200 px-5 py-3 hover:bg-red-100 transition-colors group text-left shadow-sm">
+              <Bell className="w-4 h-4 text-red-500 shrink-0" />
+              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-red-600">{overdueFollowUps.length} suivi{overdueFollowUps.length > 1 ? "s" : ""} en retard</strong> — {overdueFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
+              <ArrowUpRight className="w-4 h-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          )}
+          {todayFollowUps.length > 0 && (
+            <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-amber-50 border-l-4 border-l-amber-500 border border-amber-200 px-5 py-3 hover:bg-amber-100 transition-colors group text-left shadow-sm">
+              <Bell className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-amber-700">{todayFollowUps.length} suivi{todayFollowUps.length > 1 ? "s" : ""} aujourd'hui</strong> — {todayFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
+              <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          )}
+          {unread > 0 && (
+            <button onClick={() => setTab("messages")} className="w-full flex items-center gap-4 bg-primary/5 border-l-4 border-l-primary border border-primary/20 px-5 py-3 hover:bg-primary/8 transition-colors group text-left shadow-sm">
+              <AlertCircle className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-primary">{unread} message{unread > 1 ? "s" : ""} non lu{unread > 1 ? "s" : ""}</strong> en attente</span>
+              <ArrowUpRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          )}
+        </div>
+      )}
 
-      <div className="grid xl:grid-cols-[1fr_1fr_300px] gap-6">
-        <div className="bg-background border border-border">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="display text-base text-foreground">Cette semaine</div>
-            <button onClick={() => setTab("calendar")} className="text-[9px] tracking-[0.3em] uppercase font-bold text-primary hover:underline">Calendrier →</button>
+      {/* Main widgets */}
+      <div className="grid xl:grid-cols-[1fr_1fr_280px] gap-5">
+        {/* Cette semaine */}
+        <div className="bg-white border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-[#fafafa]">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="display text-sm text-foreground">Cette semaine</span>
+            </div>
+            <button onClick={() => setTab("calendar")} className="text-[9px] tracking-[0.3em] uppercase font-bold text-primary hover:underline">Voir tout →</button>
           </div>
           {upcoming.length === 0
-            ? <div className="px-6 py-8 text-center text-sm text-muted-foreground font-light">Aucun rendez-vous</div>
+            ? <div className="px-6 py-10 text-center text-sm text-muted-foreground font-light">Aucun rendez-vous</div>
             : <div className="divide-y divide-border">
               {upcoming.map(b => (
-                <div key={b.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="w-9 h-9 bg-[hsl(var(--mist))] flex items-center justify-center shrink-0">
-                    <span className="display text-xs text-primary">{new Date(b.date).getDate()}</span>
+                <div key={b.id} className="flex items-center gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
+                  <div className="w-9 h-9 bg-primary/8 flex flex-col items-center justify-center shrink-0">
+                    <span className="display text-xs text-primary font-black leading-none">{new Date(b.date).getDate()}</span>
+                    <span className="text-[7px] uppercase text-primary/60 font-bold">{new Date(b.date).toLocaleDateString("fr-FR",{month:"short"})}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="display text-sm text-foreground truncate">{b.name}</div>
@@ -452,16 +464,20 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
           }
         </div>
 
-        <div className="bg-background border border-border">
-          <div className="px-6 py-4 border-b border-border"><div className="display text-base text-foreground">Activité récente</div></div>
+        {/* Activité récente */}
+        <div className="bg-white border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-[#fafafa]">
+            <Activity className="w-4 h-4 text-primary" />
+            <span className="display text-sm text-foreground">Activité récente</span>
+          </div>
           {recentActivity.length === 0
-            ? <div className="px-6 py-8 text-center text-sm text-muted-foreground font-light">Aucune activité</div>
+            ? <div className="px-6 py-10 text-center text-sm text-muted-foreground font-light">Aucune activité</div>
             : <div className="divide-y divide-border">
               {recentActivity.map(({ entry, booking }) => {
                 const cfg = LOG_CFG[entry.type];
                 return (
-                  <div key={entry.id} className="flex items-start gap-3 px-5 py-3">
-                    <div className={`w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 ${cfg.color}`}><cfg.icon className="w-3 h-3" /></div>
+                  <div key={entry.id} className="flex items-start gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
+                    <div className={`w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 rounded-sm ${cfg.color}`}><cfg.icon className="w-3 h-3" /></div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-foreground/80 font-light leading-snug truncate">{booking.name} — {entry.content}</div>
                       <div className="text-[9px] text-muted-foreground/50 mt-0.5">{fmtTs(entry.ts)}</div>
@@ -473,37 +489,64 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
           }
         </div>
 
-        <div className="space-y-5">
-          <div className="bg-background border border-border p-5">
-            <div className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-4">Pipeline</div>
+        {/* Right column: Pipeline + Sources + Top soins */}
+        <div className="space-y-4">
+          <div className="bg-white border border-border shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Kanban className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Pipeline</span>
+            </div>
             <div className="space-y-3">
               {pipeline.map(p => (
                 <div key={p.label} className="flex items-center gap-3">
-                  <div className="text-[9px] tracking-[0.15em] uppercase font-bold text-muted-foreground w-16 shrink-0">{p.label}</div>
-                  <div className="flex-1 h-2 bg-border"><div className={`h-full ${p.color} transition-all duration-700`} style={{ width: stats.total ? `${(p.count / stats.total) * 100}%` : "0%" }} /></div>
-                  <div className="display text-sm text-foreground w-3 text-right">{p.count}</div>
+                  <div className="text-[9px] tracking-[0.1em] uppercase font-bold text-muted-foreground w-16 shrink-0">{p.label}</div>
+                  <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: stats.total ? `${(p.count / stats.total) * 100}%` : "0%" }}
+                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      className={`h-full ${p.color}`} />
+                  </div>
+                  <div className="display text-sm text-foreground w-4 text-right shrink-0">{p.count}</div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="bg-background border border-border p-5">
-            <div className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-4">Sources leads</div>
+
+          <div className="bg-white border border-border shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Sources leads</span>
+            </div>
             <div className="space-y-2">
               {sourceBreakdown.map(([src, n]) => (
                 <div key={src} className="flex items-center justify-between">
                   <span className="font-light text-foreground/70 text-xs">{src}</span>
-                  <span className="display text-sm text-foreground font-black">{n}</span>
+                  <span className="display text-sm text-primary font-black">{n}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="bg-background border border-border p-5">
-            <div className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-4">Top soins</div>
-            <div className="space-y-2">
+
+          <div className="bg-white border border-border shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Top soins</span>
+            </div>
+            <div className="space-y-2.5">
               {serviceBreakdown.map(([svc, n]) => (
                 <div key={svc}>
-                  <div className="flex justify-between mb-1"><span className="text-[9px] font-light text-foreground/70 truncate max-w-[160px]">{svc}</span><span className="text-[9px] font-bold text-muted-foreground">{n}</span></div>
-                  <div className="h-1 bg-border"><div className="h-full bg-primary/50" style={{ width: `${(n / maxSvc) * 100}%` }} /></div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-[9px] font-light text-foreground/70 truncate max-w-[160px]">{svc}</span>
+                    <span className="text-[9px] font-bold text-muted-foreground shrink-0 ml-2">{n}</span>
+                  </div>
+                  <div className="h-1 bg-border rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(n / maxSvc) * 100}%` }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-primary/50" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -573,9 +616,10 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
   };
 
   return (
-    <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+    <motion.div
+      initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 24 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="w-[340px] shrink-0 bg-background border border-border self-start sticky top-6">
+      className="w-full md:w-[340px] shrink-0 bg-background border border-border self-start md:sticky md:top-6">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="flex gap-1">
           {(["info","log","history"] as const).map(s => (
@@ -822,42 +866,46 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
     <div className="flex gap-4 h-full">
       <div className="flex-1 min-w-0 overflow-x-auto">
         <div className="mb-5">
-          <h1 className="display text-3xl text-foreground mb-1">Pipeline</h1>
-          <p className="text-sm text-muted-foreground font-light">Vue kanban du pipeline commercial</p>
+          <p className="text-sm text-muted-foreground font-light">Vue kanban · {bookings.filter(b => !["Terminé","Annulé"].includes(b.status)).length} leads actifs</p>
         </div>
         <div className="flex gap-3 min-w-max pb-4">
           {columns.map(col => {
             const cards = bookings.filter(b => b.status === col);
             const cfg = STATUS_CFG[col];
             return (
-              <div key={col} className={`w-64 shrink-0 ${cfg.col} border border-border`}>
-                <div className="px-4 py-3 border-b border-border">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className={`text-[9px] tracking-[0.3em] uppercase font-bold ${cfg.text}`}>{col}</div>
-                    <span className="w-5 h-5 bg-border/50 text-foreground/50 text-[9px] font-black flex items-center justify-center">{cards.length}</span>
+              <div key={col} className="w-64 shrink-0 flex flex-col">
+                {/* Column header */}
+                <div className={`${cfg.col} border border-b-0 border-border px-4 py-3`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                      <span className={`text-[9px] tracking-[0.3em] uppercase font-black ${cfg.text}`}>{col}</span>
+                    </div>
+                    <span className={`w-5 h-5 text-[9px] font-black flex items-center justify-center ${cfg.bg} ${cfg.text} border ${cfg.border}`}>{cards.length}</span>
                   </div>
-                  {totalValue(col) > 0 && <div className="text-[9px] text-muted-foreground font-light">{totalValue(col).toLocaleString("fr")} €</div>}
+                  {totalValue(col) > 0 && <div className="text-[9px] text-muted-foreground font-light mt-1">{totalValue(col).toLocaleString("fr")} €</div>}
                 </div>
-                <div className="p-2 space-y-2 min-h-[120px]">
+                {/* Cards */}
+                <div className="bg-[#f4f5f7] border border-border p-2 space-y-2 min-h-[140px] flex-1">
                   {cards.map(b => (
                     <motion.div key={b.id} layout onClick={() => setSelected(selected?.id === b.id ? null : b)}
-                      className={`bg-background border cursor-pointer p-3 hover:shadow-sm transition-all duration-200 ${selected?.id === b.id ? "border-primary shadow-sm" : "border-border"}`}>
+                      className={`bg-white border cursor-pointer p-3 shadow-sm hover:shadow-md transition-all duration-200 ${selected?.id === b.id ? "border-primary ring-1 ring-primary/20" : "border-border hover:border-primary/30"}`}>
                       <div className="flex items-start justify-between gap-1 mb-2">
                         <div className="display text-xs text-foreground leading-tight">{b.name}</div>
                         {b.followUp && b.followUp <= new Date().toISOString().slice(0, 10) && <Bell className="w-2.5 h-2.5 text-red-400 shrink-0 mt-0.5" />}
                       </div>
-                      <div className="text-[9px] text-muted-foreground font-light mb-2 truncate">{b.service}</div>
+                      <div className="text-[9px] text-muted-foreground font-light mb-2.5 truncate">{b.service}</div>
                       {b.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-2">
                           {b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}
                           {b.tags.length > 2 && <span className="text-[8px] text-muted-foreground">+{b.tags.length - 2}</span>}
                         </div>
                       )}
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[9px] font-bold text-muted-foreground">{b.origin.split(",")[0]}</span>
-                        {b.value > 0 && <span className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} €</span>}
+                        {b.value > 0 && <span className="text-[9px] font-black text-primary">{b.value.toLocaleString("fr")} €</span>}
                       </div>
-                      <div className="mt-2 pt-2 border-t border-border flex gap-1">
+                      <div className="pt-2 border-t border-border flex gap-1">
                         {columns.filter(c => c !== col).slice(0, 3).map(c => (
                           <button key={c} onClick={e => { e.stopPropagation(); onUpdateStatus(b.id, b.status, c); }}
                             className={`flex-1 text-[7px] tracking-[0.1em] uppercase font-bold py-1 border transition-colors ${STATUS_CFG[c].text} ${STATUS_CFG[c].bg} ${STATUS_CFG[c].border} hover:opacity-80`}>
@@ -867,7 +915,7 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                       </div>
                     </motion.div>
                   ))}
-                  {cards.length === 0 && <div className="py-6 text-center text-[9px] text-muted-foreground/40 font-light">Vide</div>}
+                  {cards.length === 0 && <div className="py-8 text-center text-[9px] text-muted-foreground/30 font-light">Aucun lead</div>}
                 </div>
               </div>
             );
@@ -930,12 +978,9 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
   return (
     <div className="flex gap-6 h-full">
       <div className="flex-1 min-w-0 space-y-5">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h1 className="display text-3xl text-foreground mb-1">Rendez-vous</h1>
-            <p className="text-sm text-muted-foreground font-light">{bookings.length} leads</p>
-          </div>
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 border border-border text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground font-light">{bookings.length} lead{bookings.length !== 1 ? "s" : ""} au total</p>
+          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-white border border-border shadow-sm text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">
             <Download className="w-3.5 h-3.5" /> Export CSV
           </button>
         </div>
@@ -944,8 +989,8 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
           <div className="flex gap-1 flex-wrap">
             {(["Tous","Nouveau","Confirmé","En cours","Terminé","Annulé"] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 text-[9px] tracking-[0.25em] uppercase font-bold border transition-colors ${filter === f ? "bg-primary text-white border-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
-                {f} <span className="opacity-60 ml-0.5">({counts[f]})</span>
+                className={`px-3 py-1.5 text-[9px] tracking-[0.25em] uppercase font-bold border transition-colors shadow-sm ${filter === f ? "bg-primary text-white border-primary" : "bg-white border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
+                {f} <span className="opacity-50 ml-0.5">({counts[f]})</span>
               </button>
             ))}
           </div>
@@ -965,36 +1010,36 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
           </div>
         </div>
 
-        <div className="bg-background border border-border overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white border border-border shadow-sm overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[680px]">
             <thead>
-              <tr className="border-b border-border bg-[hsl(var(--off))]">
+              <tr className="border-b-2 border-border bg-[#fafafa]">
                 {["Patient","Service","Date / Suivi","Valeur","Tags","Statut",""].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">{h}</th>
+                  <th key={h} className="px-4 py-3.5 text-left text-[8px] tracking-[0.4em] uppercase font-black text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0
-                ? <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-muted-foreground font-light">Aucun résultat</td></tr>
-                : filtered.map(b => {
+                ? <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground font-light">Aucun résultat</td></tr>
+                : filtered.map((b, idx) => {
                   const isOverdue = b.followUp && b.followUp < today;
                   return (
                     <tr key={b.id} onClick={() => setSelected(b === selected ? null : b)}
-                      className={`hover:bg-[hsl(var(--mist)/0.3)] cursor-pointer transition-colors ${selected?.id === b.id ? "bg-primary/5" : ""}`}>
-                      <td className="px-4 py-3">
+                      className={`cursor-pointer transition-colors ${selected?.id === b.id ? "bg-primary/5 border-l-2 border-l-primary" : idx % 2 === 0 ? "bg-white hover:bg-[#fafafa]" : "bg-[#fafafa]/50 hover:bg-[#f0f0f0]"}`}>
+                      <td className="px-4 py-3.5">
                         <div className="display text-sm text-foreground">{b.name}</div>
                         <div className="text-[9px] text-muted-foreground">{b.email}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm font-light text-foreground/70 max-w-[130px] truncate">{b.service}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5 text-sm font-light text-foreground/70 max-w-[130px] truncate">{b.service}</td>
+                      <td className="px-4 py-3.5">
                         <div className="text-[10px] font-bold text-muted-foreground">{b.date}</div>
-                        {b.followUp && <div className={`text-[9px] flex items-center gap-1 ${isOverdue ? "text-red-500" : "text-muted-foreground/60"}`}><Bell className="w-2.5 h-2.5" /> {b.followUp}</div>}
+                        {b.followUp && <div className={`text-[9px] flex items-center gap-1 mt-0.5 ${isOverdue ? "text-red-500 font-semibold" : "text-muted-foreground/60"}`}><Bell className="w-2.5 h-2.5" /> {b.followUp}</div>}
                       </td>
-                      <td className="px-4 py-3"><span className="display text-sm text-foreground">{b.value > 0 ? `${b.value.toLocaleString("fr")} €` : "—"}</span></td>
-                      <td className="px-4 py-3"><div className="flex gap-1 flex-wrap max-w-[100px]">{b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
-                      <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} €` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
+                      <td className="px-4 py-3.5"><div className="flex gap-1 flex-wrap max-w-[100px]">{b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
+                      <td className="px-4 py-3.5"><StatusBadge status={b.status} /></td>
+                      <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                           <button onClick={() => setSelected(b === selected ? null : b)} className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-muted-foreground"><Eye className="w-3.5 h-3.5" /></button>
                           <button onClick={() => onDelete(b.id)} className="w-8 h-8 border border-border flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -1073,8 +1118,8 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
   const unreadCount = messages.filter(m => !m.read).length;
 
   return (
-    <div className="flex gap-6 h-full">
-      <div className="w-72 shrink-0 space-y-4">
+    <div className="flex flex-col md:flex-row gap-6 h-full">
+      <div className="w-full md:w-72 shrink-0 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="display text-3xl text-foreground mb-0.5">Messages</h1>
@@ -1213,8 +1258,8 @@ function Patients({ bookings }: { bookings: Booking[] }) {
               className="pl-9 pr-4 py-2 border border-border bg-background text-sm font-light outline-none focus:border-primary transition-colors w-52 rounded-none" />
           </div>
         </div>
-        <div className="bg-background border border-border overflow-hidden">
-          <table className="w-full">
+        <div className="bg-background border border-border overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[680px]">
             <thead>
               <tr className="border-b border-border bg-[hsl(var(--off))]">
                 {["Patient","Contact","Origine","Séjours","CA total","Tags","Statut"].map(h => (
@@ -1410,6 +1455,7 @@ export default function AdminDashboard() {
   const [messages, setMessages]   = useState<Message[]>([]);
   const [loading, setLoading]     = useState(false);
   const [showNewLead, setShowNewLead] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Initial fetch ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1499,38 +1545,93 @@ export default function AdminDashboard() {
   if (!authed) return <LoginGate onLogin={() => setAuthed(true)} />;
   if (loading)  return <LoadingScreen />;
 
+  const TAB_LABELS: Record<Tab, string> = {
+    overview: "Vue d'ensemble", calendar: "Calendrier",
+    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients",
+  };
+
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--off))]">
-      <Sidebar tab={tab} setTab={setTab} unread={unread} onLogout={() => { setAuthed(false); setBookings([]); setMessages([]); }} onNewLead={() => setShowNewLead(true)} />
+    <div className="flex min-h-screen bg-[#f4f5f7]">
 
-      <main className="flex-1 min-w-0 p-8 overflow-auto">
-        {/* Section badge + top bar */}
-        <div className="mb-6 flex items-center gap-3">
-          <span className={`text-[8px] tracking-[0.5em] uppercase font-bold px-3 py-1.5 border ${SECTION_OF[tab] === "dashboard" ? "bg-foreground/5 border-border text-muted-foreground" : "bg-primary/8 border-primary/25 text-primary"}`}>
-            {SECTION_OF[tab] === "dashboard" ? "Tableau de bord" : "CRM"}
-          </span>
-          <div className="flex-1 h-px bg-border" />
-          <button onClick={() => { setLoading(true); Promise.all([fetchBookings(), fetchMessages()]).then(([b, m]) => { setBookings(b); setMessages(m); }).catch(console.error).finally(() => setLoading(false)); }}
-            className="w-8 h-8 border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors" title="Rafraîchir">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => setShowNewLead(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-primary/90 transition-colors">
-            <UserPlus className="w-3.5 h-3.5" /> Nouveau patient
-          </button>
-        </div>
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex w-[240px] shrink-0 h-screen sticky top-0">
+        <Sidebar tab={tab} setTab={setTab} unread={unread}
+          onLogout={() => { setAuthed(false); setBookings([]); setMessages([]); }}
+          onNewLead={() => setShowNewLead(true)} />
+      </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-            {tab === "overview"  && <Overview  bookings={bookings} messages={messages} setTab={setTab} />}
-            {tab === "pipeline"  && <Pipeline  bookings={bookings} callbacks={crmCallbacks} />}
-            {tab === "bookings"  && <Bookings  bookings={bookings} callbacks={crmCallbacks} />}
-            {tab === "messages"  && <Messages  messages={messages} bookings={bookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={handleDeleteMessage} onAddBooking={handleAddBooking} />}
-            {tab === "patients"  && <Patients  bookings={bookings} />}
-            {tab === "calendar"  && <CalendarTab bookings={bookings} />}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+      {/* Mobile sidebar drawer */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 z-40 bg-ink/70 backdrop-blur-sm lg:hidden" />
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed inset-y-0 left-0 z-50 w-[240px] lg:hidden">
+              <Sidebar tab={tab} setTab={setTab} unread={unread}
+                onLogout={() => { setAuthed(false); setBookings([]); setMessages([]); setSidebarOpen(false); }}
+                onNewLead={() => { setShowNewLead(true); setSidebarOpen(false); }}
+                onClose={() => setSidebarOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* ── Top header bar ───────────────────────────────────────── */}
+        <header className="sticky top-0 z-30 bg-white border-b border-border flex items-center gap-4 px-4 md:px-8 h-16 shrink-0 shadow-sm">
+          <button onClick={() => setSidebarOpen(true)}
+            className="lg:hidden w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors shrink-0">
+            <Menu className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] tracking-[0.4em] uppercase font-bold border ${SECTION_OF[tab] === "dashboard" ? "bg-foreground/5 border-border text-muted-foreground" : "bg-primary/8 border-primary/25 text-primary"}`}>
+              {SECTION_OF[tab] === "dashboard" ? "Dashboard" : "CRM"}
+            </div>
+            <h1 className="display text-lg text-foreground font-black truncate">{TAB_LABELS[tab]}</h1>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden md:block text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground/50">
+              {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+            <div className="w-px h-5 bg-border hidden md:block" />
+            <button
+              onClick={() => { setLoading(true); Promise.all([fetchBookings(), fetchMessages()]).then(([b, m]) => { setBookings(b); setMessages(m); }).catch(console.error).finally(() => setLoading(false)); }}
+              className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors" title="Rafraîchir">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+            {unread > 0 && (
+              <button onClick={() => setTab("messages")}
+                className="relative w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                <Bell className="w-3.5 h-3.5" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[8px] font-black flex items-center justify-center rounded-full">{unread}</span>
+              </button>
+            )}
+            <button onClick={() => setShowNewLead(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
+              <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouveau patient</span>
+            </button>
+          </div>
+        </header>
+
+        {/* ── Page content ─────────────────────────────────────────── */}
+        <main className="flex-1 p-4 md:p-8 overflow-auto">
+          <AnimatePresence mode="wait">
+            <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}>
+              {tab === "overview"  && <Overview  bookings={bookings} messages={messages} setTab={setTab} />}
+              {tab === "pipeline"  && <Pipeline  bookings={bookings} callbacks={crmCallbacks} />}
+              {tab === "bookings"  && <Bookings  bookings={bookings} callbacks={crmCallbacks} />}
+              {tab === "messages"  && <Messages  messages={messages} bookings={bookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={handleDeleteMessage} onAddBooking={handleAddBooking} />}
+              {tab === "patients"  && <Patients  bookings={bookings} />}
+              {tab === "calendar"  && <CalendarTab bookings={bookings} />}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
 
       <AnimatePresence>
         {showNewLead && <NewLeadModal onAdd={handleAddBooking} onClose={() => setShowNewLead(false)} />}

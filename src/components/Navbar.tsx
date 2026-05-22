@@ -21,6 +21,7 @@ export default function Navbar() {
     { to: "/a-propos",               label: n.about   },
     { to: "/dentisterie-esthetique", label: n.dental  },
     { to: "/tourisme-medical",       label: n.tourism },
+    { to: "/packs",                  label: n.packs   },
     { to: "/contact",                label: n.contact },
   ];
 

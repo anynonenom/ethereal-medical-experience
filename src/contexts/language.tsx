@@ -25,6 +25,7 @@ export const T = {
       about: "À Propos",
       dental: "Dentisterie",
       tourism: "Tourisme Médical",
+      packs: "Packs",
       contact: "Contact",
       cta: "PRENDRE RDV",
       navLabel: "Navigation",
@@ -49,7 +50,7 @@ export const T = {
     manifesto: {
       label: "Notre promesse",
       quote: "L'excellence médicale n'est plus un privilège réservé aux capitales européennes.",
-      attribution: "Medical Bay, Agadir — fondé 2018",
+      attribution: "Medical Bay, Agadir — fondé 2025",
       stats: [
         { n: "70%", t: "moins cher qu'en France, Belgique ou Suisse" },
         { n: "5 j",  t: "pour un Smile Design complet et définitif" },
@@ -64,10 +65,10 @@ export const T = {
       titleEm: "créons.",
       cta: "TOUS LES SOINS",
       items: [
-        { n: "01", title: "SMILE DESIGN",          sub: "Redesign complet du sourire",         body: "Facettes ultra-fines, composites et couronnes zircone pour un résultat naturellement parfait." },
-        { n: "02", title: "IMPLANTOLOGIE",          sub: "Solutions permanentes",               body: "Implants Nobel Biocare posés par des praticiens formés en Europe. Résultats à vie." },
-        { n: "03", title: "BLANCHIMENT LASER",      sub: "Éclat immédiat en séance unique",     body: "Protocole Zoom Whitening. Jusqu'à 8 teintes de blanc en 45 minutes." },
-        { n: "04", title: "SÉJOUR VIP TOUT INCLUS", sub: "Tourisme médical premium",            body: "Vol, hôtel 5★, transferts privés, conciergerie médicale — nous gérons tout." },
+        { n: "01", title: "SMILE DESIGN",          sub: "Redesign complet du sourire",         body: "Le smile design est une technique qui permet d'améliorer le sourire. Le dentiste travaille sur la forme, la couleur et la position des dents pour obtenir un sourire plus harmonieux et esthétique." },
+        { n: "02", title: "IMPLANTOLOGIE",          sub: "Solutions permanentes",               body: "Solution moderne et durable, l'implant dentaire remplace une dent manquante avec un rendu parfaitement naturel. Intégré avec précision dans l'os grâce à une racine en titane biocompatible, il offre confort, stabilité et élégance." },
+        { n: "03", title: "BLANCHIMENT LASER",      sub: "Éclat immédiat en séance unique",     body: "Le blanchiment dentaire est un traitement esthétique qui vise à éclaircir la teinte des dents. Il permet de réduire les taches et de raviver l'éclat du sourire, avec un résultat variable selon chaque patient." },
+        { n: "04", title: "SÉJOUR VIP TOUT INCLUS", sub: "Tourisme médical premium",            body: "Vol, hôtel 5★, transferts privés, conciergerie médicale — nous gérons tout pour que vous vous consacriez uniquement à votre transformation." },
       ],
     },
 
@@ -188,6 +189,7 @@ export const T = {
       about: "About",
       dental: "Dentistry",
       tourism: "Medical Tourism",
+      packs: "Packs",
       contact: "Contact",
       cta: "BOOK NOW",
       navLabel: "Navigation",
@@ -209,7 +211,7 @@ export const T = {
     manifesto: {
       label: "Our promise",
       quote: "Outstanding medical care is no longer a privilege reserved for European capitals.",
-      attribution: "Medical Bay, Agadir — established 2018",
+      attribution: "Medical Bay, Agadir — established 2025",
       stats: [
         { n: "70%",    t: "cheaper than France, Belgium or Switzerland" },
         { n: "5 days", t: "for a complete, lasting Smile Design" },
@@ -223,10 +225,10 @@ export const T = {
       titleEm: "create.",
       cta: "ALL TREATMENTS",
       items: [
-        { n: "01", title: "SMILE DESIGN",          sub: "Full smile redesign",              body: "Ultra-thin veneers, composites and zirconia crowns for a naturally flawless result." },
-        { n: "02", title: "IMPLANTOLOGY",           sub: "Permanent solutions",              body: "Nobel Biocare implants placed by Europe-trained specialists. Lifetime results." },
-        { n: "03", title: "LASER WHITENING",        sub: "Instant radiance, one session",   body: "Zoom Whitening protocol. Up to 8 shades whiter in just 45 minutes." },
-        { n: "04", title: "ALL-INCLUSIVE VIP STAY", sub: "Premium medical tourism",         body: "Flights, 5★ hotel, private transfers, medical concierge — we handle everything." },
+        { n: "01", title: "SMILE DESIGN",          sub: "Full smile redesign",              body: "Smile design is a technique designed to enhance your smile. Your dentist works on the shape, colour and position of your teeth to achieve a more harmonious and aesthetic result." },
+        { n: "02", title: "IMPLANTOLOGY",           sub: "Permanent solutions",              body: "A modern and lasting solution, the dental implant replaces a missing tooth with a perfectly natural appearance. Anchored precisely in the bone via a biocompatible titanium root, it delivers comfort, stability and elegance." },
+        { n: "03", title: "LASER WHITENING",        sub: "Instant radiance, one session",   body: "Laser teeth whitening is a cosmetic treatment that brightens the shade of your teeth, reduces staining and revives the brilliance of your smile — with results that vary from patient to patient." },
+        { n: "04", title: "ALL-INCLUSIVE VIP STAY", sub: "Premium medical tourism",         body: "Flights, 5★ hotel, private transfers, medical concierge — we handle every detail so you can focus entirely on your transformation." },
       ],
     },
 

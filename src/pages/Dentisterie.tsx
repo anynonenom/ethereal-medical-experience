@@ -9,12 +9,13 @@ import smileMacro from "@/assets/smile-macro.jpg";
 import blanchimentLaser from "@/assets/blanchiment-laser.jpg";
 
 const treatments = [
-  { id: "design",     label: "01 · DESIGN",     title: "DIGITAL SMILE DESIGN",     desc: "La planification virtuelle de votre futur sourire. Technologies de pointe pour simuler le résultat avant toute intervention.",   features: ["SIMULATION 3D", "ANALYSE FACIALE", "PERSONNALISATION TOTALE"], img: smileMacro },
-  { id: "facettes",   label: "02 · FACETTES",   title: "FACETTES PORCELAINE E-MAX",  desc: "De fines pellicules de céramique haute performance pour corriger la teinte, la forme et l'alignement de vos dents.",           features: ["ULTRA-FINES", "RENDU NATUREL", "DURABILITÉ EXTRÊME"],          img: veneer },
-  { id: "couronne",   label: "03 · COURONNES",  title: "COURONNES CÉRAMIQUES",       desc: "Restauration complète pour les dents abîmées, offrant une esthétique identique à l'émail naturel sans liseré métallique.",       features: ["SANS MÉTAL", "BIOCOMPATIBLE", "ESTHÉTIQUE PREMIUM"],           img: clinic },
-  { id: "zirconium",  label: "04 · ZIRCONE",    title: "PROTHÈSES EN ZIRCONE",       desc: "Le summum de la résistance et de la translucidité. Idéal pour les bridges et couronnes sur dents postérieures ou antérieures.", features: ["HAUTE RÉSISTANCE", "TRANSLUCIDITÉ", "SOLIDITÉ PROUVÉE"],       img: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=900" },
-  { id: "implant",    label: "05 · IMPLANTS",   title: "IMPLANTOLOGIE DE POINTE",    desc: "Remplacez vos dents manquantes par des racines en titane biocompatibles. Solution fixe et durable pour retrouver le confort.", features: ["SOLUTION FIXE", "OS PRÉSERVÉ", "GARANTIE LONGUE DURÉE"],       img: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=900" },
-  { id: "blanchiment",label: "06 · BLANCHIMENT",title: "BLANCHIMENT LASER",          desc: "Gagnez plusieurs teintes en une seule séance grâce à nos protocoles de blanchiment sécurisés et totalement indolores.",        features: ["RÉSULTAT IMMÉDIAT", "SÉCURISÉ", "ÉCLAT DURABLE"],              img: blanchimentLaser },
+  { id: "design",     label: "01 · DESIGN",     title: "DIGITAL SMILE DESIGN",      desc: "Le smile design est une technique qui permet d'améliorer le sourire. Le dentiste travaille sur la forme, la couleur et la position des dents pour obtenir un sourire plus harmonieux et esthétique.",                                                                                                                                                                    features: ["SIMULATION 3D", "ANALYSE FACIALE", "PERSONNALISATION TOTALE"], img: smileMacro },
+  { id: "facettes",   label: "02 · FACETTES",   title: "FACETTES ZIRCON & E-MAX",   desc: "Les facettes dentaires sont de fines coques esthétiques en E-max ou Zircon posées sur la surface des dents pour corriger les imperfections, les espaces, les fractures ou la couleur. Elles offrent un sourire harmonieux, naturel et lumineux, avec une teinte personnalisée selon le résultat souhaité par le patient.",                                             features: ["ULTRA-FINES", "RENDU NATUREL", "DURABILITÉ EXTRÊME"],          img: veneer },
+  { id: "couronne",   label: "03 · COURONNES",  title: "COURONNES ZIRCONIUM",        desc: "Les couronnes en zirconium offrent une restauration esthétique et durable, idéale pour retrouver un sourire élégant et naturel. Conçues sans métal, elles reproduisent parfaitement l'apparence de l'émail naturel tout en garantissant confort, solidité et finition haut de gamme.",                                                                                  features: ["SANS MÉTAL", "BIOCOMPATIBLE", "ESTHÉTIQUE PREMIUM"],           img: clinic },
+  { id: "implant",    label: "04 · IMPLANTS",   title: "IMPLANTOLOGIE DENTAIRE",     desc: "Solution moderne et durable, l'implant dentaire remplace une dent manquante avec un rendu parfaitement naturel. Intégré avec précision dans l'os grâce à une racine en titane biocompatible, il offre confort, stabilité et élégance pour retrouver un sourire harmonieux en toute confiance.",                                                                         features: ["SOLUTION FIXE", "OS PRÉSERVÉ", "GARANTIE LONGUE DURÉE"],       img: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=900" },
+  { id: "protheses",  label: "05 · PROTHÈSES",  title: "PROTHÈSES CÉRAMIQUES",       desc: "La couronne en porcelaine, qu'elle soit céramo-métallique ou céramo-céramique, est une solution prothétique fixe hautement esthétique et durable. Elle permet de restaurer une dent endommagée, usée ou dévitalisée en lui redonnant sa forme, sa solidité et son apparence naturelle.",                                                                               features: ["HAUTE RÉSISTANCE", "TRANSLUCIDITÉ", "SOLIDITÉ PROUVÉE"],       img: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=900" },
+  { id: "aligneurs",  label: "06 · ALIGNEURS",  title: "ALIGNEURS",                  desc: "Les aligneurs sont des gouttières orthodontiques transparentes, conçues pour déplacer progressivement les dents et corriger leur alignement. Discrets, amovibles et confortables, ils constituent une alternative moderne aux appareils orthodontiques classiques.",                                                                                                      features: ["DISCRETS", "AMOVIBLES", "CONFORTABLES"],                       img: "https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&q=80&w=900" },
+  { id: "blanchiment",label: "07 · BLANCHIMENT",title: "BLANCHIMENT LASER",          desc: "Le blanchiment dentaire est un traitement esthétique qui vise à éclaircir la teinte des dents. Il permet de réduire les taches et de raviver l'éclat du sourire, avec un résultat variable selon chaque patient.",                                                                                                                                                     features: ["RÉSULTAT IMMÉDIAT", "SÉCURISÉ", "ÉCLAT DURABLE"],              img: blanchimentLaser },
 ];
 
 // ─── HERO ─────────────────────────────────────────────────────────────────────
@@ -242,7 +243,7 @@ function PriceComparison() {
       {/* Ghost watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
         <span className="display text-[20vw] text-foreground/[0.025] font-black whitespace-nowrap tracking-tighter">
-          −75%
+          −70%
         </span>
       </div>
 
@@ -256,7 +257,7 @@ function PriceComparison() {
               <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Transparence tarifaire</span>
             </div>
             <h2 className="display text-[clamp(36px,6vw,88px)] leading-[0.88] tracking-[-0.025em]">
-              Jusqu'à 75%<br />moins cher<br />
+              Jusqu'à 70%<br />moins cher<br />
               <em className="serif-it font-normal not-italic text-primary">qu'en Europe.</em>
             </h2>
           </div>
