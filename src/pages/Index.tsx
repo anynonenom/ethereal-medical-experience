@@ -6,11 +6,16 @@ import Layout from "@/components/Layout";
 import agadirCoast from "@/assets/agadir-coast.jpg";
 import clinic from "@/assets/clinic-interior.jpg";
 import heroSmile from "@/assets/hero-smile.jpg";
+import rect3 from "@/assets/rectangle-3.webp";
+import rect4 from "@/assets/rectangle-4-2.webp";
+import transitionBg from "@/assets/transition-bg.jpg";
+import homepageImage from "@/assets/homepage-image.jpeg";
+import agadirMarina from "@/assets/image2.jpeg";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
 const serviceImgs = [heroSmile, clinic,
-  "https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800",
   agadirCoast,
 ];
 const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/dentisterie-esthetique", "/tourisme-medical"];
@@ -19,7 +24,7 @@ const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/de
 const HERO_SLIDES = {
   fr: [
     {
-      img: heroSmile,
+      img: transitionBg,
       badge: "Medical Bay · Agadir, Maroc",
       line1: "Votre sourire",
       lineEm: "mérite mieux.",
@@ -39,7 +44,7 @@ const HERO_SLIDES = {
       ctaLink: "/dentisterie-esthetique",
     },
     {
-      img: agadirCoast,
+      img: agadirMarina,
       badge: "Tourisme Médical · Agadir",
       line1: "Guérissez en",
       lineEm: "beauté.",
@@ -48,10 +53,30 @@ const HERO_SLIDES = {
       cta2: "En savoir plus",
       ctaLink: "/tourisme-medical",
     },
+    {
+      img: rect4,
+      badge: "Medical Bay · Accueil & Confort",
+      line1: "Un cadre",
+      lineEm: "d'exception.",
+      sub: "Une clinique moderne au cœur d'Agadir, conçue pour votre confort et votre sérénité.",
+      cta1: "DEVIS GRATUIT · 24H",
+      cta2: "Découvrir la clinique",
+      ctaLink: "/dentisterie-esthetique",
+    },
+    {
+      img: rect3,
+      badge: "Medical Bay · Consultation",
+      line1: "Votre santé,",
+      lineEm: "notre priorité.",
+      sub: "Des consultations personnalisées avec des experts dédiés à votre bien-être.",
+      cta1: "PRENDRE RENDEZ-VOUS",
+      cta2: "En savoir plus",
+      ctaLink: "/contact",
+    },
   ],
   en: [
     {
-      img: heroSmile,
+      img: transitionBg,
       badge: "Medical Bay · Agadir, Morocco",
       line1: "Your smile",
       lineEm: "deserves better.",
@@ -71,7 +96,7 @@ const HERO_SLIDES = {
       ctaLink: "/dentisterie-esthetique",
     },
     {
-      img: agadirCoast,
+      img: agadirMarina,
       badge: "Medical Tourism · Agadir",
       line1: "Heal in",
       lineEm: "paradise.",
@@ -79,6 +104,26 @@ const HERO_SLIDES = {
       cta1: "PLAN MY STAY",
       cta2: "Learn more",
       ctaLink: "/tourisme-medical",
+    },
+    {
+      img: rect4,
+      badge: "Medical Bay · Reception",
+      line1: "A world-class",
+      lineEm: "environment.",
+      sub: "A modern clinic in the heart of Agadir, designed for your comfort and peace of mind.",
+      cta1: "FREE QUOTE · 24H",
+      cta2: "Discover the clinic",
+      ctaLink: "/dentisterie-esthetique",
+    },
+    {
+      img: rect3,
+      badge: "Medical Bay · Consultation",
+      line1: "Your health,",
+      lineEm: "our priority.",
+      sub: "Personalised consultations with experts fully dedicated to your well-being.",
+      cta1: "BOOK AN APPOINTMENT",
+      cta2: "Learn more",
+      ctaLink: "/contact",
     },
   ],
 };
