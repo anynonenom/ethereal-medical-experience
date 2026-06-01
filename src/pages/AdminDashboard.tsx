@@ -230,7 +230,7 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
               </div>
               <div className="grid grid-cols-2 gap-5">
                 {field("Ville / Pays d'origine", "origin", "text",   "Paris, France")}
-                {field("Valeur estimée (€)",      "value",  "number", "0")}
+                {field("Valeur estimée (MAD)",      "value",  "number", "0")}
               </div>
               <div className="grid grid-cols-2 gap-5">
                 <label className="block group">
@@ -316,15 +316,25 @@ function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose }: {
         </button>
 
         <div>
-          <div className="px-4 pt-1 pb-2"><span className={`text-[8px] tracking-[0.45em] uppercase font-black ${section === "dashboard" ? "text-white/60" : "text-white/20"}`}>Tableau de bord</span></div>
-          <div className={`border-l-2 ml-4 space-y-0.5 ${section === "dashboard" ? "border-primary/40" : "border-white/8"}`}>
+          <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "dashboard" ? "border-primary" : "border-transparent"}`}>
+            <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "dashboard" ? "bg-primary" : "bg-white/8"}`}>
+              <LayoutDashboard className="w-2.5 h-2.5 text-white" />
+            </div>
+            <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "dashboard" ? "text-white/70" : "text-white/20"}`}>Tableau de bord</span>
+          </div>
+          <div className="space-y-0.5">
             {DASHBOARD_NAV.map(item => <NavItem key={item.id} item={item} />)}
           </div>
         </div>
         <div className="mx-4 border-t border-white/8" />
         <div>
-          <div className="px-4 pt-1 pb-2"><span className={`text-[8px] tracking-[0.45em] uppercase font-black ${section === "crm" ? "text-white/60" : "text-white/20"}`}>CRM</span></div>
-          <div className={`border-l-2 ml-4 space-y-0.5 ${section === "crm" ? "border-primary/40" : "border-white/8"}`}>
+          <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "crm" ? "border-primary" : "border-transparent"}`}>
+            <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "crm" ? "bg-primary" : "bg-white/8"}`}>
+              <Users className="w-2.5 h-2.5 text-white" />
+            </div>
+            <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "crm" ? "text-white/70" : "text-white/20"}`}>CRM</span>
+          </div>
+          <div className="space-y-0.5">
             {CRM_NAV.map(item => <NavItem key={item.id} item={item} />)}
           </div>
         </div>
@@ -390,9 +400,9 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
           { label: "Leads totaux",     value: stats.total,                                sub: "toutes sources",     icon: Zap,          color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
-          { label: "Pipeline actif",   value: `${stats.pipeline.toLocaleString("fr")} €`, sub: "revenus potentiels", icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",  iconBg: "bg-amber-50" },
+          { label: "Pipeline actif",   value: `${stats.pipeline.toLocaleString("fr")} MAD`, sub: "revenus potentiels", icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",  iconBg: "bg-amber-50" },
           { label: "Séjours terminés", value: stats.done,                                 sub: "patients traités",   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500",iconBg: "bg-emerald-50" },
-          { label: "CA réalisé",       value: `${stats.revenue.toLocaleString("fr")} €`,  sub: "séjours clôturés",   icon: BarChart3,    color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
+          { label: "CA réalisé",       value: `${stats.revenue.toLocaleString("fr")} MAD`,  sub: "séjours clôturés",   icon: BarChart3,    color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
             className={`bg-white border border-border border-l-4 ${s.accent} p-5 md:p-6 shadow-sm`}>
@@ -683,7 +693,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
 
             {/* Value */}
             <div className="border-t border-border pt-4">
-              <div className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-1.5">Valeur estimée (€)</div>
+              <div className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-1.5">Valeur estimée (MAD)</div>
               <input type="number" value={booking.value} onChange={e => setValue(Number(e.target.value))}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none" />
             </div>
@@ -883,7 +893,7 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                     </div>
                     <span className={`w-5 h-5 text-[9px] font-black flex items-center justify-center ${cfg.bg} ${cfg.text} border ${cfg.border}`}>{cards.length}</span>
                   </div>
-                  {totalValue(col) > 0 && <div className="text-[9px] text-muted-foreground font-light mt-1">{totalValue(col).toLocaleString("fr")} €</div>}
+                  {totalValue(col) > 0 && <div className="text-[9px] text-muted-foreground font-light mt-1">{totalValue(col).toLocaleString("fr")} MAD</div>}
                 </div>
                 {/* Cards */}
                 <div className="bg-[#f4f5f7] border border-border p-2 space-y-2 min-h-[140px] flex-1">
@@ -903,7 +913,7 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                       )}
                       <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[9px] font-bold text-muted-foreground">{b.origin.split(",")[0]}</span>
-                        {b.value > 0 && <span className="text-[9px] font-black text-primary">{b.value.toLocaleString("fr")} €</span>}
+                        {b.value > 0 && <span className="text-[9px] font-black text-primary">{b.value.toLocaleString("fr")} MAD</span>}
                       </div>
                       <div className="pt-2 border-t border-border flex gap-1">
                         {columns.filter(c => c !== col).slice(0, 3).map(c => (
@@ -1036,7 +1046,7 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                         <div className="text-[10px] font-bold text-muted-foreground">{b.date}</div>
                         {b.followUp && <div className={`text-[9px] flex items-center gap-1 mt-0.5 ${isOverdue ? "text-red-500 font-semibold" : "text-muted-foreground/60"}`}><Bell className="w-2.5 h-2.5" /> {b.followUp}</div>}
                       </td>
-                      <td className="px-4 py-3.5"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} €` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
+                      <td className="px-4 py-3.5"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} MAD` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
                       <td className="px-4 py-3.5"><div className="flex gap-1 flex-wrap max-w-[100px]">{b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
                       <td className="px-4 py-3.5"><StatusBadge status={b.status} /></td>
                       <td className="px-4 py-3.5">
@@ -1282,7 +1292,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
                     <td className="px-4 py-4"><div className="text-sm font-light text-foreground/70 text-xs">{p.email}</div><div className="text-[10px] text-muted-foreground">{p.phone}</div></td>
                     <td className="px-4 py-4 text-sm font-light text-muted-foreground text-xs">{p.origin}</td>
                     <td className="px-4 py-4"><span className="display text-sm text-foreground">{p.bookings.length}</span></td>
-                    <td className="px-4 py-4"><span className={`display text-sm ${totalRevenue(p.bookings) > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{totalRevenue(p.bookings) > 0 ? `${totalRevenue(p.bookings).toLocaleString("fr")} €` : "—"}</span></td>
+                    <td className="px-4 py-4"><span className={`display text-sm ${totalRevenue(p.bookings) > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{totalRevenue(p.bookings) > 0 ? `${totalRevenue(p.bookings).toLocaleString("fr")} MAD` : "—"}</span></td>
                     <td className="px-4 py-4"><div className="flex gap-1 flex-wrap">{p.latest.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
                     <td className="px-4 py-4"><StatusBadge status={p.latest.status} /></td>
                   </tr>
@@ -1305,7 +1315,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
                 <div className="w-12 h-12 bg-[hsl(var(--mist))] flex items-center justify-center mb-3"><span className="display text-lg text-primary">{selectedPatient.name.split(" ").map(n => n[0]).join("").toUpperCase()}</span></div>
                 <div className="display text-xl text-foreground">{selectedPatient.name}</div>
                 <div className="text-[9px] text-muted-foreground mt-1">{selectedPatient.origin}</div>
-                {totalRevenue(selectedPatient.bookings) > 0 && <div className="text-emerald-600 font-bold text-sm mt-1">{totalRevenue(selectedPatient.bookings).toLocaleString("fr")} € réalisés</div>}
+                {totalRevenue(selectedPatient.bookings) > 0 && <div className="text-emerald-600 font-bold text-sm mt-1">{totalRevenue(selectedPatient.bookings).toLocaleString("fr")} MAD réalisés</div>}
               </div>
               <div className="space-y-2">
                 {[{ icon: Mail, label: selectedPatient.email }, { icon: Phone, label: selectedPatient.phone }].map(({ icon: Icon, label }) => (
@@ -1319,7 +1329,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
                     <div key={b.id} className="border border-border p-4">
                       <div className="flex items-start justify-between gap-2 mb-2"><div className="text-[9px] font-bold text-muted-foreground tracking-widest">{b.id}</div><StatusBadge status={b.status} /></div>
                       <div className="text-sm font-light text-foreground/80 mb-1">{b.service}</div>
-                      <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.date}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} €</div>}</div>
+                      <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.date}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} MAD</div>}</div>
                       {b.notes && <div className="mt-2 text-xs text-muted-foreground/70 font-light italic">{b.notes}</div>}
                     </div>
                   ))}
@@ -1417,7 +1427,7 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
                     <div key={b.id} className="border border-border p-4">
                       <div className="flex items-start justify-between gap-2 mb-2"><div className="display text-sm text-foreground">{b.name}</div><StatusBadge status={b.status} /></div>
                       <div className="text-xs font-light text-foreground/60 mb-1">{b.service}</div>
-                      <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.origin}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} €</div>}</div>
+                      <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.origin}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} MAD</div>}</div>
                       {b.tags.length > 0 && <div className="flex gap-1 flex-wrap mt-2">{b.tags.map(t => <TagChip key={t} tag={t} />)}</div>}
                     </div>
                   ))}
