@@ -11,7 +11,7 @@ import {
   PhoneCall, MessageCircle, AtSign, StickyNote,
   Bell, BellOff, Kanban, Menu,
   Send, Copy, CheckCheck, UserPlus, Activity,
-  RefreshCw, Loader2,
+  RefreshCw, Loader2, Stethoscope,
 } from "lucide-react";
 import logoMark from "@/assets/medicalbay-logo-mark.png";
 import { supabase } from "@/lib/supabase";
@@ -28,7 +28,41 @@ import type {
 } from "@/lib/crm-api";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-type Tab = "overview" | "pipeline" | "bookings" | "messages" | "patients" | "calendar";
+type Tab = "overview" | "pipeline" | "bookings" | "messages" | "patients" | "calendar" | "dentists";
+
+// ─── DENTISTS ─────────────────────────────────────────────────────────────────
+// Each booking is assigned to one practitioner. Colours are reused across the
+// calendar, the practitioner workspace and the booking tables.
+interface Dentist {
+  name: string;
+  short: string;
+  specialty: string;
+  dot: string;     // bg colour for the dentist marker dot / accent
+  bg: string;      // soft background for chips
+  text: string;    // text colour for chips
+  border: string;  // border colour for chips
+  bar: string;     // bg colour for calendar event chips
+}
+const DENTISTS: Dentist[] = [
+  { name: "Dr. Salma El Fassi", short: "Dr. El Fassi", specialty: "Dentisterie esthétique",  dot: "bg-primary",     bg: "bg-primary/10",  text: "text-primary",     border: "border-primary/30",  bar: "bg-primary/15" },
+  { name: "Dr. Youssef Benali", short: "Dr. Benali",   specialty: "Implantologie & chirurgie", dot: "bg-blue-500",   bg: "bg-blue-50",     text: "text-blue-700",     border: "border-blue-200",    bar: "bg-blue-50" },
+  { name: "Dr. Leïla Amrani",   short: "Dr. Amrani",   specialty: "Couronnes & prothèses",   dot: "bg-purple-500",  bg: "bg-purple-50",   text: "text-purple-700",   border: "border-purple-200",  bar: "bg-purple-50" },
+  { name: "Dr. Karim Tahiri",   short: "Dr. Tahiri",   specialty: "Général & blanchiment",   dot: "bg-amber-500",   bg: "bg-amber-50",    text: "text-amber-700",    border: "border-amber-200",   bar: "bg-amber-50" },
+];
+const DENTIST_NAMES = DENTISTS.map(d => d.name);
+const dentistMeta = (name: string): Dentist | undefined => DENTISTS.find(d => d.name === name);
+
+// Auto-assignment: each service maps to the specialist who handles it.
+const SERVICE_DENTIST: Record<string, string> = {
+  "Smile Design complet":        "Dr. Salma El Fassi",
+  "Facettes porcelaine E-max":   "Dr. Salma El Fassi",
+  "Séjour médical tout inclus":  "Dr. Salma El Fassi",
+  "Implantologie":               "Dr. Youssef Benali",
+  "Couronnes Zircone":           "Dr. Leïla Amrani",
+  "Blanchiment laser":           "Dr. Karim Tahiri",
+  "Consultation générale":       "Dr. Karim Tahiri",
+};
+const dentistForService = (service: string) => SERVICE_DENTIST[service] ?? DENTISTS[0].name;
 
 const SERVICE_REVENUE: Record<string, number> = {
   "Smile Design complet": 4500, "Implantologie": 3000,
@@ -70,11 +104,11 @@ const QUICK_TEMPLATES = [
 ];
 
 const SERVICES = ["Smile Design complet","Facettes porcelaine E-max","Implantologie","Couronnes Zircone","Blanchiment laser","Séjour médical tout inclus","Consultation générale"];
-const SOURCES: LeadSource[] = ["Site web","WhatsApp","Instagram","Référence","Autre"];
+const SOURCES: LeadSource[] = ["Site web","WhatsApp","Instagram","Google","Facebook","Référence","Autre"];
 
 const SECTION_OF: Record<Tab, "dashboard" | "crm"> = {
   overview: "dashboard", calendar: "dashboard",
-  pipeline: "crm", bookings: "crm", messages: "crm", patients: "crm",
+  pipeline: "crm", bookings: "crm", messages: "crm", patients: "crm", dentists: "crm",
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -109,12 +143,37 @@ function TagChip({ tag, onRemove }: { tag: string; onRemove?: () => void }) {
   );
 }
 
+function DentistChip({ name, className = "" }: { name: string; className?: string }) {
+  const d = dentistMeta(name);
+  if (!name) return <span className="inline-flex items-center gap-1 text-[9px] text-muted-foreground/40 italic">Non assigné</span>;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold border ${d ? `${d.bg} ${d.text} ${d.border}` : "bg-border/30 text-muted-foreground border-border"} ${className}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${d?.dot ?? "bg-muted-foreground"}`} />
+      {d?.short ?? name}
+    </span>
+  );
+}
+
 // ─── LOGIN GATE ───────────────────────────────────────────────────────────────
-function LoginGate({ onLogin }: { onLogin: () => void }) {
+// Admin logs in and sees everything. Each practitioner has their own password
+// and only sees their own workspace (their bookings, scoped).
+type Session = { role: "admin" } | { role: "dentist"; dentist: string };
+const ADMIN_PASSWORD = "MB2026";
+const DENTIST_LOGINS: Record<string, string> = {
+  "salma2026":   "Dr. Salma El Fassi",
+  "youssef2026": "Dr. Youssef Benali",
+  "leila2026":   "Dr. Leïla Amrani",
+  "karim2026":   "Dr. Karim Tahiri",
+};
+
+function LoginGate({ onLogin }: { onLogin: (s: Session) => void }) {
   const [pw, setPw] = useState(""); const [error, setError] = useState(false);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw === "MB2026") onLogin(); else { setError(true); setPw(""); }
+    if (pw === ADMIN_PASSWORD) { onLogin({ role: "admin" }); return; }
+    const dentist = DENTIST_LOGINS[pw.trim().toLowerCase()];
+    if (dentist) { onLogin({ role: "dentist", dentist }); return; }
+    setError(true); setPw("");
   };
   return (
     <div className="min-h-screen bg-[hsl(var(--ink))] flex items-center justify-center p-4">
@@ -141,14 +200,17 @@ function LoginGate({ onLogin }: { onLogin: () => void }) {
           </label>
           <button type="submit" className="w-full btn-primary !py-4">ACCÉDER AU CRM</button>
         </form>
-        <p className="text-[9px] text-muted-foreground/40 text-center mt-8 tracking-widest">Mot de passe : MB2026</p>
+        <div className="mt-8 text-[9px] text-muted-foreground/40 text-center tracking-widest space-y-1 leading-relaxed">
+          <p><span className="text-muted-foreground/60">Admin</span> : MB2026</p>
+          <p><span className="text-muted-foreground/60">Praticien</span> : salma2026 · youssef2026 · leila2026 · karim2026</p>
+        </div>
       </motion.div>
     </div>
   );
 }
 
 // ─── NEW LEAD MODAL ───────────────────────────────────────────────────────────
-const BLANK_FORM = { nom: "", prenom: "", email: "", phone: "", service: "Consultation générale", origin: "", date: "", source: "Site web" as LeadSource, value: "", notes: "" };
+const BLANK_FORM = { nom: "", prenom: "", email: "", phone: "", service: "Consultation générale", dentist: "", origin: "", date: "", source: "Site web" as LeadSource, value: "", notes: "" };
 
 function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose: () => void }) {
   const [form, setForm] = useState(BLANK_FORM);
@@ -163,6 +225,7 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
       name: `${form.prenom} ${form.nom}`.trim(),
       email: form.email, phone: form.phone,
       service: form.service, origin: form.origin,
+      dentist: form.dentist || dentistForService(form.service),
       date: form.date || new Date().toISOString().slice(0, 10),
       status: "Nouveau", notes: form.notes, tags: [],
       source: form.source as LeadSource,
@@ -238,7 +301,13 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
                   <input type="date" value={form.date} onChange={e => set("date", e.target.value)}
                     className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none" />
                 </label>
-                <div />
+                <label className="block group">
+                  <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Praticien assigné</span>
+                  <select value={form.dentist || dentistForService(form.service)} onChange={e => set("dentist", e.target.value)}
+                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
+                    {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
+                  </select>
+                </label>
               </div>
               <label className="block group">
                 <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Notes <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
@@ -269,12 +338,21 @@ const CRM_NAV = [
   { id: "bookings" as Tab, label: "Rendez-vous",    icon: Calendar },
   { id: "messages" as Tab, label: "Messages",       icon: MessageSquare },
   { id: "patients" as Tab, label: "Patients",       icon: Users },
+  { id: "dentists" as Tab, label: "Praticiens",     icon: Stethoscope },
+];
+// Practitioner-scoped navigation — what a dentist sees once logged in.
+const DENTIST_NAV = [
+  { id: "dentists" as Tab, label: "Mon espace",    icon: Stethoscope },
+  { id: "bookings" as Tab, label: "Rendez-vous",   icon: Calendar },
+  { id: "calendar" as Tab, label: "Calendrier",    icon: BarChart3 },
+  { id: "patients" as Tab, label: "Patients",      icon: Users },
 ];
 
-function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose }: {
-  tab: Tab; setTab: (t: Tab) => void; unread: number; onLogout: () => void; onNewLead: () => void; onClose?: () => void;
+function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose, session }: {
+  tab: Tab; setTab: (t: Tab) => void; unread: number; onLogout: () => void; onNewLead: () => void; onClose?: () => void; session: Session;
 }) {
   const section = SECTION_OF[tab];
+  const isDentist = session.role === "dentist";
   const NavItem = ({ item }: { item: { id: Tab; label: string; icon: React.ElementType } }) => {
     const active = tab === item.id;
     return (
@@ -298,7 +376,9 @@ function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose }: {
         <div className="flex-1">
           <div className="display text-[11px] tracking-[0.2em] text-white font-black">MEDICAL BAY</div>
           <div className="text-[8px] tracking-[0.35em] uppercase font-bold mt-0.5">
-            {section === "dashboard" ? <span className="text-white/50">Tableau de bord</span> : <span className="text-primary/80">CRM</span>}
+            {isDentist
+              ? <span className="text-primary/80">Espace praticien</span>
+              : section === "dashboard" ? <span className="text-white/50">Tableau de bord</span> : <span className="text-primary/80">CRM</span>}
           </div>
         </div>
         {onClose && (
@@ -309,35 +389,53 @@ function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose }: {
       </div>
 
       <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-4">
-        <button onClick={onNewLead}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/15 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200">
-          <UserPlus className="w-3.5 h-3.5 shrink-0" />
-          <span className="text-[10px] tracking-[0.2em] uppercase font-bold">Nouveau patient</span>
-        </button>
+        {!isDentist && (
+          <button onClick={onNewLead}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/15 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200">
+            <UserPlus className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold">Nouveau patient</span>
+          </button>
+        )}
 
-        <div>
-          <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "dashboard" ? "border-primary" : "border-transparent"}`}>
-            <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "dashboard" ? "bg-primary" : "bg-white/8"}`}>
-              <LayoutDashboard className="w-2.5 h-2.5 text-white" />
+        {isDentist ? (
+          <div>
+            <div className="flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 border-primary">
+              <div className="w-5 h-5 flex items-center justify-center shrink-0 bg-primary">
+                <Stethoscope className="w-2.5 h-2.5 text-white" />
+              </div>
+              <span className="text-[8px] tracking-[0.45em] uppercase font-black text-white/70">Mon espace</span>
             </div>
-            <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "dashboard" ? "text-white/70" : "text-white/20"}`}>Tableau de bord</span>
-          </div>
-          <div className="space-y-0.5">
-            {DASHBOARD_NAV.map(item => <NavItem key={item.id} item={item} />)}
-          </div>
-        </div>
-        <div className="mx-4 border-t border-white/8" />
-        <div>
-          <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "crm" ? "border-primary" : "border-transparent"}`}>
-            <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "crm" ? "bg-primary" : "bg-white/8"}`}>
-              <Users className="w-2.5 h-2.5 text-white" />
+            <div className="space-y-0.5">
+              {DENTIST_NAV.map(item => <NavItem key={item.id} item={item} />)}
             </div>
-            <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "crm" ? "text-white/70" : "text-white/20"}`}>CRM</span>
           </div>
-          <div className="space-y-0.5">
-            {CRM_NAV.map(item => <NavItem key={item.id} item={item} />)}
-          </div>
-        </div>
+        ) : (
+          <>
+            <div>
+              <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "dashboard" ? "border-primary" : "border-transparent"}`}>
+                <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "dashboard" ? "bg-primary" : "bg-white/8"}`}>
+                  <LayoutDashboard className="w-2.5 h-2.5 text-white" />
+                </div>
+                <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "dashboard" ? "text-white/70" : "text-white/20"}`}>Tableau de bord</span>
+              </div>
+              <div className="space-y-0.5">
+                {DASHBOARD_NAV.map(item => <NavItem key={item.id} item={item} />)}
+              </div>
+            </div>
+            <div className="mx-4 border-t border-white/8" />
+            <div>
+              <div className={`flex items-center gap-2.5 px-3 py-2 mb-1 border-l-2 transition-colors ${section === "crm" ? "border-primary" : "border-transparent"}`}>
+                <div className={`w-5 h-5 flex items-center justify-center shrink-0 transition-colors ${section === "crm" ? "bg-primary" : "bg-white/8"}`}>
+                  <Users className="w-2.5 h-2.5 text-white" />
+                </div>
+                <span className={`text-[8px] tracking-[0.45em] uppercase font-black transition-colors ${section === "crm" ? "text-white/70" : "text-white/20"}`}>CRM</span>
+              </div>
+              <div className="space-y-0.5">
+                {CRM_NAV.map(item => <NavItem key={item.id} item={item} />)}
+              </div>
+            </div>
+          </>
+        )}
       </nav>
 
       <div className="px-3 py-4 border-t border-white/8 space-y-0.5">
@@ -387,10 +485,15 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
   }));
 
   const sourceBreakdown = useMemo(() => {
-    const map: Record<string, number> = {};
-    bookings.forEach(b => { map[b.source] = (map[b.source] ?? 0) + 1; });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+    const map: Record<string, { count: number; revenue: number }> = {};
+    bookings.forEach(b => {
+      if (!map[b.source]) map[b.source] = { count: 0, revenue: 0 };
+      map[b.source].count += 1;
+      if (b.status !== "Annulé") map[b.source].revenue += b.value;
+    });
+    return Object.entries(map).sort((a, b) => b[1].revenue - a[1].revenue);
   }, [bookings]);
+  const maxSrcRev = Math.max(...sourceBreakdown.map(([, s]) => s.revenue), 1);
 
   const unread = messages.filter(m => !m.read).length;
 
@@ -526,13 +629,22 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
           <div className="bg-white border border-border shadow-sm p-5">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Sources leads</span>
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Revenus par source</span>
             </div>
-            <div className="space-y-2">
-              {sourceBreakdown.map(([src, n]) => (
-                <div key={src} className="flex items-center justify-between">
-                  <span className="font-light text-foreground/70 text-xs">{src}</span>
-                  <span className="display text-sm text-primary font-black">{n}</span>
+            <div className="space-y-3">
+              {sourceBreakdown.map(([src, s]) => (
+                <div key={src}>
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <span className="font-light text-foreground/70 text-xs truncate">{src} <span className="text-muted-foreground/45">· {s.count} lead{s.count > 1 ? "s" : ""}</span></span>
+                    <span className="display text-xs text-primary font-black shrink-0">{s.revenue.toLocaleString("fr")} MAD</span>
+                  </div>
+                  <div className="h-1 bg-border rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(s.revenue / maxSrcRev) * 100}%` }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-primary/50" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -594,6 +706,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
   const toggleTag    = (tag: string) => onUpdateFields({ ...booking, tags: booking.tags.includes(tag) ? booking.tags.filter(t => t !== tag) : [...booking.tags, tag] });
   const setFollowUp  = (date: string) => onUpdateFields({ ...booking, followUp: date || undefined });
   const setValue     = (v: number) => onUpdateFields({ ...booking, value: v });
+  const setDentist   = (name: string) => onUpdateFields({ ...booking, dentist: name });
 
   const [emailSending, setEmailSending]   = useState(false);
   const [emailStatus, setEmailStatus]     = useState<"idle" | "ok" | "err">("idle");
@@ -689,6 +802,17 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
                   <div className="text-sm font-light text-foreground">{v}</div>
                 </div>
               ))}
+            </div>
+
+            {/* Praticien assigné */}
+            <div className="border-t border-border pt-4">
+              <div className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-2 flex items-center gap-1.5"><Stethoscope className="w-2.5 h-2.5" /> Praticien assigné</div>
+              <div className="mb-2"><DentistChip name={booking.dentist} /></div>
+              <select value={booking.dentist} onChange={e => setDentist(e.target.value)}
+                className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
+                <option value="">Non assigné</option>
+                {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
+              </select>
             </div>
 
             {/* Value */}
@@ -904,7 +1028,8 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                         <div className="display text-xs text-foreground leading-tight">{b.name}</div>
                         {b.followUp && b.followUp <= new Date().toISOString().slice(0, 10) && <Bell className="w-2.5 h-2.5 text-red-400 shrink-0 mt-0.5" />}
                       </div>
-                      <div className="text-[9px] text-muted-foreground font-light mb-2.5 truncate">{b.service}</div>
+                      <div className="text-[9px] text-muted-foreground font-light mb-2 truncate">{b.service}</div>
+                      {b.dentist && <div className="mb-2"><DentistChip name={b.dentist} /></div>}
                       {b.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-2">
                           {b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}
@@ -978,8 +1103,8 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
   }), [bookings]);
 
   const exportCSV = () => {
-    const headers = ["ID","Nom","Email","Téléphone","Service","Origine","Date","Statut","Valeur","Source","Tags","Notes"];
-    const rows = bookings.map(b => [b.id, b.name, b.email, b.phone, b.service, b.origin, b.date, b.status, b.value, b.source, b.tags.join(";"), b.notes]);
+    const headers = ["ID","Nom","Email","Téléphone","Service","Praticien","Origine","Date","Statut","Valeur","Source","Tags","Notes"];
+    const rows = bookings.map(b => [b.id, b.name, b.email, b.phone, b.service, b.dentist, b.origin, b.date, b.status, b.value, b.source, b.tags.join(";"), b.notes]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `medicalbay-leads-${today}.csv`; a.click();
@@ -1021,17 +1146,17 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
         </div>
 
         <div className="bg-white border border-border shadow-sm overflow-hidden overflow-x-auto">
-          <table className="w-full min-w-[680px]">
+          <table className="w-full min-w-[780px]">
             <thead>
               <tr className="border-b-2 border-border bg-[#fafafa]">
-                {["Patient","Service","Date / Suivi","Valeur","Tags","Statut",""].map(h => (
+                {["Patient","Service","Praticien","Date / Suivi","Valeur","Tags","Statut",""].map(h => (
                   <th key={h} className="px-4 py-3.5 text-left text-[8px] tracking-[0.4em] uppercase font-black text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0
-                ? <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground font-light">Aucun résultat</td></tr>
+                ? <tr><td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground font-light">Aucun résultat</td></tr>
                 : filtered.map((b, idx) => {
                   const isOverdue = b.followUp && b.followUp < today;
                   return (
@@ -1042,6 +1167,7 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                         <div className="text-[9px] text-muted-foreground">{b.email}</div>
                       </td>
                       <td className="px-4 py-3.5 text-sm font-light text-foreground/70 max-w-[130px] truncate">{b.service}</td>
+                      <td className="px-4 py-3.5"><DentistChip name={b.dentist} /></td>
                       <td className="px-4 py-3.5">
                         <div className="text-[10px] font-bold text-muted-foreground">{b.date}</div>
                         {b.followUp && <div className={`text-[9px] flex items-center gap-1 mt-0.5 ${isOverdue ? "text-red-500 font-semibold" : "text-muted-foreground/60"}`}><Bell className="w-2.5 h-2.5" /> {b.followUp}</div>}
@@ -1115,6 +1241,7 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
     const nb: Booking = {
       id: newId(), name: m.name, email: m.email, phone: m.phone,
       service: "Consultation générale", origin: "—",
+      dentist: dentistForService("Consultation générale"),
       date: new Date().toISOString().slice(0, 10),
       status: "Nouveau", notes: `Sujet : ${m.subject}`, tags: [],
       source: "Site web", value: 0,
@@ -1329,6 +1456,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
                     <div key={b.id} className="border border-border p-4">
                       <div className="flex items-start justify-between gap-2 mb-2"><div className="text-[9px] font-bold text-muted-foreground tracking-widest">{b.id}</div><StatusBadge status={b.status} /></div>
                       <div className="text-sm font-light text-foreground/80 mb-1">{b.service}</div>
+                      {b.dentist && <div className="mb-1.5"><DentistChip name={b.dentist} /></div>}
                       <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.date}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} MAD</div>}</div>
                       {b.notes && <div className="mt-2 text-xs text-muted-foreground/70 font-light italic">{b.notes}</div>}
                     </div>
@@ -1372,7 +1500,7 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
   const fmt      = (d: number) => `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col lg:flex-row gap-6">
       <div className="flex-1 min-w-0 space-y-5">
         <div className="flex items-center justify-between">
           <div>
@@ -1384,6 +1512,15 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
             <button onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }} className="px-4 py-2 border border-border text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">Aujourd'hui</button>
             <button onClick={next} className="w-9 h-9 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><ChevronRight className="w-4 h-4" /></button>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-white border border-border px-4 py-3 shadow-sm">
+          <span className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Praticiens</span>
+          {DENTISTS.map(d => (
+            <div key={d.name} className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${d.dot}`} />
+              <span className="text-[10px] font-light text-foreground/70">{d.short}</span>
+            </div>
+          ))}
         </div>
         <div className="bg-background border border-border overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border">
@@ -1401,7 +1538,15 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
                   className={`h-24 border-b border-r border-border p-2 cursor-pointer transition-colors overflow-hidden ${isSel ? "bg-primary/8" : "hover:bg-[hsl(var(--mist)/0.3)]"}`}>
                   <div className={`w-6 h-6 flex items-center justify-center text-sm mb-1 ${isToday ? "bg-primary text-white display font-black" : "text-foreground/70 font-light"}`}>{day}</div>
                   <div className="space-y-0.5">
-                    {dayBks.slice(0, 2).map(b => <div key={b.id} className={`text-[8px] font-bold truncate px-1 py-0.5 ${STATUS_CFG[b.status].bg} ${STATUS_CFG[b.status].text}`}>{b.name.split(" ")[0]}</div>)}
+                    {dayBks.slice(0, 2).map(b => {
+                      const dm = dentistMeta(b.dentist);
+                      return (
+                        <div key={b.id} className={`flex items-center gap-1 text-[8px] font-bold px-1 py-0.5 ${STATUS_CFG[b.status].bg} ${STATUS_CFG[b.status].text}`}>
+                          <span className={`w-1 h-1 rounded-full shrink-0 ${dm?.dot ?? "bg-foreground/30"}`} title={b.dentist || "Non assigné"} />
+                          <span className="truncate">{b.name.split(" ")[0]}</span>
+                        </div>
+                      );
+                    })}
                     {dayBks.length > 2 && <div className="text-[8px] text-muted-foreground font-bold">+{dayBks.length - 2}</div>}
                   </div>
                 </div>
@@ -1414,7 +1559,7 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
       <AnimatePresence>
         {daySelected && (
           <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 24 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="w-72 shrink-0 bg-background border border-border self-start sticky top-6">
+            className="w-full lg:w-72 shrink-0 bg-background border border-border self-start lg:sticky lg:top-6">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <div className="text-[9px] tracking-[0.35em] uppercase font-bold text-muted-foreground">{new Date(daySelected).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</div>
               <button onClick={() => setDaySelected(null)} className="w-7 h-7 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><X className="w-3 h-3" /></button>
@@ -1426,7 +1571,12 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
                   {(byDate[daySelected] ?? []).map(b => (
                     <div key={b.id} className="border border-border p-4">
                       <div className="flex items-start justify-between gap-2 mb-2"><div className="display text-sm text-foreground">{b.name}</div><StatusBadge status={b.status} /></div>
-                      <div className="text-xs font-light text-foreground/60 mb-1">{b.service}</div>
+                      <div className="text-xs font-light text-foreground/60 mb-2">{b.service}</div>
+                      <div className="mb-2"><DentistChip name={b.dentist} /></div>
+                      <div className="space-y-1 mb-2">
+                        <a href={`mailto:${b.email}`} className="flex items-center gap-2 text-[10px] text-muted-foreground hover:text-primary transition-colors"><Mail className="w-2.5 h-2.5 text-primary shrink-0" /><span className="truncate">{b.email}</span></a>
+                        <a href={`tel:${b.phone}`} className="flex items-center gap-2 text-[10px] text-muted-foreground hover:text-primary transition-colors"><Phone className="w-2.5 h-2.5 text-primary shrink-0" />{b.phone}</a>
+                      </div>
                       <div className="flex items-center justify-between"><div className="text-[9px] text-muted-foreground">{b.origin}</div>{b.value > 0 && <div className="text-[9px] font-bold text-primary">{b.value.toLocaleString("fr")} MAD</div>}</div>
                       {b.tags.length > 0 && <div className="flex gap-1 flex-wrap mt-2">{b.tags.map(t => <TagChip key={t} tag={t} />)}</div>}
                     </div>
@@ -1437,6 +1587,201 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── DENTISTS WORKSPACE ───────────────────────────────────────────────────────
+function DentistsTab({ bookings, lockedDentist }: { bookings: Booking[]; lockedDentist?: string }) {
+  const [selected, setSelected] = useState<string>(lockedDentist ?? DENTISTS[0].name);
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Aggregated stats per practitioner.
+  const stats = useMemo(() => DENTISTS.map(d => {
+    const mine     = bookings.filter(b => b.dentist === d.name);
+    const active   = mine.filter(b => !["Terminé","Annulé"].includes(b.status));
+    const done     = mine.filter(b => b.status === "Terminé");
+    const upcoming = mine.filter(b => b.date >= today && b.status !== "Annulé");
+    return {
+      dentist:  d,
+      total:    mine.length,
+      active:   active.length,
+      pipeline: active.reduce((a, b) => a + b.value, 0),
+      revenue:  done.reduce((a, b) => a + b.value, 0),
+      upcoming: upcoming.length,
+      patients: new Set(mine.map(b => b.email)).size,
+    };
+  }), [bookings, today]);
+
+  const sel = stats.find(s => s.dentist.name === (lockedDentist ?? selected)) ?? stats[0];
+  const d = sel.dentist;
+  const initials = d.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase();
+
+  const selBookings = useMemo(() => bookings.filter(b => b.dentist === d.name), [bookings, d.name]);
+  const selUpcoming = useMemo(
+    () => selBookings.filter(b => b.date >= today && b.status !== "Annulé").sort((a, b) => a.date.localeCompare(b.date)),
+    [selBookings, today]
+  );
+  const unassigned = bookings.filter(b => !dentistMeta(b.dentist)).length;
+  const pipelineCols = (["Nouveau","Confirmé","En cours","Terminé"] as BookingStatus[])
+    .map(s => ({ label: s, count: selBookings.filter(b => b.status === s).length }));
+  const maxCol = Math.max(...pipelineCols.map(p => p.count), 1);
+
+  const kpis = [
+    { label: "Leads actifs", value: String(sel.active),                          icon: Zap,          color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+    { label: "Pipeline",     value: `${sel.pipeline.toLocaleString("fr")} MAD`,  icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",   iconBg: "bg-amber-50" },
+    { label: "CA réalisé",   value: `${sel.revenue.toLocaleString("fr")} MAD`,   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500", iconBg: "bg-emerald-50" },
+    { label: "RDV à venir",  value: String(sel.upcoming),                         icon: Calendar,     color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+  ];
+
+  return (
+    <div className="flex flex-col xl:flex-row gap-6">
+      {/* Left rail — practitioner cards (hidden when a dentist is locked to their own workspace) */}
+      {!lockedDentist && (
+      <div className="w-full xl:w-72 shrink-0 space-y-3">
+        <p className="text-sm text-muted-foreground font-light">
+          {DENTISTS.length} praticiens{unassigned > 0 ? ` · ${unassigned} non assigné${unassigned > 1 ? "s" : ""}` : ""}
+        </p>
+        {stats.map(s => {
+          const dd = s.dentist;
+          const active = selected === dd.name;
+          return (
+            <button key={dd.name} onClick={() => setSelected(dd.name)}
+              className={`w-full text-left bg-white border p-4 shadow-sm transition-all duration-200 ${active ? "border-primary ring-1 ring-primary/20" : "border-border hover:border-primary/40"}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-10 h-10 ${dd.bg} ${dd.text} flex items-center justify-center shrink-0`}>
+                  <span className="display text-sm font-black">{dd.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase()}</span>
+                </div>
+                <div className="min-w-0">
+                  <div className="display text-sm text-foreground truncate">{dd.name}</div>
+                  <div className="text-[9px] text-muted-foreground font-light truncate">{dd.specialty}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-[hsl(var(--off))] py-1.5">
+                  <div className="display text-sm text-foreground font-black">{s.active}</div>
+                  <div className="text-[7px] tracking-[0.2em] uppercase font-bold text-muted-foreground">Actifs</div>
+                </div>
+                <div className="bg-[hsl(var(--off))] py-1.5">
+                  <div className="display text-sm text-primary font-black">{s.upcoming}</div>
+                  <div className="text-[7px] tracking-[0.2em] uppercase font-bold text-muted-foreground">À venir</div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      )}
+
+      {/* Right — selected practitioner workspace */}
+      <div className="flex-1 min-w-0 space-y-5">
+        {/* Header */}
+        <div className={`bg-white border border-border border-l-4 ${kpis[0].accent} shadow-sm p-6 flex items-center gap-4`}>
+          <div className={`w-14 h-14 ${d.bg} ${d.text} flex items-center justify-center shrink-0`}>
+            <span className="display text-lg font-black">{initials}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="display text-2xl text-foreground">{d.name}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`w-2 h-2 rounded-full ${d.dot}`} />
+              <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-muted-foreground">{d.specialty}</span>
+            </div>
+          </div>
+          <div className="hidden sm:block text-right shrink-0">
+            <div className="display text-2xl text-foreground font-black">{sel.patients}</div>
+            <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">patient{sel.patients > 1 ? "s" : ""}</div>
+          </div>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {kpis.map((k, i) => (
+            <div key={i} className={`bg-white border border-border border-l-4 ${k.accent} p-4 shadow-sm`}>
+              <div className={`w-8 h-8 ${k.iconBg} flex items-center justify-center mb-3`}><k.icon className={`w-4 h-4 ${k.color}`} /></div>
+              <div className={`display text-2xl font-black mb-0.5 ${k.color}`}>{k.value}</div>
+              <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">{k.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_260px] gap-5">
+          {/* Upcoming appointments */}
+          <div className="bg-white border border-border shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-[#fafafa]">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="display text-sm text-foreground">Prochains rendez-vous</span>
+            </div>
+            {selUpcoming.length === 0
+              ? <div className="px-6 py-10 text-center text-sm text-muted-foreground font-light">Aucun rendez-vous à venir</div>
+              : <div className="divide-y divide-border">
+                {selUpcoming.map(b => (
+                  <div key={b.id} className="flex items-center gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
+                    <div className="w-9 h-9 bg-primary/8 flex flex-col items-center justify-center shrink-0">
+                      <span className="display text-xs text-primary font-black leading-none">{new Date(b.date).getDate()}</span>
+                      <span className="text-[7px] uppercase text-primary/60 font-bold">{new Date(b.date).toLocaleDateString("fr-FR", { month: "short" })}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="display text-sm text-foreground truncate">{b.name}</div>
+                      <div className="text-[9px] text-muted-foreground truncate">{b.service}{b.value > 0 ? ` · ${b.value.toLocaleString("fr")} MAD` : ""}</div>
+                    </div>
+                    <StatusBadge status={b.status} />
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+
+          {/* Pipeline breakdown */}
+          <div className="bg-white border border-border shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Kanban className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Pipeline</span>
+            </div>
+            <div className="space-y-3">
+              {pipelineCols.map(p => (
+                <div key={p.label} className="flex items-center gap-3">
+                  <div className="text-[9px] tracking-[0.1em] uppercase font-bold text-muted-foreground w-16 shrink-0">{p.label}</div>
+                  <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${(p.count / maxCol) * 100}%` }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className={`h-full ${STATUS_CFG[p.label].dot}`} />
+                  </div>
+                  <div className="display text-sm text-foreground w-4 text-right shrink-0">{p.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Full patient/lead list */}
+        <div className="bg-white border border-border shadow-sm overflow-hidden overflow-x-auto">
+          <div className="px-5 py-4 border-b border-border bg-[#fafafa] flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" />
+            <span className="display text-sm text-foreground">Tous les dossiers · {selBookings.length}</span>
+          </div>
+          <table className="w-full min-w-[560px]">
+            <thead>
+              <tr className="border-b border-border bg-white">
+                {["Patient","Service","Date","Valeur","Statut"].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {selBookings.length === 0
+                ? <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné</td></tr>
+                : selBookings.map(b => (
+                  <tr key={b.id} className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3"><div className="display text-sm text-foreground">{b.name}</div><div className="text-[9px] text-muted-foreground">{b.email}</div></td>
+                    <td className="px-4 py-3 text-sm font-light text-foreground/70 max-w-[150px] truncate">{b.service}</td>
+                    <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground">{b.date}</td>
+                    <td className="px-4 py-3"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} MAD` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
+                    <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1459,7 +1804,7 @@ function LoadingScreen() {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const [authed, setAuthed]       = useState(false);
+  const [session, setSession]     = useState<Session | null>(null);
   const [tab, setTab]             = useState<Tab>("overview");
   const [bookings, setBookings]   = useState<Booking[]>([]);
   const [messages, setMessages]   = useState<Message[]>([]);
@@ -1469,17 +1814,17 @@ export default function AdminDashboard() {
 
   // ── Initial fetch ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!authed) return;
+    if (!session) return;
     setLoading(true);
     Promise.all([fetchBookings(), fetchMessages()])
       .then(([bks, msgs]) => { setBookings(bks); setMessages(msgs); })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [authed]);
+  }, [session]);
 
   // ── Realtime subscriptions ─────────────────────────────────────────────────
   useEffect(() => {
-    if (!authed) return;
+    if (!session) return;
     const channel = supabase
       .channel("crm-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => {
@@ -1493,7 +1838,7 @@ export default function AdminDashboard() {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [authed]);
+  }, [session]);
 
   // ── CRM mutation callbacks ─────────────────────────────────────────────────
   const handleUpdateFields = useCallback((updated: Booking) => {
@@ -1550,14 +1895,18 @@ export default function AdminDashboard() {
     onDelete:       handleDeleteBooking,
   };
 
-  const unread = messages.filter(m => !m.read).length;
-
-  if (!authed) return <LoginGate onLogin={() => setAuthed(true)} />;
+  if (!session) return <LoginGate onLogin={(s) => { setSession(s); setTab(s.role === "dentist" ? "dentists" : "overview"); }} />;
   if (loading)  return <LoadingScreen />;
+
+  // Role scoping: a dentist only ever sees their own bookings; admin sees all.
+  const isDentist       = session.role === "dentist";
+  const visibleBookings = isDentist ? bookings.filter(b => b.dentist === session.dentist) : bookings;
+  const visibleMessages = isDentist ? [] : messages;
+  const unread          = isDentist ? 0 : messages.filter(m => !m.read).length;
 
   const TAB_LABELS: Record<Tab, string> = {
     overview: "Vue d'ensemble", calendar: "Calendrier",
-    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients",
+    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients", dentists: "Praticiens",
   };
 
   return (
@@ -1565,8 +1914,8 @@ export default function AdminDashboard() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:flex w-[240px] shrink-0 h-screen sticky top-0">
-        <Sidebar tab={tab} setTab={setTab} unread={unread}
-          onLogout={() => { setAuthed(false); setBookings([]); setMessages([]); }}
+        <Sidebar tab={tab} setTab={setTab} unread={unread} session={session}
+          onLogout={() => { setSession(null); setBookings([]); setMessages([]); }}
           onNewLead={() => setShowNewLead(true)} />
       </div>
 
@@ -1580,8 +1929,8 @@ export default function AdminDashboard() {
             <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="fixed inset-y-0 left-0 z-50 w-[240px] lg:hidden">
-              <Sidebar tab={tab} setTab={setTab} unread={unread}
-                onLogout={() => { setAuthed(false); setBookings([]); setMessages([]); setSidebarOpen(false); }}
+              <Sidebar tab={tab} setTab={setTab} unread={unread} session={session}
+                onLogout={() => { setSession(null); setBookings([]); setMessages([]); setSidebarOpen(false); }}
                 onNewLead={() => { setShowNewLead(true); setSidebarOpen(false); }}
                 onClose={() => setSidebarOpen(false)} />
             </motion.div>
@@ -1601,7 +1950,7 @@ export default function AdminDashboard() {
             <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] tracking-[0.4em] uppercase font-bold border ${SECTION_OF[tab] === "dashboard" ? "bg-foreground/5 border-border text-muted-foreground" : "bg-primary/8 border-primary/25 text-primary"}`}>
               {SECTION_OF[tab] === "dashboard" ? "Dashboard" : "CRM"}
             </div>
-            <h1 className="display text-lg text-foreground font-black truncate">{TAB_LABELS[tab]}</h1>
+            <h1 className="display text-lg text-foreground font-black truncate">{isDentist && tab === "dentists" ? "Mon espace" : TAB_LABELS[tab]}</h1>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -1621,10 +1970,12 @@ export default function AdminDashboard() {
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[8px] font-black flex items-center justify-center rounded-full">{unread}</span>
               </button>
             )}
-            <button onClick={() => setShowNewLead(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
-              <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouveau patient</span>
-            </button>
+            {!isDentist && (
+              <button onClick={() => setShowNewLead(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
+                <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouveau patient</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -1632,12 +1983,13 @@ export default function AdminDashboard() {
         <main className="flex-1 p-4 md:p-8 overflow-auto">
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}>
-              {tab === "overview"  && <Overview  bookings={bookings} messages={messages} setTab={setTab} />}
-              {tab === "pipeline"  && <Pipeline  bookings={bookings} callbacks={crmCallbacks} />}
-              {tab === "bookings"  && <Bookings  bookings={bookings} callbacks={crmCallbacks} />}
-              {tab === "messages"  && <Messages  messages={messages} bookings={bookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={handleDeleteMessage} onAddBooking={handleAddBooking} />}
-              {tab === "patients"  && <Patients  bookings={bookings} />}
-              {tab === "calendar"  && <CalendarTab bookings={bookings} />}
+              {tab === "overview"  && <Overview  bookings={visibleBookings} messages={visibleMessages} setTab={setTab} />}
+              {tab === "pipeline"  && <Pipeline  bookings={visibleBookings} callbacks={crmCallbacks} />}
+              {tab === "bookings"  && <Bookings  bookings={visibleBookings} callbacks={crmCallbacks} />}
+              {tab === "messages"  && <Messages  messages={visibleMessages} bookings={visibleBookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={handleDeleteMessage} onAddBooking={handleAddBooking} />}
+              {tab === "patients"  && <Patients  bookings={visibleBookings} />}
+              {tab === "calendar"  && <CalendarTab bookings={visibleBookings} />}
+              {tab === "dentists"  && <DentistsTab bookings={visibleBookings} lockedDentist={isDentist ? session.dentist : undefined} />}
             </motion.div>
           </AnimatePresence>
         </main>
