@@ -9,90 +9,117 @@ import { toast } from "sonner";
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const packs = [
   {
-    id: "essentiel",
+    id: "implant",
     num: "01",
-    name: "Essentiel",
-    tagline: "Le premier pas vers votre sourire idéal.",
-    desc: "Idéal pour une remise en forme bucco-dentaire complète, associée à un séjour confortable à Agadir.",
+    name: "Implant",
+    tagline: "Une solution fixe, naturelle et définitive.",
+    desc: "Solution complète destinée aux patients souhaitant remplacer une ou plusieurs dents manquantes.",
     services: [
-      "Consultation & bilan dentaire complet",
-      "Blanchiment laser professionnel",
-      "Détartrage & polissage",
-      "3 nuits · Hôtel 4★",
-      "Transferts aéroport inclus",
-      "Coordinateur dédié",
+      "Consultation spécialisée",
+      "Radiographie panoramique ou scanner",
+      "Implant dentaire premium",
+      "Pilier implantaire",
+      "Couronne définitive",
+      "Suivi post-opératoire",
+      "Assistance Medical Bay",
     ],
     badge: null,
     highlight: false,
   },
   {
-    id: "sourire",
+    id: "facettes",
     num: "02",
-    name: "Sourire",
-    tagline: "La transformation la plus demandée.",
-    desc: "La formule phare de Medical Bay — facettes haut de gamme, Smile Design numérique et hôtel 5★.",
+    name: "Facettes",
+    tagline: "Transformez votre sourire sur mesure.",
+    desc: "Traitement esthétique visant à transformer le sourire grâce à des facettes haut de gamme.",
     services: [
-      "6 facettes Zircon ou E-max",
-      "Digital Smile Design numérique",
-      "Blanchiment laser offert",
-      "5 nuits · Hôtel 5★",
-      "Transferts privés",
-      "Conciergerie médicale",
-      "Suivi post-traitement inclus",
+      "Étude esthétique du sourire",
+      "Simulation du résultat",
+      "Facettes E-Max ou Zircone",
+      "Essayage et ajustements",
+      "Suivi esthétique personnalisé",
     ],
-    badge: "Le plus populaire",
+    badge: "Le plus demandé",
     highlight: true,
   },
   {
-    id: "premium",
+    id: "dsd",
     num: "03",
-    name: "Premium",
-    tagline: "Le sourire parfait, sans compromis.",
-    desc: "Pour ceux qui veulent le meilleur — facettes premium, palace 5★ et assistance VIP 24h/24.",
+    name: "Digital Smile Design",
+    tagline: "Visualisez votre sourire avant de commencer.",
+    desc: "Conception numérique du sourire avant traitement.",
     services: [
-      "Smile Design numérique complet",
-      "8 à 10 facettes Zircon premium",
-      "Couronnes zirconium si nécessaire",
-      "Blanchiment laser offert",
-      "7 nuits · Hôtel 5★ palace",
-      "Transferts VIP & assistance 24/7",
-      "Garantie étendue sur les soins",
+      "Analyse photographique et vidéo",
+      "Scan intra-oral numérique",
+      "Modélisation 3D du futur sourire",
+      "Présentation du résultat avant intervention",
+      "Plan de traitement personnalisé",
     ],
     badge: null,
     highlight: false,
   },
   {
-    id: "implants",
+    id: "zirconium",
     num: "04",
-    name: "Implants",
-    tagline: "Une solution fixe, naturelle et définitive.",
-    desc: "La solution permanente pour remplacer les dents manquantes avec des implants Nobel Biocare.",
+    name: "Couronnes Zirconium",
+    tagline: "Esthétique et résistance durable.",
+    desc: "Restauration esthétique et résistante pour les dents endommagées.",
     services: [
-      "2 à 4 implants Nobel Biocare",
-      "Couronnes sur implants incluses",
-      "Bilan radiologique 3D",
-      "7 nuits · Hôtel 5★",
-      "Transferts privés",
-      "Conciergerie médicale",
-      "Garantie longue durée",
+      "Diagnostic complet",
+      "Préparation de la dent",
+      "Couronne Zirconium haute esthétique",
+      "Contrôle et ajustements",
+      "Garantie qualité partenaire",
+    ],
+    badge: null,
+    highlight: false,
+  },
+  {
+    id: "ceramique",
+    num: "05",
+    name: "Couronnes Céramique",
+    tagline: "Le naturel dans les moindres détails.",
+    desc: "Solution esthétique reproduisant parfaitement l'apparence naturelle des dents.",
+    services: [
+      "Consultation spécialisée",
+      "Empreinte numérique",
+      "Fabrication sur mesure",
+      "Pose et contrôle final",
+      "Suivi clinique",
+    ],
+    badge: null,
+    highlight: false,
+  },
+  {
+    id: "aligneurs",
+    num: "06",
+    name: "Aligneurs Invisible Smile",
+    tagline: "Alignez vos dents en toute discrétion.",
+    desc: "Correction orthodontique discrète grâce à des gouttières transparentes.",
+    services: [
+      "Consultation orthodontique",
+      "Scan numérique 3D",
+      "Simulation du résultat final",
+      "Série complète d'aligneurs",
+      "Contrôles périodiques",
+      "Suivi personnalisé",
     ],
     badge: null,
     highlight: false,
   },
 ];
 
+// i = implant · f = facettes · d = digital smile design · z = zirconium · c = céramique · a = aligneurs
 const comparisonRows = [
-  { feature: "Consultation & bilan",     e: true,  s: true,  p: true,  i: true  },
-  { feature: "Blanchiment laser",         e: true,  s: true,  p: true,  i: false },
-  { feature: "Facettes Zircon / E-max",   e: false, s: true,  p: true,  i: false },
-  { feature: "Smile Design numérique",    e: false, s: true,  p: true,  i: false },
-  { feature: "Implants Nobel Biocare",    e: false, s: false, p: false, i: true  },
-  { feature: "Couronnes zirconium",       e: false, s: false, p: true,  i: true  },
-  { feature: "Hôtel 4★",                 e: true,  s: false, p: false, i: false },
-  { feature: "Hôtel 5★",                 e: false, s: true,  p: false, i: true  },
-  { feature: "Hôtel 5★ Palace",           e: false, s: false, p: true,  i: false },
-  { feature: "Garantie étendue",          e: false, s: false, p: true,  i: true  },
-  { feature: "Assistance 24/7",           e: false, s: false, p: true,  i: true  },
+  { feature: "Consultation & diagnostic",       i: true,  f: true,  d: true,  z: true,  c: true,  a: true  },
+  { feature: "Imagerie / scan numérique",       i: true,  f: false, d: true,  z: false, c: true,  a: true  },
+  { feature: "Simulation du résultat",          i: false, f: true,  d: true,  z: false, c: false, a: true  },
+  { feature: "Implant dentaire premium",        i: true,  f: false, d: false, z: false, c: false, a: false },
+  { feature: "Facettes E-Max / Zircone",        i: false, f: true,  d: false, z: false, c: false, a: false },
+  { feature: "Couronne sur mesure",             i: true,  f: false, d: false, z: true,  c: true,  a: false },
+  { feature: "Aligneurs transparents",          i: false, f: false, d: false, z: false, c: false, a: true  },
+  { feature: "Suivi personnalisé",              i: true,  f: true,  d: false, z: true,  c: true,  a: true  },
+  { feature: "Garantie qualité partenaire",     i: false, f: false, d: false, z: true,  c: false, a: false },
 ];
 
 // ─── STEP 1 · HERO ────────────────────────────────────────────────────────────
@@ -152,7 +179,7 @@ function Hero({ onStart }: { onStart: () => void }) {
             transition={{ delay: 0.5 }}
             className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
             {[
-              ["4",    "formules disponibles"],
+              ["6",    "formules disponibles"],
               ["−70%", "vs tarifs européens"],
               ["5j",   "résultats visibles"],
               ["24h",  "devis garanti"],
@@ -217,7 +244,7 @@ function PackSelector({
         </h2>
 
         {/* Pack tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-8">
           {packs.map((p) => (
             <button
               key={p.id}
@@ -335,6 +362,7 @@ function BookingForm({
         phone: form.phone,
         service: `Pack ${packName}`,
         origin: "Packs page",
+        dentist: "",
         date: now.toISOString().slice(0, 10),
         status: "Nouveau",
         notes: form.message || "",
@@ -539,10 +567,12 @@ function BookingForm({
 // ─── COMPARISON ───────────────────────────────────────────────────────────────
 function Comparison({ onSelect }: { onSelect: (id: string) => void }) {
   const cols = [
-    { label: "Essentiel", id: "essentiel" },
-    { label: "Sourire",   id: "sourire"   },
-    { label: "Premium",   id: "premium"   },
-    { label: "Implants",  id: "implants"  },
+    { label: "Implant",      id: "implant"   },
+    { label: "Facettes",     id: "facettes"  },
+    { label: "Smile Design", id: "dsd"       },
+    { label: "Zirconium",    id: "zirconium" },
+    { label: "Céramique",    id: "ceramique" },
+    { label: "Aligneurs",    id: "aligneurs" },
   ];
 
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -561,10 +591,10 @@ function Comparison({ onSelect }: { onSelect: (id: string) => void }) {
         <p className="text-muted-foreground font-light mb-12">Cliquez sur une formule pour la sélectionner directement.</p>
 
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full min-w-[560px] border-collapse bg-white border border-border">
+          <table className="w-full min-w-[820px] border-collapse bg-white border border-border">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-5 px-6 w-[36%] bg-white">
+                <th className="text-left py-5 px-6 w-[28%] bg-white">
                   <span className="text-[9px] tracking-[0.4em] uppercase font-black text-muted-foreground/40">Prestations</span>
                 </th>
                 {cols.map((c, ci) => (
@@ -586,7 +616,7 @@ function Comparison({ onSelect }: { onSelect: (id: string) => void }) {
                   viewport={{ once: true }} transition={{ delay: i * 0.03 }}
                   className="group hover:bg-muted/30 transition-colors">
                   <td className="py-4 px-6 text-sm font-light text-foreground/60 group-hover:text-foreground transition-colors">{row.feature}</td>
-                  {[row.e, row.s, row.p, row.i].map((has, ci) => (
+                  {[row.i, row.f, row.d, row.z, row.c, row.a].map((has, ci) => (
                     <td key={ci} className={`text-center py-4 px-4 ${ci === 1 ? "bg-primary/5" : ""}`}>
                       {has
                         ? <Check className={`w-4 h-4 mx-auto ${ci === 1 ? "text-primary" : "text-foreground/25"}`} />
@@ -624,7 +654,7 @@ function Comparison({ onSelect }: { onSelect: (id: string) => void }) {
 
 // ─── PAGE ─────────────────────────────────────────────────────────────────────
 export default function Packs() {
-  const [selected, setSelected] = useState("sourire");
+  const [selected, setSelected] = useState("facettes");
   const packSectionRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
