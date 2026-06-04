@@ -9,7 +9,7 @@ import { useLang, T } from "@/contexts/language";
 export default function Navbar() {
   const [open, setOpen]         = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { lang, toggle: toggleLang } = useLang();
+  const { lang } = useLang();
   const { scrollY }             = useScroll();
   const { pathname }            = useLocation();
   const n                       = T[lang].nav;
@@ -79,18 +79,6 @@ export default function Navbar() {
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
-            {/* FR / EN toggle */}
-            <button
-              onClick={toggleLang}
-              className="flex items-center gap-0 border border-border/70 overflow-hidden text-[10px] font-bold tracking-[0.15em] hover:border-primary transition-colors">
-              <span className={`px-2.5 py-2 transition-colors ${lang === "fr" ? "bg-primary text-white" : "text-foreground/40 hover:text-foreground"}`}>
-                FR
-              </span>
-              <span className={`px-2.5 py-2 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-foreground/40 hover:text-foreground"}`}>
-                EN
-              </span>
-            </button>
-
             <button onClick={openBooking}
               className="hidden md:inline-flex btn-primary !py-2.5 !px-5 gap-2">
               <Calendar className="w-3.5 h-3.5" /> {n.cta}
@@ -119,12 +107,6 @@ export default function Navbar() {
               <span className="font-display tracking-[0.3em] text-[10px] font-bold text-white/40 uppercase">{n.navLabel}</span>
             </div>
             <div className="flex items-center gap-3">
-              {/* Lang toggle mobile */}
-              <button onClick={toggleLang}
-                className="flex items-center border border-white/20 overflow-hidden text-[10px] font-bold tracking-[0.15em]">
-                <span className={`px-2.5 py-2 transition-colors ${lang === "fr" ? "bg-primary text-white" : "text-white/30"}`}>FR</span>
-                <span className={`px-2.5 py-2 transition-colors ${lang === "en" ? "bg-primary text-white" : "text-white/30"}`}>EN</span>
-              </button>
               <button onClick={() => setOpen(false)} aria-label="Fermer"
                 className="w-10 h-10 border border-white/15 flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
                 <X className="w-4 h-4" />
