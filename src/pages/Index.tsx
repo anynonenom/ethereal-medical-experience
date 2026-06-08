@@ -812,7 +812,6 @@ export default function Index() {
       <Testimonials />
       <Process />
       <Destination />
-      <InstagramSection />
       <FAQ />
       <CTASection />
     </Layout>
