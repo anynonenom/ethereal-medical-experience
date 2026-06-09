@@ -25,7 +25,7 @@ const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/de
 const HERO_SLIDES = {
   fr: [
     {
-      img: transitionBg,
+      img: rect4,
       badge: "Medical Bay · Agadir, Maroc",
       line1: "Votre sourire",
       lineEm: "mérite mieux.",
@@ -77,7 +77,7 @@ const HERO_SLIDES = {
   ],
   en: [
     {
-      img: transitionBg,
+      img: rect4,
       badge: "Medical Bay · Agadir, Morocco",
       line1: "Your smile",
       lineEm: "deserves better.",
