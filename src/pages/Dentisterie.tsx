@@ -6,7 +6,7 @@ import veneer from "@/assets/veneer-macro.jpg";
 import clinic from "@/assets/clinic-interior.jpg";
 import { openBooking } from "@/components/BookingModal";
 import smileMacro from "@/assets/smile-macro.jpg";
-import blanchimentLaser from "@/assets/BLACHIMENT.jpg";
+import blanchimentLaser from "@/assets/blanchiment.png";
 import implantImg from "@/assets/IMPL.jpg";
 
 const treatments = [

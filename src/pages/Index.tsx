@@ -12,7 +12,7 @@ import transitionBg from "@/assets/transition-bg.png";
 import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
 import implantImg from "@/assets/IMPL.jpg";
-import blanchimentImg from "@/assets/BLACHIMENT.jpg";
+import blanchimentImg from "@/assets/blanchiment.png";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
