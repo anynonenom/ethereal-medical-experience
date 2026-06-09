@@ -37,7 +37,7 @@ export const T = {
       line1: "Votre sourire",
       line2: "mérite",
       lineEm: "mieux.",
-      sub: "Dentisterie d'élite à Agadir — jusqu'à 70% moins cher qu'en Europe, avec séjour palace inclus.",
+      sub: "Dentisterie d'élite à Agadir, jusqu'à 70% moins cher qu'en Europe, avec séjour palace inclus.",
       cta1: "DEVIS GRATUIT · 24H",
       cta2: "Découvrir le séjour",
       stats: [["1 500+", "patients"], ["70%", "économies"], ["5 j", "résultats"]],
@@ -50,7 +50,7 @@ export const T = {
     manifesto: {
       label: "Notre promesse",
       quote: "L'excellence médicale n'est plus un privilège réservé aux capitales européennes.",
-      attribution: "Medical Bay, Agadir — fondé 2025",
+      attribution: "Medical Bay, Agadir, fondé 2025",
       stats: [
         { n: "70%", t: "moins cher qu'en France, Belgique ou Suisse" },
         { n: "5 j",  t: "pour un Smile Design complet et définitif" },
@@ -68,7 +68,7 @@ export const T = {
         { n: "01", title: "SMILE DESIGN",          sub: "Redesign complet du sourire",         body: "Le smile design est une technique qui permet d'améliorer le sourire. Le dentiste travaille sur la forme, la couleur et la position des dents pour obtenir un sourire plus harmonieux et esthétique." },
         { n: "02", title: "IMPLANTOLOGIE",          sub: "Solutions permanentes",               body: "Solution moderne et durable, l'implant dentaire remplace une dent manquante avec un rendu parfaitement naturel. Intégré avec précision dans l'os grâce à une racine en titane biocompatible, il offre confort, stabilité et élégance." },
         { n: "03", title: "BLANCHIMENT LASER",      sub: "Éclat immédiat en séance unique",     body: "Le blanchiment dentaire est un traitement esthétique qui vise à éclaircir la teinte des dents. Il permet de réduire les taches et de raviver l'éclat du sourire, avec un résultat variable selon chaque patient." },
-        { n: "04", title: "SÉJOUR VIP TOUT INCLUS", sub: "Tourisme médical premium",            body: "Vol, hôtel 5★, transferts privés, conciergerie médicale — nous gérons tout pour que vous vous consacriez uniquement à votre transformation." },
+        { n: "04", title: "SÉJOUR VIP TOUT INCLUS", sub: "Tourisme médical premium",            body: "Vol, hôtel 5★, transferts privés, conciergerie médicale, nous gérons tout pour que vous vous consacriez uniquement à votre transformation." },
       ],
     },
 
@@ -83,7 +83,7 @@ export const T = {
           role: "Paris, France",
           treatment: "Smile Design complet",
           stars: 5,
-          quote: "Je n'aurais jamais imaginé vivre une expérience aussi soignée à un tel prix. Mon sourire est enfin ce que j'ai toujours rêvé — naturel, lumineux, parfait. L'équipe de Medical Bay est d'un professionnalisme sans faille.",
+          quote: "Je n'aurais jamais imaginé vivre une expérience aussi soignée à un tel prix. Mon sourire est enfin ce que j'ai toujours rêvé, naturel, lumineux, parfait. L'équipe de Medical Bay est d'un professionnalisme sans faille.",
           img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -91,7 +91,7 @@ export const T = {
           role: "Bruxelles, Belgique",
           treatment: "Implantologie",
           stars: 5,
-          quote: "Trois implants posés en deux séances. En Belgique, on m'avait demandé 9 000 €. Ici, tout compris — hôtel, transferts, soins — j'en suis sorti à moins de 3 500 €. Et la qualité est irréprochable.",
+          quote: "Trois implants posés en deux séances. En Belgique, on m'avait demandé 9 000 €. Ici, tout compris, hôtel, transferts, soins, j'en suis sorti à moins de 3 500 €. Et la qualité est irréprochable.",
           img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -99,7 +99,7 @@ export const T = {
           role: "Genève, Suisse",
           treatment: "Facettes E-max",
           stars: 5,
-          quote: "Agadir est une ville magnifique pour récupérer. Le fait que Medical Bay gère tout — de l'aéroport à l'hôtel — m'a permis de me concentrer uniquement sur ma transformation.",
+          quote: "Agadir est une ville magnifique pour récupérer. Le fait que Medical Bay gère tout, de l'aéroport à l'hôtel, m'a permis de me concentrer uniquement sur ma transformation.",
           img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -126,11 +126,11 @@ export const T = {
       label: "Comment ça marche",
       title: "4 étapes,",
       titleEm: "zéro stress.",
-      sub: "De votre première demande à votre retour — nous gérons chaque détail pour que vous ne pensiez qu'à votre transformation.",
+      sub: "De votre première demande à votre retour, nous gérons chaque détail pour que vous ne pensiez qu'à votre transformation.",
       steps: [
         { n: "01", title: "Consultation gratuite",      body: "Envoyez vos photos ou radios. Notre coordinateur vous répond sous 24h avec une estimation complète." },
         { n: "02", title: "Plan & devis sur-mesure",    body: "Calendrier personnalisé, hôtel sélectionné, tout est coordonné avant votre départ." },
-        { n: "03", title: "Voyage VIP pris en charge",  body: "Accueil à l'aéroport, transfert privé, check-in à l'hôtel — vous n'avez rien à gérer." },
+        { n: "03", title: "Voyage VIP pris en charge",  body: "Accueil à l'aéroport, transfert privé, check-in à l'hôtel, vous n'avez rien à gérer." },
         { n: "04", title: "Transformation & suivi",     body: "Soins en clinique d'élite. Résultats visibles avant votre retour, suivi post-traitement inclus." },
       ],
       nudge: "Commencer ne prend que",
@@ -200,7 +200,7 @@ export const T = {
       line1: "Your smile",
       line2: "deserves",
       lineEm: "better.",
-      sub: "World-class dentistry in Agadir — up to 70% cheaper than in Europe, with a palace stay included.",
+      sub: "World-class dentistry in Agadir, up to 70% cheaper than in Europe, with a palace stay included.",
       cta1: "FREE QUOTE · 24H",
       cta2: "Discover the stay",
       stats: [["1,500+", "patients"], ["70%", "savings"], ["5 days", "results"]],
@@ -211,7 +211,7 @@ export const T = {
     manifesto: {
       label: "Our promise",
       quote: "Outstanding medical care is no longer a privilege reserved for European capitals.",
-      attribution: "Medical Bay, Agadir — established 2025",
+      attribution: "Medical Bay, Agadir, established 2025",
       stats: [
         { n: "70%",    t: "cheaper than France, Belgium or Switzerland" },
         { n: "5 days", t: "for a complete, lasting Smile Design" },
@@ -227,8 +227,8 @@ export const T = {
       items: [
         { n: "01", title: "SMILE DESIGN",          sub: "Full smile redesign",              body: "Smile design is a technique designed to enhance your smile. Your dentist works on the shape, colour and position of your teeth to achieve a more harmonious and aesthetic result." },
         { n: "02", title: "IMPLANTOLOGY",           sub: "Permanent solutions",              body: "A modern and lasting solution, the dental implant replaces a missing tooth with a perfectly natural appearance. Anchored precisely in the bone via a biocompatible titanium root, it delivers comfort, stability and elegance." },
-        { n: "03", title: "LASER WHITENING",        sub: "Instant radiance, one session",   body: "Laser teeth whitening is a cosmetic treatment that brightens the shade of your teeth, reduces staining and revives the brilliance of your smile — with results that vary from patient to patient." },
-        { n: "04", title: "ALL-INCLUSIVE VIP STAY", sub: "Premium medical tourism",         body: "Flights, 5★ hotel, private transfers, medical concierge — we handle every detail so you can focus entirely on your transformation." },
+        { n: "03", title: "LASER WHITENING",        sub: "Instant radiance, one session",   body: "Laser teeth whitening is a cosmetic treatment that brightens the shade of your teeth, reduces staining and revives the brilliance of your smile, with results that vary from patient to patient." },
+        { n: "04", title: "ALL-INCLUSIVE VIP STAY", sub: "Premium medical tourism",         body: "Flights, 5★ hotel, private transfers, medical concierge, we handle every detail so you can focus entirely on your transformation." },
       ],
     },
 
@@ -242,7 +242,7 @@ export const T = {
           role: "Paris, France",
           treatment: "Full Smile Design",
           stars: 5,
-          quote: "I never imagined experiencing such meticulous care at this price point. My smile is finally everything I'd always dreamed of — natural, radiant, perfect. The Medical Bay team's professionalism is truly unmatched.",
+          quote: "I never imagined experiencing such meticulous care at this price point. My smile is finally everything I'd always dreamed of, natural, radiant, perfect. The Medical Bay team's professionalism is truly unmatched.",
           img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -250,7 +250,7 @@ export const T = {
           role: "Brussels, Belgium",
           treatment: "Implantology",
           stars: 5,
-          quote: "Three implants, two sessions. In Belgium I was quoted €9,000. Here, everything included — hotel, transfers, full treatment — came to under €3,500. The quality is absolutely impeccable.",
+          quote: "Three implants, two sessions. In Belgium I was quoted €9,000. Here, everything included, hotel, transfers, full treatment, came to under €3,500. The quality is absolutely impeccable.",
           img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -258,7 +258,7 @@ export const T = {
           role: "Geneva, Switzerland",
           treatment: "E-max Veneers",
           stars: 5,
-          quote: "Agadir is a stunning city to recover in. The fact that Medical Bay handles everything — from the airport to the hotel — let me focus entirely on my transformation.",
+          quote: "Agadir is a stunning city to recover in. The fact that Medical Bay handles everything, from the airport to the hotel, let me focus entirely on my transformation.",
           img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -266,7 +266,7 @@ export const T = {
           role: "Lyon, France",
           treatment: "Zirconia Crowns",
           stars: 5,
-          quote: "I was skeptical at first. I came back to Lyon with a smile that no one — not even my dentist — can tell isn't natural. Every step was explained with patience and total transparency.",
+          quote: "I was skeptical at first. I came back to Lyon with a smile that no one, not even my dentist, can tell isn't natural. Every step was explained with patience and total transparency.",
           img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150&h=150",
         },
         {
@@ -284,11 +284,11 @@ export const T = {
       label: "How it works",
       title: "4 steps,",
       titleEm: "zero stress.",
-      sub: "From your first message to your flight home — we manage every detail so you can focus on one thing: your transformation.",
+      sub: "From your first message to your flight home, we manage every detail so you can focus on one thing: your transformation.",
       steps: [
         { n: "01", title: "Free consultation",       body: "Send us your photos or X-rays. Your coordinator replies within 24h with a full cost estimate." },
         { n: "02", title: "Personalised care plan",  body: "Tailored schedule, curated hotel, everything arranged before you even pack your bag." },
-        { n: "03", title: "VIP travel, handled",     body: "Airport pick-up, private transfer, hotel check-in — nothing for you to worry about." },
+        { n: "03", title: "VIP travel, handled",     body: "Airport pick-up, private transfer, hotel check-in, nothing for you to worry about." },
         { n: "04", title: "Transform & follow up",   body: "Treatment at an elite clinic. Visible results before departure, aftercare included." },
       ],
       nudge: "Getting started takes just",

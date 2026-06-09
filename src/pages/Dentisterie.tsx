@@ -69,7 +69,7 @@ function Hook() {
   );
 }
 
-// ─── TREATMENTS — Accordion ───────────────────────────────────────────────────
+// ─── TREATMENTS, Accordion ───────────────────────────────────────────────────
 function TreatmentAccordion() {
   const [active, setActive] = useState<string>(treatments[0].id);
 
@@ -228,7 +228,7 @@ function Process() {
   );
 }
 
-// ─── PRICE COMPARISON — Visual bars ──────────────────────────────────────────
+// ─── PRICE COMPARISON, Visual bars ──────────────────────────────────────────
 const prices = [
   { soin: "Facettes porcelaine",   europe: "800 – 1 200 €",     maroc: "200 – 350 €",     pct: 25 },
   { soin: "Implant dentaire",      europe: "1 500 – 3 000 €",   maroc: "500 – 800 €",     pct: 30 },
@@ -264,7 +264,7 @@ function PriceComparison() {
           </div>
           <div className="lg:col-span-5 lg:col-start-8 flex flex-col gap-8">
             <p className="text-muted-foreground text-lg font-light leading-relaxed">
-              Qualité internationale, cliniques certifiées, chirurgiens formés à l'étranger — sans le prix européen.
+              Qualité internationale, cliniques certifiées, chirurgiens formés à l'étranger, sans le prix européen.
             </p>
             {/* Legend */}
             <div className="flex items-center gap-8">

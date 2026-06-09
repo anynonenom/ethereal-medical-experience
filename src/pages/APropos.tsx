@@ -40,7 +40,7 @@ function Hero() {
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
             className="mt-10 max-w-2xl text-foreground/45 text-xl font-light leading-relaxed">
-            Medical Bay n'est pas un intermédiaire — c'est votre allié dévoué, garant d'un parcours médical sans couture, humain et hautement sécurisé.
+            Medical Bay n'est pas un intermédiaire, c'est votre allié dévoué, garant d'un parcours médical sans couture, humain et hautement sécurisé.
           </motion.p>
         </div>
       </div>
@@ -127,7 +127,7 @@ function Values() {
   const items = [
     { icon: Heart,   title: "L'HUMAIN D'ABORD", body: "Chaque patient est unique. Nous adaptons chaque détail à votre rythme et vos besoins." },
     { icon: Globe2,  title: "RAYONNEMENT",       body: "Nous connectons les meilleures expertises locales à une patientèle internationale exigeante." },
-    { icon: Compass, title: "GUIDANCE EXPERT",   body: "Nous ne sommes pas des intermédiaires — nous sommes vos conseillers dévoués 24/7." },
+    { icon: Compass, title: "GUIDANCE EXPERT",   body: "Nous ne sommes pas des intermédiaires, nous sommes vos conseillers dévoués 24/7." },
   ];
   return (
     <section className="bg-[hsl(var(--off))] py-40 border-t border-border">
@@ -162,7 +162,7 @@ function Methode() {
   const steps = [
     { icon: MessageCircle, title: "Consultation gratuite",    body: "Envoyez vos photos ou votre dossier. Notre coordinateur vous répond sous 24h avec une estimation complète." },
     { icon: Check,         title: "Plan sur-mesure",          body: "Calendrier personnalisé, hôtel sélectionné, tout est coordonné avant votre départ." },
-    { icon: Plane,         title: "Voyage VIP tout inclus",   body: "Accueil à l'aéroport, transfert privé, check-in à l'hôtel — vous n'avez rien à gérer." },
+    { icon: Plane,         title: "Voyage VIP tout inclus",   body: "Accueil à l'aéroport, transfert privé, check-in à l'hôtel, vous n'avez rien à gérer." },
     { icon: Sparkles,      title: "Transformation & suivi",   body: "Soins en clinique d'élite. Résultats visibles avant votre retour, suivi post-traitement inclus." },
   ];
 
@@ -210,7 +210,7 @@ function MiniTestimonials() {
   const quotes = [
     {
       name: "Sophie M.", role: "Paris, France", treatment: "Smile Design", stars: 5,
-      quote: "Je n'aurais jamais imaginé vivre une expérience aussi soignée à un tel prix. Mon sourire est enfin ce que j'ai toujours rêvé — naturel, lumineux, parfait.",
+      quote: "Je n'aurais jamais imaginé vivre une expérience aussi soignée à un tel prix. Mon sourire est enfin ce que j'ai toujours rêvé, naturel, lumineux, parfait.",
       img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
     },
     {

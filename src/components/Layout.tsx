@@ -40,10 +40,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
       <BookingModal />
 
-      {/* Floating buttons — stacked right */}
+      {/* Floating buttons, stacked right */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-center gap-3">
 
-        {/* Back to top — appears after scroll */}
+        {/* Back to top, appears after scroll */}
         <AnimatePresence>
           {showTop && (
             <motion.button

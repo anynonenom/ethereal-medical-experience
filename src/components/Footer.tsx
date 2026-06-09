@@ -68,7 +68,7 @@ export default function Footer() {
 
       <div className="border-t border-cream/10">
         <div className="container py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[10px] tracking-[0.3em] uppercase text-cream/40">
-          <span>© 2026 Medical Bay — Tous droits réservés</span>
+          <span>© 2026 Medical Bay, Tous droits réservés</span>
           <span>Crafted with care · Agadir, Morocco</span>
         </div>
       </div>

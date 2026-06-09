@@ -32,7 +32,7 @@ export default function BookingModal() {
         name: `${form.prenom} ${form.nom}`.trim(),
         email: form.email,
         phone: form.phone,
-        subject: form.soin ? `Demande RDV — ${form.soin}` : "Demande de rendez-vous",
+        subject: form.soin ? `Demande RDV, ${form.soin}` : "Demande de rendez-vous",
         body: form.message || `Demande de rendez-vous pour : ${form.soin || "soin non précisé"}.`,
         date: new Date().toISOString().slice(0, 10),
         read: false,
@@ -83,7 +83,7 @@ export default function BookingModal() {
 
                 <div className="grid md:grid-cols-[1fr_1.55fr]">
 
-                  {/* ── Left panel — teal ───────────────────────── */}
+                  {/* ── Left panel, teal ───────────────────────── */}
                   <div className="bg-primary p-10 md:p-12 flex flex-col justify-between relative overflow-hidden min-h-[420px]">
                     {/* Stripe texture */}
                     <div className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -147,7 +147,7 @@ export default function BookingModal() {
                     </div>
                   </div>
 
-                  {/* ── Right panel — form ──────────────────────── */}
+                  {/* ── Right panel, form ──────────────────────── */}
                   <div className="bg-background p-8 md:p-12">
                     <div className="flex items-center gap-4 mb-10">
                       <div className="w-8 h-px bg-primary" />

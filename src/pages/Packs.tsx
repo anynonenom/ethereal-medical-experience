@@ -157,7 +157,7 @@ function Hero({ onStart }: { onStart: () => void }) {
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="mt-6 text-muted-foreground text-lg font-light leading-relaxed max-w-md">
-              Soin, hôtel, transferts, coordinateur dédié — tout est inclus. Réservez en 2 minutes.
+              Soin, hôtel, transferts, coordinateur dédié, tout est inclus. Réservez en 2 minutes.
             </motion.p>
 
             <motion.div
@@ -236,7 +236,7 @@ function PackSelector({
           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <span className="text-[10px] font-black text-primary">1</span>
           </div>
-          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Étape 1 — Choisissez votre formule</span>
+          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Étape 1, Choisissez votre formule</span>
         </div>
         <h2 className="display text-[clamp(28px,4.5vw,64px)] leading-[0.9] tracking-[-0.025em] mb-10">
           Quelle formule<br />
@@ -372,7 +372,7 @@ function BookingForm({
         contactLog: [],
         history: [{
           ts: now.toISOString(),
-          action: `Réservation Pack ${packName} — via site web`,
+          action: `Réservation Pack ${packName}, via site web`,
         }],
       };
       await createBooking(booking);
@@ -394,7 +394,7 @@ function BookingForm({
           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <span className="text-[10px] font-black text-primary">2</span>
           </div>
-          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Étape 2 — Votre demande</span>
+          <span className="text-[10px] tracking-[0.55em] uppercase font-black text-muted-foreground">Étape 2, Votre demande</span>
         </div>
         <h2 className="display text-[clamp(28px,4.5vw,64px)] leading-[0.9] tracking-[-0.025em] mb-12">
           Réservez votre<br />
@@ -494,7 +494,7 @@ function BookingForm({
                     </>
                   ) : (
                     <>
-                      <span className="hidden sm:inline">ENVOYER MA DEMANDE — </span>PACK {packName.toUpperCase()}
+                      <span className="hidden sm:inline">ENVOYER MA DEMANDE, </span>PACK {packName.toUpperCase()}
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </>
                   )}
@@ -506,7 +506,7 @@ function BookingForm({
             )}
           </div>
 
-          {/* Right — reassurance */}
+          {/* Right, reassurance */}
           <div className="lg:col-span-4 lg:col-start-9 space-y-8">
             {/* Selected pack summary */}
             <div className="border border-border p-6">

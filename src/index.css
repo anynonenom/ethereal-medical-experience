@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Medical Bay — Brand Design System 2026
+/* Medical Bay, Brand Design System 2026
    Colors sourced from official brand guidelines.
-   Site is always light — dark mode variables mirror light. */
+   Site is always light, dark mode variables mirror light. */
 
 @layer base {
   :root {
@@ -65,7 +65,7 @@
     --sidebar-ring:        var(--teal);
   }
 
-  /* Dark class mirrors light — theme toggle has no effect */
+  /* Dark class mirrors light, theme toggle has no effect */
   .dark {
     --background:          var(--cream);
     --foreground:          var(--ink);
@@ -95,7 +95,7 @@
 }
 
 @layer components {
-  /* ── Display / Heading — Montserrat 800 */
+  /* ── Display / Heading, Montserrat 800 */
   .display {
     font-family: 'Montserrat', sans-serif;
     font-weight: 800;
@@ -103,7 +103,7 @@
     line-height: 0.92;
   }
 
-  /* ── Serif italic accent — Cormorant Garamond */
+  /* ── Serif italic accent, Cormorant Garamond */
   .serif-it {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-style: italic;

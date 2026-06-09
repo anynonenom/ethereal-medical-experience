@@ -55,7 +55,7 @@ function Hook() {
     <section className="bg-background py-24 border-b border-border">
       <div className="container grid lg:grid-cols-4 gap-px bg-border border border-border">
         {[
-          { n: "3H",   t: "Depuis l'Europe",          d: "Paris, Lyon, Genève, Bruxelles — vol direct pour Agadir." },
+          { n: "3H",   t: "Depuis l'Europe",          d: "Paris, Lyon, Genève, Bruxelles, vol direct pour Agadir." },
           { n: "3×",   t: "Économies garanties",       d: "Tarifs jusqu'à 3× inférieurs aux prix européens." },
           { n: "5★",   t: "Hôtels sélectionnés",       d: "Riad de luxe ou resort balnéaire inclus dans votre séjour." },
           { n: "24/7", t: "Conciergerie dédiée",        d: "Un interlocuteur unique disponible tout au long de votre séjour." },
@@ -106,10 +106,10 @@ function Pillars() {
   );
 }
 
-// ─── JOURNEY — Cinematic scroll sequence ──────────────────────────────────────
+// ─── JOURNEY, Cinematic scroll sequence ──────────────────────────────────────
 const journeyCards = [
   { day: "J − 30", title: "ANALYSE",      body: "Étude confidentielle de votre dossier par nos chirurgiens partenaires. Réponse sous 48h.", img: clinic },
-  { day: "J − 7",  title: "CONCIERGERIE", body: "Vols, hôtel, transfers — votre planning complet organisé à la perfection.", img: luxury },
+  { day: "J − 7",  title: "CONCIERGERIE", body: "Vols, hôtel, transfers, votre planning complet organisé à la perfection.", img: luxury },
   { day: "J  0",   title: "ARRIVÉE VIP",  body: "Accueil nominatif en zone VIP et transfert en véhicule de prestige jusqu'à l'hôtel.", img: coast },
   { day: "J + 1",  title: "SOINS",        body: "Prise en charge dans une clinique de classe mondiale. Chirurgiens formés à l'international.", img: clinic },
   { day: "J + 5",  title: "DÉPART",       body: "Résultats visibles, suivi post-opératoire assuré à distance. Vous repartez transformé.", img: luxury },
@@ -154,10 +154,10 @@ function HorizontalJourney() {
         {/* ── Main split grid ─────────────────────────────── */}
         <div className="grid lg:grid-cols-2 h-full">
 
-          {/* Left — text panel */}
+          {/* Left, text panel */}
           <div className="flex flex-col justify-between px-8 py-12 lg:px-20 lg:py-16 relative z-10">
 
-            {/* Header — always visible */}
+            {/* Header, always visible */}
             <div>
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-8 h-px bg-primary" />
@@ -185,7 +185,7 @@ function HorizontalJourney() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Title — clip-path reveal */}
+              {/* Title, clip-path reveal */}
               <div className="overflow-hidden mb-8">
                 <AnimatePresence mode="wait">
                   <motion.h3 key={`title-${step}`}
@@ -212,7 +212,7 @@ function HorizontalJourney() {
               </AnimatePresence>
             </div>
 
-            {/* Bottom — step dots + counter */}
+            {/* Bottom, step dots + counter */}
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 {journeyCards.map((_, i) => (
@@ -232,7 +232,7 @@ function HorizontalJourney() {
             </div>
           </div>
 
-          {/* Right — image */}
+          {/* Right, image */}
           <div className="hidden lg:block relative overflow-hidden border-l border-white/5">
             <AnimatePresence mode="wait">
               <motion.img key={`img-${step}`}

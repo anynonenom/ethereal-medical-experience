@@ -62,7 +62,7 @@ interface Dentist {
   bar: string;     // bg colour for calendar event chips
 }
 
-// Colour palette — each practitioner picks one key; new practitioners cycle
+// Colour palette, each practitioner picks one key; new practitioners cycle
 // through the remaining colours automatically.
 const COLOR_PALETTE: Record<string, { dot: string; bg: string; text: string; border: string; bar: string }> = {
   primary: { dot: "bg-primary",     bg: "bg-primary/10",  text: "text-primary",      border: "border-primary/30",  bar: "bg-primary/15" },
@@ -81,7 +81,7 @@ function practitionerToDentist(p: Practitioner): Dentist {
   return { id: p.id, name: p.name, short: p.short, specialty: p.specialty, loginCode: p.loginCode, color: p.color, ...c };
 }
 
-// Fallback list — used before the DB responds and if the practitioners table
+// Fallback list, used before the DB responds and if the practitioners table
 // is missing. Mirrors the seed rows in schema.sql.
 const SEED_PRACTITIONERS: Practitioner[] = [
   { id: "PR-001", name: "Dr. Salma El Fassi", short: "Dr. El Fassi", specialty: "Dentisterie esthétique",   loginCode: "salma2026",   color: "primary" },
@@ -259,7 +259,7 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
       name: `${form.prenom} ${form.nom}`.trim(),
       email: form.email, phone: form.phone,
       service: form.service, origin: form.origin,
-      // No practitioner is assigned at creation — assignment happens once the
+      // No practitioner is assigned at creation, assignment happens once the
       // admin confirms the client. The exception is a practitioner adding their
       // own client (lockedDentist), which is assigned to them directly.
       dentist: lockedDentist ?? "",
@@ -356,7 +356,7 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
                   className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
                   <option value="">Aucune (client direct)</option>
                   {companies.filter(c => c.status === "Active").map(c => (
-                    <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>
+                    <option key={c.id} value={c.id}>{c.name}, remise {c.discount}%</option>
                   ))}
                 </select>
               </label>
@@ -402,7 +402,7 @@ function AssignPractitionerModal({ booking, onAssign, onClose }: {
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 bg-emerald-500 flex items-center justify-center"><CheckCircle2 className="w-3.5 h-3.5 text-white" /></div>
                 <div>
-                  <h2 className="display text-xl text-foreground">Client confirmé — assigner un praticien</h2>
+                  <h2 className="display text-xl text-foreground">Client confirmé, assigner un praticien</h2>
                   <p className="text-xs text-muted-foreground font-light">{booking.name} · {booking.service}</p>
                 </div>
               </div>
@@ -443,7 +443,7 @@ function AssignPractitionerModal({ booking, onAssign, onClose }: {
 }
 
 // ─── CONFIRM DIALOG ───────────────────────────────────────────────────────────
-// Shared confirmation modal — used before any destructive delete.
+// Shared confirmation modal, used before any destructive delete.
 export interface ConfirmRequest {
   title: string;
   message: string;
@@ -504,7 +504,7 @@ const CRM_NAV = [
   { id: "companies" as Tab, label: "Entreprises",    icon: Building2 },
   { id: "dentists" as Tab,  label: "Praticiens",     icon: Stethoscope },
 ];
-// Practitioner-scoped navigation — what a dentist sees once logged in.
+// Practitioner-scoped navigation, what a dentist sees once logged in.
 const DENTIST_NAV = [
   { id: "dentists" as Tab, label: "Mon espace",    icon: Stethoscope },
   { id: "bookings" as Tab, label: "Rendez-vous",   icon: Calendar },
@@ -689,14 +689,14 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
           {overdueFollowUps.length > 0 && (
             <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-red-50 border-l-4 border-l-red-500 border border-red-200 px-5 py-3 hover:bg-red-100 transition-colors group text-left shadow-sm">
               <Bell className="w-4 h-4 text-red-500 shrink-0" />
-              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-red-600">{overdueFollowUps.length} suivi{overdueFollowUps.length > 1 ? "s" : ""} en retard</strong> — {overdueFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
+              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-red-600">{overdueFollowUps.length} suivi{overdueFollowUps.length > 1 ? "s" : ""} en retard</strong>, {overdueFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
               <ArrowUpRight className="w-4 h-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           )}
           {todayFollowUps.length > 0 && (
             <button onClick={() => setTab("bookings")} className="w-full flex items-center gap-4 bg-amber-50 border-l-4 border-l-amber-500 border border-amber-200 px-5 py-3 hover:bg-amber-100 transition-colors group text-left shadow-sm">
               <Bell className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-amber-700">{todayFollowUps.length} suivi{todayFollowUps.length > 1 ? "s" : ""} aujourd'hui</strong> — {todayFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
+              <span className="text-sm font-light text-foreground flex-1"><strong className="font-semibold text-amber-700">{todayFollowUps.length} suivi{todayFollowUps.length > 1 ? "s" : ""} aujourd'hui</strong>, {todayFollowUps.map(b => b.name.split(" ")[0]).join(", ")}</span>
               <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           )}
@@ -756,7 +756,7 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
                   <div key={entry.id} className="flex items-start gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
                     <div className={`w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 rounded-sm ${cfg.color}`}><cfg.icon className="w-3 h-3" /></div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-foreground/80 font-light leading-snug truncate">{booking.name} — {entry.content}</div>
+                      <div className="text-xs text-foreground/80 font-light leading-snug truncate">{booking.name}, {entry.content}</div>
                       <div className="text-[9px] text-muted-foreground/50 mt-0.5">{fmtTs(entry.ts)}</div>
                     </div>
                   </div>
@@ -895,7 +895,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
     try {
       await sendEmail({
         to: booking.email,
-        subject: `Medical Bay — Message pour ${booking.name.split(" ")[0]}`,
+        subject: `Medical Bay, Message pour ${booking.name.split(" ")[0]}`,
         body: logContent.trim(),
       });
       setEmailStatus("ok");
@@ -979,7 +979,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
               <select value={booking.dentist} onChange={e => setDentist(e.target.value)}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
                 <option value="">Non assigné</option>
-                {practitioners.map(d => <option key={d.id} value={d.name}>{d.name} — {d.specialty}</option>)}
+                {practitioners.map(d => <option key={d.id} value={d.name}>{d.name}, {d.specialty}</option>)}
               </select>
             </div>
 
@@ -999,7 +999,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
               <select value={booking.companyId ?? ""} onChange={e => setCompany(e.target.value)}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
                 <option value="">Aucune (client direct)</option>
-                {companies.map(c => <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>)}
+                {companies.map(c => <option key={c.id} value={c.id}>{c.name}, remise {c.discount}%</option>)}
               </select>
             </div>
 
@@ -1366,7 +1366,7 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                         <div className="text-[10px] font-bold text-muted-foreground">{b.date}</div>
                         {b.followUp && <div className={`text-[9px] flex items-center gap-1 mt-0.5 ${isOverdue ? "text-red-500 font-semibold" : "text-muted-foreground/60"}`}><Bell className="w-2.5 h-2.5" /> {b.followUp}</div>}
                       </td>
-                      <td className="px-4 py-3.5"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} MAD` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
+                      <td className="px-4 py-3.5"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} MAD` : <span className="text-muted-foreground/30 font-light">-</span>}</span></td>
                       <td className="px-4 py-3.5"><div className="flex gap-1 flex-wrap max-w-[100px]">{b.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
                       <td className="px-4 py-3.5"><StatusBadge status={b.status} /></td>
                       <td className="px-4 py-3.5">
@@ -1434,7 +1434,7 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
     if (converted.has(m.id)) return;
     const nb: Booking = {
       id: newId(), name: m.name, email: m.email, phone: m.phone,
-      service: "Consultation générale", origin: "—",
+      service: "Consultation générale", origin: "-",
       dentist: "",
       date: new Date().toISOString().slice(0, 10),
       status: "Nouveau", notes: `Sujet : ${m.subject}`, tags: [],
@@ -1613,7 +1613,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
                     <td className="px-4 py-4"><div className="text-sm font-light text-foreground/70 text-xs">{p.email}</div><div className="text-[10px] text-muted-foreground">{p.phone}</div></td>
                     <td className="px-4 py-4 text-sm font-light text-muted-foreground text-xs">{p.origin}</td>
                     <td className="px-4 py-4"><span className="display text-sm text-foreground">{p.bookings.length}</span></td>
-                    <td className="px-4 py-4"><span className={`display text-sm ${totalRevenue(p.bookings) > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{totalRevenue(p.bookings) > 0 ? `${totalRevenue(p.bookings).toLocaleString("fr")} MAD` : "—"}</span></td>
+                    <td className="px-4 py-4"><span className={`display text-sm ${totalRevenue(p.bookings) > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{totalRevenue(p.bookings) > 0 ? `${totalRevenue(p.bookings).toLocaleString("fr")} MAD` : "-"}</span></td>
                     <td className="px-4 py-4"><div className="flex gap-1 flex-wrap">{p.latest.tags.slice(0, 2).map(t => <TagChip key={t} tag={t} />)}</div></td>
                     <td className="px-4 py-4"><StatusBadge status={p.latest.status} /></td>
                   </tr>
@@ -1823,7 +1823,7 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPr
   );
   const unassigned = bookings.filter(b => !dentistMeta(practitioners, b.dentist)).length;
 
-  // No practitioner yet (all deleted) — offer to add one.
+  // No practitioner yet (all deleted), offer to add one.
   if (!sel || !d) {
     return (
       <div className="bg-white border border-border shadow-sm p-10 text-center space-y-4">
@@ -1853,7 +1853,7 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPr
 
   return (
     <div className="flex flex-col xl:flex-row gap-6">
-      {/* Left rail — practitioner cards (hidden when a dentist is locked to their own workspace) */}
+      {/* Left rail, practitioner cards (hidden when a dentist is locked to their own workspace) */}
       {!lockedDentist && (
       <div className="w-full xl:w-72 shrink-0 space-y-3">
         <div className="flex items-center justify-between gap-2">
@@ -1905,7 +1905,7 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPr
       </div>
       )}
 
-      {/* Right — selected practitioner workspace */}
+      {/* Right, selected practitioner workspace */}
       <div className="flex-1 min-w-0 space-y-5">
         {/* Header */}
         <div className={`bg-white border border-border border-l-4 ${kpis[0].accent} shadow-sm p-6 flex items-center gap-4`}>
@@ -1968,7 +1968,7 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPr
           }
         </div>
 
-        {/* Interactive pipeline — the practitioner works their own dossiers here */}
+        {/* Interactive pipeline, the practitioner works their own dossiers here */}
         <div className="bg-white border border-border shadow-sm p-5">
           <div className="flex items-center gap-2 mb-1">
             <Kanban className="w-4 h-4 text-primary" />
@@ -1976,7 +1976,7 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPr
           </div>
           <p className="text-[11px] text-muted-foreground font-light mb-4">Changez l'étape d'un dossier ou ouvrez une fiche pour ajouter notes, contacts et suivis.</p>
           {selBookings.length === 0
-            ? <div className="py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné — cliquez sur « Ajouter un client » pour commencer.</div>
+            ? <div className="py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné, cliquez sur « Ajouter un client » pour commencer.</div>
             : <Pipeline bookings={selBookings} callbacks={callbacks} />}
         </div>
       </div>
@@ -2261,17 +2261,17 @@ function CompaniesTab({ companies, bookings, onAdd, onUpdate, onRequestDelete }:
                         <div className="w-9 h-9 bg-primary/8 flex items-center justify-center shrink-0"><Building2 className="w-4 h-4 text-primary" /></div>
                         <div>
                           <div className="display text-sm text-foreground">{c.name}</div>
-                          <div className="text-[9px] text-muted-foreground">{c.sector || "—"}</div>
+                          <div className="text-[9px] text-muted-foreground">{c.sector || "-"}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="text-sm font-light text-foreground/70">{c.contactName || "—"}</div>
+                      <div className="text-sm font-light text-foreground/70">{c.contactName || "-"}</div>
                       <div className="text-[10px] text-muted-foreground">{c.email}</div>
                     </td>
                     <td className="px-4 py-3.5"><span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200"><Percent className="w-2.5 h-2.5" /> {c.discount}%</span></td>
                     <td className="px-4 py-3.5"><span className="display text-sm text-foreground">{s.total}</span> <span className="text-[9px] text-muted-foreground">({s.patients} cli.)</span></td>
-                    <td className="px-4 py-3.5"><span className={`display text-sm ${s.revenue > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{s.revenue > 0 ? `${s.revenue.toLocaleString("fr")} MAD` : "—"}</span></td>
+                    <td className="px-4 py-3.5"><span className={`display text-sm ${s.revenue > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{s.revenue > 0 ? `${s.revenue.toLocaleString("fr")} MAD` : "-"}</span></td>
                     <td className="px-4 py-3.5">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-[0.2em] uppercase font-bold border ${c.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-foreground/6 text-foreground/50 border-border"}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${c.status === "Active" ? "bg-emerald-500" : "bg-foreground/25"}`} /> {c.status}
@@ -2317,7 +2317,7 @@ function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Co
     };
   }, [bookings, net]);
 
-  // Par acte (service) — realised net + pipeline net + count.
+  // Par acte (service), realised net + pipeline net + count.
   const byService = useMemo(() => {
     const map: Record<string, { count: number; revenue: number; pipeline: number }> = {};
     bookings.forEach(b => {
@@ -2339,7 +2339,7 @@ function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Co
   }).sort((a, b) => b.revenue - a.revenue), [bookings, net, practitioners]);
   const maxDentist = Math.max(...byDentist.map(d => d.revenue + d.pipeline), 1);
 
-  // Évolution mensuelle — realised net per month, last 6 months ending this month.
+  // Évolution mensuelle, realised net per month, last 6 months ending this month.
   const byMonth = useMemo(() => {
     const map: Record<string, number> = {};
     bookings.filter(b => b.status === "Terminé").forEach(b => {
@@ -2395,12 +2395,12 @@ function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Co
       <div className="bg-white border border-border shadow-sm p-6">
         <div className="flex items-center gap-2 mb-5">
           <BarChart3 className="w-4 h-4 text-primary" />
-          <span className="display text-sm text-foreground">Évolution du CA — 6 derniers mois</span>
+          <span className="display text-sm text-foreground">Évolution du CA, 6 derniers mois</span>
         </div>
         <div className="flex items-end justify-between gap-3 h-44">
           {byMonth.map(m => (
             <div key={m.key} className="flex-1 flex flex-col items-center justify-end h-full gap-2">
-              <div className="text-[9px] font-bold text-foreground/70">{m.value > 0 ? `${(m.value / 1000).toFixed(1)}k` : "—"}</div>
+              <div className="text-[9px] font-bold text-foreground/70">{m.value > 0 ? `${(m.value / 1000).toFixed(1)}k` : "-"}</div>
               <motion.div initial={{ height: 0 }} animate={{ height: `${(m.value / maxMonth) * 100}%` }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full bg-primary/80 min-h-[2px]" style={{ minHeight: m.value > 0 ? 4 : 2 }} />

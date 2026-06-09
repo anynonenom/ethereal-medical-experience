@@ -26,7 +26,7 @@ const HERO_SLIDES = {
       badge: "Medical Bay · Agadir, Maroc",
       line1: "Votre sourire",
       lineEm: "mérite mieux.",
-      sub: "Dentisterie d'élite à Agadir — jusqu'à 70% moins cher qu'en Europe, avec séjour palace inclus.",
+      sub: "Dentisterie d'élite à Agadir, jusqu'à 70% moins cher qu'en Europe, avec séjour palace inclus.",
       cta1: "DEVIS GRATUIT · 24H",
       cta2: "Découvrir le séjour",
       ctaLink: "/tourisme-medical",
@@ -78,7 +78,7 @@ const HERO_SLIDES = {
       badge: "Medical Bay · Agadir, Morocco",
       line1: "Your smile",
       lineEm: "deserves better.",
-      sub: "World-class dentistry in Agadir — up to 70% cheaper than in Europe, with a palace stay included.",
+      sub: "World-class dentistry in Agadir, up to 70% cheaper than in Europe, with a palace stay included.",
       cta1: "FREE QUOTE · 24H",
       cta2: "Discover the stay",
       ctaLink: "/tourisme-medical",
@@ -182,7 +182,7 @@ function Hero() {
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
 
-      {/* Badge — pinned to top, always below navbar */}
+      {/* Badge, pinned to top, always below navbar */}
       <div className="absolute top-[80px] sm:top-[88px] md:top-[96px] left-0 right-0 container z-10">
         <AnimatePresence mode="wait">
           <motion.div key={`badge-${current}`}
@@ -195,7 +195,7 @@ function Hero() {
         </AnimatePresence>
       </div>
 
-      {/* Main text — vertically centered in available space */}
+      {/* Main text, vertically centered in available space */}
       <div className="absolute inset-0 container flex items-center z-10">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -235,7 +235,7 @@ function Hero() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom bar — pinned to bottom */}
+      {/* Bottom bar, pinned to bottom */}
       <div className="absolute bottom-0 left-0 right-0 container pb-6 sm:pb-8 md:pb-10 z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
 
@@ -408,7 +408,7 @@ function Services() {
   );
 }
 
-// ─── TESTIMONIALS — carousel ──────────────────────────────────────────────────
+// ─── TESTIMONIALS, carousel ──────────────────────────────────────────────────
 function Testimonials() {
   const { lang } = useLang();
   const tm = T[lang].testimonials;
@@ -494,7 +494,7 @@ function Testimonials() {
                 </div>
               </div>
 
-              {/* Right panel — quote */}
+              {/* Right panel, quote */}
               <div className="p-10 md:p-14 lg:p-16 flex flex-col justify-center min-h-[320px]">
                 <Quote className="w-10 h-10 text-primary/15 mb-8" />
                 <blockquote className="serif-it text-[clamp(20px,2.4vw,30px)] leading-[1.5] text-foreground/80">
