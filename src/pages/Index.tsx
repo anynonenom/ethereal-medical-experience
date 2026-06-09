@@ -179,11 +179,11 @@ function Hero() {
         />
       </AnimatePresence>
 
-      {/* Gradient overlays */}
+      {/* Gradient overlays — lightened so more of the image shows through */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to right, hsl(var(--ink) / 0.88) 0%, hsl(var(--ink) / 0.55) 55%, hsl(var(--ink) / 0.15) 100%)" }} />
+        style={{ background: "linear-gradient(to right, hsl(var(--ink) / 0.62) 0%, hsl(var(--ink) / 0.3) 55%, hsl(var(--ink) / 0.05) 100%)" }} />
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
+        style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.4) 0%, transparent 45%)" }} />
 
       {/* Badge, pinned to top, always below navbar */}
       <div className="absolute top-[88px] sm:top-[96px] md:top-[128px] left-0 right-0 container z-10">
