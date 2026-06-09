@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Quote, Plus, Instagram, Heart, MessageCircle, Plane, Stethoscope, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "@/components/Layout";
-import agadirCoast from "@/assets/agadir-coast.jpg";
+import agadirCoast from "@/assets/agadir-coast.png";
 import clinic from "@/assets/clinic-interior.jpg";
 import heroSmile from "@/assets/hero-smile.jpg";
 import rect3 from "@/assets/rectangle-3.webp";
