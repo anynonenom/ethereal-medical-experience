@@ -186,7 +186,7 @@ function Hero() {
         style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.65) 0%, transparent 50%)" }} />
 
       {/* Badge, pinned to top, always below navbar */}
-      <div className="absolute top-[80px] sm:top-[88px] md:top-[96px] left-0 right-0 container z-10">
+      <div className="absolute top-[88px] sm:top-[96px] md:top-[128px] left-0 right-0 container z-10">
         <AnimatePresence mode="wait">
           <motion.div key={`badge-${current}`}
             initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
