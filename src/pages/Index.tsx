@@ -608,9 +608,9 @@ function Destination() {
     <section ref={ref} className="relative h-[85vh] min-h-[560px] overflow-hidden border-b border-border">
       <motion.div style={{ y: imgY }} className="absolute inset-0 z-0">
         <img src={agadirMarina} alt="Agadir" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-[hsl(var(--ink))/35]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))/95] via-[hsl(var(--ink))/55] to-[hsl(var(--ink))/20]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--ink))/85] via-[hsl(var(--ink))/30] to-transparent" />
+        <div className="absolute inset-0 bg-[hsl(var(--ink))/45]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))] via-[hsl(var(--ink))/70] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--ink))/95] via-[hsl(var(--ink))/45] to-transparent" />
       </motion.div>
       <div className="absolute inset-0 z-10 container flex flex-col justify-end pb-20 md:pb-28">
         <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
@@ -619,15 +619,15 @@ function Destination() {
             <div className="w-8 h-px bg-primary" />
             <span className="text-[10px] tracking-[0.55em] uppercase font-bold text-primary">{d.label}</span>
           </div>
-          <h2 className="display text-[clamp(40px,6.5vw,96px)] leading-[0.9] text-white mb-10">
+          <h2 className="display text-[clamp(40px,6.5vw,96px)] leading-[0.9] text-white mb-10 [text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
             {d.title}<br /><span className="serif-it text-primary">{d.titleEm}</span>
           </h2>
-          <p className="text-white/90 text-lg font-light leading-relaxed max-w-md mb-12 [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">{d.body}</p>
+          <p className="text-white text-lg font-light leading-relaxed max-w-md mb-12 [text-shadow:0_2px_16px_rgba(0,0,0,0.7)]">{d.body}</p>
           <div className="flex items-center gap-10">
             {d.stats.map(([n, l]) => (
               <div key={l}>
-                <div className="display text-2xl text-primary">{n}</div>
-                <div className="text-[9px] tracking-[0.3em] uppercase text-white/70 font-bold mt-1">{l}</div>
+                <div className="display text-2xl text-primary [text-shadow:0_2px_14px_rgba(0,0,0,0.6)]">{n}</div>
+                <div className="text-[9px] tracking-[0.3em] uppercase text-white/80 font-bold mt-1 [text-shadow:0_1px_10px_rgba(0,0,0,0.7)]">{l}</div>
               </div>
             ))}
           </div>
