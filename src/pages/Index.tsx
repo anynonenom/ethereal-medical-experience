@@ -622,12 +622,12 @@ function Destination() {
           <h2 className="display text-[clamp(40px,6.5vw,96px)] leading-[0.9] text-white mb-10">
             {d.title}<br /><span className="serif-it text-primary">{d.titleEm}</span>
           </h2>
-          <p className="text-white/55 text-lg font-light leading-relaxed max-w-md mb-12">{d.body}</p>
+          <p className="text-white/90 text-lg font-light leading-relaxed max-w-md mb-12 [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">{d.body}</p>
           <div className="flex items-center gap-10">
             {d.stats.map(([n, l]) => (
               <div key={l}>
                 <div className="display text-2xl text-primary">{n}</div>
-                <div className="text-[9px] tracking-[0.3em] uppercase text-white/35 font-bold mt-1">{l}</div>
+                <div className="text-[9px] tracking-[0.3em] uppercase text-white/70 font-bold mt-1">{l}</div>
               </div>
             ))}
           </div>
