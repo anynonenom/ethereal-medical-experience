@@ -10,7 +10,7 @@ const SOCIALS = [
   { Icon: Facebook,  href: "https://www.facebook.com/profile.php?id=100085861093531", label: "Facebook" },
   { Icon: Instagram, href: "https://www.instagram.com/medicalbay.maroc?igsh=eXQ2c2h6N2Q1eDI2", label: "Instagram" },
   { Icon: Linkedin,  href: "https://www.linkedin.com/company/medical-bay-agadir/about/?viewAsMember=true", label: "LinkedIn" },
-  { Icon: MapPin,    href: "https://maps.google.com/?q=Medical+Bay+Agadir", label: "Localisation" },
+  { Icon: MapPin,    href: "https://maps.app.goo.gl/zk7qt9Unm6VVznQY9", label: "Localisation" },
 ];
 
 export default function Navbar() {
@@ -41,11 +41,11 @@ export default function Navbar() {
       >
         {/* ── Top utility bar (collapses on scroll) ─────────────────────── */}
         <motion.div
-          animate={{ height: scrolled ? 0 : 40, opacity: scrolled ? 0 : 1 }}
+          animate={{ height: scrolled ? 0 : 52, opacity: scrolled ? 0 : 1 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="overflow-hidden bg-primary text-white hidden md:block"
         >
-          <div className="container flex items-center justify-between h-10">
+          <div className="container flex items-center justify-between h-[52px]">
             <div className="flex items-center gap-5 text-[11px] font-medium tracking-wide">
               <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors">
                 <Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma

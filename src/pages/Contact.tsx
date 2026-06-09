@@ -278,16 +278,23 @@ function MapSection() {
             <p className="text-foreground/45 text-sm font-light leading-relaxed mb-10">
               Technopole 1, Bureau A102, Agadir Bay. À quelques minutes des cliniques partenaires et du front de mer.
             </p>
-            <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer"
-              className="btn-primary group">
-              NOUS CONTACTER <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer"
+                className="btn-primary group">
+                NOUS CONTACTER <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </a>
+              <a href="https://maps.app.goo.gl/zk7qt9Unm6VVznQY9" target="_blank" rel="noreferrer"
+                className="btn-ghost-teal group">
+                VOIR SUR GOOGLE MAPS <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </a>
+            </div>
           </div>
-          <div className="lg:col-span-8 h-[500px] overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-shadow">
-            <iframe title="Medical Bay Agadir"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=-9.583%2C30.385%2C-9.493%2C30.435&layer=mapnik&marker=30.41,-9.538"
-              className="w-full h-full" loading="lazy" />
-          </div>
+          <a href="https://maps.app.goo.gl/zk7qt9Unm6VVznQY9" target="_blank" rel="noreferrer"
+            className="lg:col-span-8 h-[500px] block overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-shadow">
+            <iframe title="Medical Bay Agadir" tabIndex={-1}
+              src="https://maps.google.com/maps?q=Technopole%201%20Agadir%20Bay%2C%20Agadir%2080000&z=15&output=embed"
+              className="w-full h-full pointer-events-none" loading="lazy" />
+          </a>
         </div>
       </div>
     </section>
