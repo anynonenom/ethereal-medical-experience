@@ -7,9 +7,9 @@ import { openBooking } from "./BookingModal";
 import { useLang, T } from "@/contexts/language";
 
 const SOCIALS = [
-  { Icon: Facebook,  href: "#", label: "Facebook" },
-  { Icon: Instagram, href: "#", label: "Instagram" },
-  { Icon: Linkedin,  href: "#", label: "LinkedIn" },
+  { Icon: Facebook,  href: "https://www.facebook.com/profile.php?id=100085861093531", label: "Facebook" },
+  { Icon: Instagram, href: "https://www.instagram.com/medicalbay.maroc?igsh=eXQ2c2h6N2Q1eDI2", label: "Instagram" },
+  { Icon: Linkedin,  href: "https://www.linkedin.com/company/medical-bay-agadir/about/?viewAsMember=true", label: "LinkedIn" },
   { Icon: MapPin,    href: "https://maps.google.com/?q=Medical+Bay+Agadir", label: "Localisation" },
 ];
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Instagram, Facebook, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin, ArrowUpRight } from "lucide-react";
 import logoMark from "@/assets/medicalbay-logo-mark.png";
 
 export default function Footer() {
@@ -60,8 +60,9 @@ export default function Footer() {
             <li className="flex items-start gap-3"><MapPin className="w-4 h-4 text-primary mt-1" /><span>Technopole 1, 1er Étage, Bloc A, Bureau A102,<br/>Agadir Bay, Agadir 80000, Maroc</span></li>
           </ul>
           <div className="flex gap-3 mt-6">
-            <a className="w-10 h-10 grid place-items-center border border-cream/20 hover:border-primary hover:text-primary transition" href="#"><Instagram className="w-4 h-4" /></a>
-            <a className="w-10 h-10 grid place-items-center border border-cream/20 hover:border-primary hover:text-primary transition" href="#"><Facebook className="w-4 h-4" /></a>
+            <a className="w-10 h-10 grid place-items-center border border-cream/20 hover:border-primary hover:text-primary transition" href="https://www.instagram.com/medicalbay.maroc?igsh=eXQ2c2h6N2Q1eDI2" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram className="w-4 h-4" /></a>
+            <a className="w-10 h-10 grid place-items-center border border-cream/20 hover:border-primary hover:text-primary transition" href="https://www.facebook.com/profile.php?id=100085861093531" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook className="w-4 h-4" /></a>
+            <a className="w-10 h-10 grid place-items-center border border-cream/20 hover:border-primary hover:text-primary transition" href="https://www.linkedin.com/company/medical-bay-agadir/about/?viewAsMember=true" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /></a>
           </div>
         </div>
       </div>
