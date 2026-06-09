@@ -54,6 +54,18 @@ create table if not exists companies (
   created_at    timestamptz not null default now()
 );
 
+-- Practitioners (praticiens). Each booking is assigned to one practitioner by name
+-- once it is confirmed. Managed from the CRM ("Nouveau praticien").
+create table if not exists practitioners (
+  id          text primary key,
+  name        text not null,
+  short       text not null default '',
+  specialty   text not null default '',
+  login_code  text not null default '',
+  color       text not null default 'primary',
+  created_at  timestamptz not null default now()
+);
+
 create table if not exists contact_log (
   id          text primary key default gen_random_uuid()::text,
   booking_id  text not null references bookings(id) on delete cascade,
@@ -99,6 +111,7 @@ alter table messages        disable row level security;
 alter table contact_log     disable row level security;
 alter table booking_history disable row level security;
 alter table companies       disable row level security;
+alter table practitioners   disable row level security;
 
 -- ─── REALTIME ────────────────────────────────────────────────────────────────
 -- Required so Supabase broadcasts live changes to the client
@@ -107,8 +120,16 @@ alter table messages        replica identity full;
 alter table contact_log     replica identity full;
 alter table booking_history replica identity full;
 alter table companies       replica identity full;
+alter table practitioners   replica identity full;
 
 -- ─── SEED DATA ───────────────────────────────────────────────────────────────
+
+insert into practitioners (id, name, short, specialty, login_code, color) values
+  ('PR-001','Dr. Salma El Fassi','Dr. El Fassi','Dentisterie esthétique',  'salma2026',  'primary'),
+  ('PR-002','Dr. Youssef Benali','Dr. Benali',  'Implantologie & chirurgie','youssef2026','blue'),
+  ('PR-003','Dr. Leïla Amrani',  'Dr. Amrani',  'Couronnes & prothèses',   'leila2026',  'purple'),
+  ('PR-004','Dr. Karim Tahiri',  'Dr. Tahiri',  'Général & blanchiment',   'karim2026',  'amber')
+on conflict (id) do nothing;
 
 insert into bookings (id, name, email, phone, service, origin, date, dentist, status, notes, tags, follow_up, source, value) values
   ('MB-001','Sophie Martin',   'sophie.martin@gmail.com', '+33 6 12 34 56 78', 'Smile Design complet',      'Paris, France',       '2026-05-10', 'Dr. Salma El Fassi', 'Nouveau',  'Intéressée par les facettes E-max.',          array['VIP','Prioritaire'], '2026-05-08', 'Instagram', 4500),

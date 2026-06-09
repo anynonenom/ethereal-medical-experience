@@ -6,7 +6,7 @@ import veneer from "@/assets/veneer-macro.jpg";
 import clinic from "@/assets/clinic-interior.jpg";
 import { openBooking } from "@/components/BookingModal";
 import smileMacro from "@/assets/smile-macro.jpg";
-import blanchimentLaser from "@/assets/blanchiment-laser.jpg";
+import blanchimentLaser from "@/assets/blanchiment-dentaire-laser-Belgique.jpg";
 
 const treatments = [
   { id: "design",     label: "01 · DESIGN",     title: "DIGITAL SMILE DESIGN",      desc: "Le smile design est une technique qui permet d'améliorer le sourire. Le dentiste travaille sur la forme, la couleur et la position des dents pour obtenir un sourire plus harmonieux et esthétique.",                                                                                                                                                                    features: ["SIMULATION 3D", "ANALYSE FACIALE", "PERSONNALISATION TOTALE"], img: smileMacro },

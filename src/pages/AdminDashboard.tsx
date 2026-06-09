@@ -24,10 +24,11 @@ import {
   markMessageRead, markAllMessagesRead,
   deleteMessage as apiDeleteMessage,
   createCompany, updateCompany, deleteCompany as apiDeleteCompany,
+  fetchPractitioners, createPractitioner, deletePractitioner as apiDeletePractitioner,
 } from "@/lib/crm-api";
 import type {
   Booking, Message, BookingStatus, ContactEntry, HistoryEntry, LogType, LeadSource,
-  Company, CompanyStatus,
+  Company, CompanyStatus, Practitioner,
 } from "@/lib/crm-api";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -43,39 +44,57 @@ const companyMeta = (companies: Company[], id?: string) => companies.find(c => c
 const discountFor = (companies: Company[], id?: string) => companyMeta(companies, id)?.discount ?? 0;
 const netValue = (value: number, discountPct: number) => Math.round(value * (1 - discountPct / 100));
 
-// ─── DENTISTS ─────────────────────────────────────────────────────────────────
-// Each booking is assigned to one practitioner. Colours are reused across the
-// calendar, the practitioner workspace and the booking tables.
+// ─── PRACTITIONERS (praticiens) ───────────────────────────────────────────────
+// Practitioners are stored in Supabase and loaded into a context. Colours are
+// reused across the calendar, the practitioner workspace and the booking tables.
+// A booking is only assigned to a practitioner once the admin confirms it.
 interface Dentist {
+  id: string;
   name: string;
   short: string;
   specialty: string;
+  loginCode: string;
+  color: string;   // palette key
   dot: string;     // bg colour for the dentist marker dot / accent
   bg: string;      // soft background for chips
   text: string;    // text colour for chips
   border: string;  // border colour for chips
   bar: string;     // bg colour for calendar event chips
 }
-const DENTISTS: Dentist[] = [
-  { name: "Dr. Salma El Fassi", short: "Dr. El Fassi", specialty: "Dentisterie esthétique",  dot: "bg-primary",     bg: "bg-primary/10",  text: "text-primary",     border: "border-primary/30",  bar: "bg-primary/15" },
-  { name: "Dr. Youssef Benali", short: "Dr. Benali",   specialty: "Implantologie & chirurgie", dot: "bg-blue-500",   bg: "bg-blue-50",     text: "text-blue-700",     border: "border-blue-200",    bar: "bg-blue-50" },
-  { name: "Dr. Leïla Amrani",   short: "Dr. Amrani",   specialty: "Couronnes & prothèses",   dot: "bg-purple-500",  bg: "bg-purple-50",   text: "text-purple-700",   border: "border-purple-200",  bar: "bg-purple-50" },
-  { name: "Dr. Karim Tahiri",   short: "Dr. Tahiri",   specialty: "Général & blanchiment",   dot: "bg-amber-500",   bg: "bg-amber-50",    text: "text-amber-700",    border: "border-amber-200",   bar: "bg-amber-50" },
-];
-const DENTIST_NAMES = DENTISTS.map(d => d.name);
-const dentistMeta = (name: string): Dentist | undefined => DENTISTS.find(d => d.name === name);
 
-// Auto-assignment: each service maps to the specialist who handles it.
-const SERVICE_DENTIST: Record<string, string> = {
-  "Smile Design complet":        "Dr. Salma El Fassi",
-  "Facettes porcelaine E-max":   "Dr. Salma El Fassi",
-  "Séjour médical tout inclus":  "Dr. Salma El Fassi",
-  "Implantologie":               "Dr. Youssef Benali",
-  "Couronnes Zircone":           "Dr. Leïla Amrani",
-  "Blanchiment laser":           "Dr. Karim Tahiri",
-  "Consultation générale":       "Dr. Karim Tahiri",
+// Colour palette — each practitioner picks one key; new practitioners cycle
+// through the remaining colours automatically.
+const COLOR_PALETTE: Record<string, { dot: string; bg: string; text: string; border: string; bar: string }> = {
+  primary: { dot: "bg-primary",     bg: "bg-primary/10",  text: "text-primary",      border: "border-primary/30",  bar: "bg-primary/15" },
+  blue:    { dot: "bg-blue-500",    bg: "bg-blue-50",     text: "text-blue-700",     border: "border-blue-200",    bar: "bg-blue-50" },
+  purple:  { dot: "bg-purple-500",  bg: "bg-purple-50",   text: "text-purple-700",   border: "border-purple-200",  bar: "bg-purple-50" },
+  amber:   { dot: "bg-amber-500",   bg: "bg-amber-50",    text: "text-amber-700",    border: "border-amber-200",   bar: "bg-amber-50" },
+  rose:    { dot: "bg-rose-500",    bg: "bg-rose-50",     text: "text-rose-700",     border: "border-rose-200",    bar: "bg-rose-50" },
+  teal:    { dot: "bg-teal-500",    bg: "bg-teal-50",     text: "text-teal-700",     border: "border-teal-200",    bar: "bg-teal-50" },
+  indigo:  { dot: "bg-indigo-500",  bg: "bg-indigo-50",   text: "text-indigo-700",   border: "border-indigo-200",  bar: "bg-indigo-50" },
+  emerald: { dot: "bg-emerald-500", bg: "bg-emerald-50",  text: "text-emerald-700",  border: "border-emerald-200", bar: "bg-emerald-50" },
 };
-const dentistForService = (service: string) => SERVICE_DENTIST[service] ?? DENTISTS[0].name;
+const PALETTE_KEYS = Object.keys(COLOR_PALETTE);
+
+function practitionerToDentist(p: Practitioner): Dentist {
+  const c = COLOR_PALETTE[p.color] ?? COLOR_PALETTE.primary;
+  return { id: p.id, name: p.name, short: p.short, specialty: p.specialty, loginCode: p.loginCode, color: p.color, ...c };
+}
+
+// Fallback list — used before the DB responds and if the practitioners table
+// is missing. Mirrors the seed rows in schema.sql.
+const SEED_PRACTITIONERS: Practitioner[] = [
+  { id: "PR-001", name: "Dr. Salma El Fassi", short: "Dr. El Fassi", specialty: "Dentisterie esthétique",   loginCode: "salma2026",   color: "primary" },
+  { id: "PR-002", name: "Dr. Youssef Benali", short: "Dr. Benali",   specialty: "Implantologie & chirurgie", loginCode: "youssef2026", color: "blue" },
+  { id: "PR-003", name: "Dr. Leïla Amrani",   short: "Dr. Amrani",   specialty: "Couronnes & prothèses",    loginCode: "leila2026",   color: "purple" },
+  { id: "PR-004", name: "Dr. Karim Tahiri",   short: "Dr. Tahiri",   specialty: "Général & blanchiment",    loginCode: "karim2026",   color: "amber" },
+];
+const SEED_DENTISTS: Dentist[] = SEED_PRACTITIONERS.map(practitionerToDentist);
+
+// The live practitioner list is provided here; components read it via usePractitioners().
+const PractitionersContext = createContext<Dentist[]>(SEED_DENTISTS);
+const usePractitioners = () => useContext(PractitionersContext);
+const dentistMeta = (list: Dentist[], name: string): Dentist | undefined => list.find(d => d.name === name);
 
 const SERVICE_REVENUE: Record<string, number> = {
   "Smile Design complet": 4500, "Implantologie": 3000,
@@ -157,7 +176,8 @@ function TagChip({ tag, onRemove }: { tag: string; onRemove?: () => void }) {
 }
 
 function DentistChip({ name, className = "" }: { name: string; className?: string }) {
-  const d = dentistMeta(name);
+  const practitioners = usePractitioners();
+  const d = dentistMeta(practitioners, name);
   if (!name) return <span className="inline-flex items-center gap-1 text-[9px] text-muted-foreground/40 italic">Non assigné</span>;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold border ${d ? `${d.bg} ${d.text} ${d.border}` : "bg-border/30 text-muted-foreground border-border"} ${className}`}>
@@ -172,20 +192,20 @@ function DentistChip({ name, className = "" }: { name: string; className?: strin
 // and only sees their own workspace (their bookings, scoped).
 type Session = { role: "admin" } | { role: "dentist"; dentist: string };
 const ADMIN_PASSWORD = "MB2026";
-const DENTIST_LOGINS: Record<string, string> = {
-  "salma2026":   "Dr. Salma El Fassi",
-  "youssef2026": "Dr. Youssef Benali",
-  "leila2026":   "Dr. Leïla Amrani",
-  "karim2026":   "Dr. Karim Tahiri",
-};
 
 function LoginGate({ onLogin }: { onLogin: (s: Session) => void }) {
   const [pw, setPw] = useState(""); const [error, setError] = useState(false);
+  // Practitioner logins live in the DB; fetch them so new practitioners can sign in.
+  const [practitioners, setPractitioners] = useState<Practitioner[]>(SEED_PRACTITIONERS);
+  useEffect(() => {
+    fetchPractitioners().then(ps => { if (ps.length) setPractitioners(ps); }).catch(() => {});
+  }, []);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pw === ADMIN_PASSWORD) { onLogin({ role: "admin" }); return; }
-    const dentist = DENTIST_LOGINS[pw.trim().toLowerCase()];
-    if (dentist) { onLogin({ role: "dentist", dentist }); return; }
+    const code = pw.trim().toLowerCase();
+    const dentist = practitioners.find(p => p.loginCode.trim().toLowerCase() === code && code !== "");
+    if (dentist) { onLogin({ role: "dentist", dentist: dentist.name }); return; }
     setError(true); setPw("");
   };
   return (
@@ -215,7 +235,7 @@ function LoginGate({ onLogin }: { onLogin: (s: Session) => void }) {
         </form>
         <div className="mt-8 text-[9px] text-muted-foreground/40 text-center tracking-widest space-y-1 leading-relaxed">
           <p><span className="text-muted-foreground/60">Admin</span> : MB2026</p>
-          <p><span className="text-muted-foreground/60">Praticien</span> : salma2026 · youssef2026 · leila2026 · karim2026</p>
+          <p><span className="text-muted-foreground/60">Praticien</span> : {practitioners.map(p => p.loginCode).filter(Boolean).join(" · ")}</p>
         </div>
       </motion.div>
     </div>
@@ -239,14 +259,17 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
       name: `${form.prenom} ${form.nom}`.trim(),
       email: form.email, phone: form.phone,
       service: form.service, origin: form.origin,
-      dentist: form.dentist || dentistForService(form.service),
+      // No practitioner is assigned at creation — assignment happens once the
+      // admin confirms the client. The exception is a practitioner adding their
+      // own client (lockedDentist), which is assigned to them directly.
+      dentist: lockedDentist ?? "",
       date: form.date || new Date().toISOString().slice(0, 10),
       status: "Nouveau", notes: form.notes, tags: [],
       source: form.source as LeadSource,
       value: Number(form.value) || SERVICE_REVENUE[form.service] || 0,
       companyId: form.companyId || undefined,
       contactLog: [],
-      history: [{ ts: new Date().toISOString(), action: "Lead créé manuellement" }],
+      history: [{ ts: new Date().toISOString(), action: "Client créé manuellement" }],
     };
     onAdd(booking);
     onClose();
@@ -275,7 +298,7 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <div className="w-7 h-7 bg-primary flex items-center justify-center"><UserPlus className="w-3.5 h-3.5 text-white" /></div>
-                  <h2 className="display text-xl text-foreground">Nouveau patient / lead</h2>
+                  <h2 className="display text-xl text-foreground">Nouveau client</h2>
                 </div>
                 <p className="text-xs text-muted-foreground font-light ml-10">Ajout manuel · statut initial : Nouveau</p>
               </div>
@@ -321,10 +344,9 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
                   {lockedDentist ? (
                     <div className="w-full mt-2 border-b border-border py-2.5 flex items-center"><DentistChip name={lockedDentist} /></div>
                   ) : (
-                    <select value={form.dentist || dentistForService(form.service)} onChange={e => set("dentist", e.target.value)}
-                      className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
-                      {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
-                    </select>
+                    <div className="w-full mt-2 border-b border-border py-2.5 flex items-center gap-2 text-[11px] text-muted-foreground/60 font-light italic">
+                      <Stethoscope className="w-3 h-3 shrink-0" /> Assigné après confirmation
+                    </div>
                   )}
                 </label>
               </div>
@@ -332,7 +354,7 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
                 <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors flex items-center gap-1.5"><Building2 className="w-2.5 h-2.5" /> Entreprise / Convention <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
                 <select value={form.companyId} onChange={e => set("companyId", e.target.value)}
                   className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
-                  <option value="">Aucune (patient direct)</option>
+                  <option value="">Aucune (client direct)</option>
                   {companies.filter(c => c.status === "Active").map(c => (
                     <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>
                   ))}
@@ -350,6 +372,69 @@ function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) =
                 <button type="button" onClick={onClose} className="px-6 py-4 border border-border text-[10px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">Annuler</button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── ASSIGN PRACTITIONER MODAL ────────────────────────────────────────────────
+// Opens automatically when the admin confirms a client, so the client is routed
+// to a specific practitioner who then sees it (with its stage) in their workspace.
+function AssignPractitionerModal({ booking, onAssign, onClose }: {
+  booking: Booking; onAssign: (b: Booking, dentist: string) => void; onClose: () => void;
+}) {
+  const practitioners = usePractitioners();
+  const [picked, setPicked] = useState<string>(booking.dentist || "");
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-[110] backdrop-blur-sm"
+        style={{ background: "hsl(var(--ink) / 0.6)" }} />
+      <div className="fixed inset-0 z-[111] overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 py-10">
+          <motion.div initial={{ opacity: 0, y: 20, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-lg bg-background border border-border shadow-2xl">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-emerald-500 flex items-center justify-center"><CheckCircle2 className="w-3.5 h-3.5 text-white" /></div>
+                <div>
+                  <h2 className="display text-xl text-foreground">Client confirmé — assigner un praticien</h2>
+                  <p className="text-xs text-muted-foreground font-light">{booking.name} · {booking.service}</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><X className="w-3.5 h-3.5" /></button>
+            </div>
+            <div className="p-8 space-y-3">
+              {practitioners.length === 0
+                ? <p className="text-sm text-muted-foreground font-light text-center py-6">Aucun praticien disponible. Ajoutez-en un dans « Praticiens ».</p>
+                : practitioners.map(d => {
+                  const active = picked === d.name;
+                  return (
+                    <button key={d.id} onClick={() => setPicked(d.name)}
+                      className={`w-full flex items-center gap-3 text-left bg-white border p-4 shadow-sm transition-all duration-200 ${active ? "border-primary ring-1 ring-primary/20" : "border-border hover:border-primary/40"}`}>
+                      <div className={`w-10 h-10 ${d.bg} ${d.text} flex items-center justify-center shrink-0`}>
+                        <span className="display text-sm font-black">{d.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase()}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="display text-sm text-foreground truncate">{d.name}</div>
+                        <div className="text-[9px] text-muted-foreground font-light truncate">{d.specialty}</div>
+                      </div>
+                      {active && <Check className="w-4 h-4 text-primary shrink-0" />}
+                    </button>
+                  );
+                })}
+            </div>
+            <div className="flex gap-3 px-8 pb-8">
+              <button onClick={() => picked && onAssign(booking, picked)} disabled={!picked}
+                className="flex-1 btn-primary !py-4 gap-2 disabled:opacity-50">
+                <Stethoscope className="w-4 h-4" /> Assigner le praticien
+              </button>
+              <button onClick={onClose} className="px-6 py-4 border border-border text-[10px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">Plus tard</button>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -415,7 +500,7 @@ const CRM_NAV = [
   { id: "pipeline" as Tab,  label: "Pipeline",       icon: Kanban },
   { id: "bookings" as Tab,  label: "Rendez-vous",    icon: Calendar },
   { id: "messages" as Tab,  label: "Messages",       icon: MessageSquare },
-  { id: "patients" as Tab,  label: "Patients",       icon: Users },
+  { id: "patients" as Tab,  label: "Clients",        icon: Users },
   { id: "companies" as Tab, label: "Entreprises",    icon: Building2 },
   { id: "dentists" as Tab,  label: "Praticiens",     icon: Stethoscope },
 ];
@@ -424,7 +509,7 @@ const DENTIST_NAV = [
   { id: "dentists" as Tab, label: "Mon espace",    icon: Stethoscope },
   { id: "bookings" as Tab, label: "Rendez-vous",   icon: Calendar },
   { id: "calendar" as Tab, label: "Calendrier",    icon: BarChart3 },
-  { id: "patients" as Tab, label: "Patients",      icon: Users },
+  { id: "patients" as Tab, label: "Clients",       icon: Users },
 ];
 
 function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose, session }: {
@@ -472,7 +557,7 @@ function Sidebar({ tab, setTab, unread, onLogout, onNewLead, onClose, session }:
           <button onClick={onNewLead}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/15 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200">
             <UserPlus className="w-3.5 h-3.5 shrink-0" />
-            <span className="text-[10px] tracking-[0.2em] uppercase font-bold">Nouveau patient</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold">Nouveau client</span>
           </button>
         )}
 
@@ -581,9 +666,9 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Leads totaux",     value: stats.total,                                sub: "toutes sources",     icon: Zap,          color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
+          { label: "Clients totaux",   value: stats.total,                                sub: "toutes sources",     icon: Zap,          color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
           { label: "Pipeline actif",   value: `${stats.pipeline.toLocaleString("fr")} MAD`, sub: "revenus potentiels", icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",  iconBg: "bg-amber-50" },
-          { label: "Séjours terminés", value: stats.done,                                 sub: "patients traités",   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500",iconBg: "bg-emerald-50" },
+          { label: "Séjours terminés", value: stats.done,                                 sub: "clients traités",   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500",iconBg: "bg-emerald-50" },
           { label: "CA réalisé",       value: `${stats.revenue.toLocaleString("fr")} MAD`,  sub: "séjours clôturés",   icon: BarChart3,    color: "text-primary",     accent: "border-l-primary",    iconBg: "bg-primary/10" },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
@@ -714,7 +799,7 @@ function Overview({ bookings, messages, setTab }: { bookings: Booking[]; message
               {sourceBreakdown.map(([src, s]) => (
                 <div key={src}>
                   <div className="flex items-center justify-between mb-1 gap-2">
-                    <span className="font-light text-foreground/70 text-xs truncate">{src} <span className="text-muted-foreground/45">· {s.count} lead{s.count > 1 ? "s" : ""}</span></span>
+                    <span className="font-light text-foreground/70 text-xs truncate">{src} <span className="text-muted-foreground/45">· {s.count} client{s.count > 1 ? "s" : ""}</span></span>
                     <span className="display text-xs text-primary font-black shrink-0">{s.revenue.toLocaleString("fr")} MAD</span>
                   </div>
                   <div className="h-1 bg-border rounded-full overflow-hidden">
@@ -777,6 +862,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
   const [activeSection, setActiveSection] = useState<"info" | "log" | "history">("info");
 
   const companies = useCompanies();
+  const practitioners = usePractitioners();
   const linkedCompany = companyMeta(companies, booking.companyId);
   const today = new Date().toISOString().slice(0, 10);
   const isOverdue = booking.followUp && booking.followUp < today;
@@ -893,7 +979,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
               <select value={booking.dentist} onChange={e => setDentist(e.target.value)}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
                 <option value="">Non assigné</option>
-                {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
+                {practitioners.map(d => <option key={d.id} value={d.name}>{d.name} — {d.specialty}</option>)}
               </select>
             </div>
 
@@ -912,7 +998,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
               )}
               <select value={booking.companyId ?? ""} onChange={e => setCompany(e.target.value)}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
-                <option value="">Aucune (patient direct)</option>
+                <option value="">Aucune (client direct)</option>
                 {companies.map(c => <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>)}
               </select>
             </div>
@@ -982,7 +1068,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
             </div>
 
             <button onClick={() => onDelete(booking.id)} className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 py-2.5 hover:bg-red-50 transition-colors text-[10px] tracking-[0.3em] uppercase font-bold">
-              <Trash2 className="w-3.5 h-3.5" /> Supprimer ce lead
+              <Trash2 className="w-3.5 h-3.5" /> Supprimer ce client
             </button>
           </div>
         )}
@@ -1108,7 +1194,7 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
     <div className="flex gap-4 h-full">
       <div className="flex-1 min-w-0 overflow-x-auto">
         <div className="mb-5">
-          <p className="text-sm text-muted-foreground font-light">Vue kanban · {bookings.filter(b => !["Terminé","Annulé"].includes(b.status)).length} leads actifs</p>
+          <p className="text-sm text-muted-foreground font-light">Vue kanban · {bookings.filter(b => !["Terminé","Annulé"].includes(b.status)).length} clients actifs</p>
         </div>
         <div className="flex gap-3 min-w-max pb-4">
           {columns.map(col => {
@@ -1158,7 +1244,7 @@ function Pipeline({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
                       </div>
                     </motion.div>
                   ))}
-                  {cards.length === 0 && <div className="py-8 text-center text-[9px] text-muted-foreground/30 font-light">Aucun lead</div>}
+                  {cards.length === 0 && <div className="py-8 text-center text-[9px] text-muted-foreground/30 font-light">Aucun client</div>}
                 </div>
               </div>
             );
@@ -1215,14 +1301,14 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
     const rows = bookings.map(b => [b.id, b.name, b.email, b.phone, b.service, b.dentist, b.origin, b.date, b.status, b.value, b.source, b.tags.join(";"), b.notes]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `medicalbay-leads-${today}.csv`; a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `medicalbay-clients-${today}.csv`; a.click();
   };
 
   return (
     <div className="flex gap-6 h-full">
       <div className="flex-1 min-w-0 space-y-5">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground font-light">{bookings.length} lead{bookings.length !== 1 ? "s" : ""} au total</p>
+          <p className="text-sm text-muted-foreground font-light">{bookings.length} client{bookings.length !== 1 ? "s" : ""} au total</p>
           <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-white border border-border shadow-sm text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">
             <Download className="w-3.5 h-3.5" /> Export CSV
           </button>
@@ -1257,7 +1343,7 @@ function Bookings({ bookings, callbacks }: { bookings: Booking[]; callbacks: CRM
           <table className="w-full min-w-[780px]">
             <thead>
               <tr className="border-b-2 border-border bg-[#fafafa]">
-                {["Patient","Service","Praticien","Date / Suivi","Valeur","Tags","Statut",""].map(h => (
+                {["Client","Service","Praticien","Date / Suivi","Valeur","Tags","Statut",""].map(h => (
                   <th key={h} className="px-4 py-3.5 text-left text-[8px] tracking-[0.4em] uppercase font-black text-muted-foreground">{h}</th>
                 ))}
               </tr>
@@ -1349,7 +1435,7 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
     const nb: Booking = {
       id: newId(), name: m.name, email: m.email, phone: m.phone,
       service: "Consultation générale", origin: "—",
-      dentist: dentistForService("Consultation générale"),
+      dentist: "",
       date: new Date().toISOString().slice(0, 10),
       status: "Nouveau", notes: `Sujet : ${m.subject}`, tags: [],
       source: "Site web", value: 0,
@@ -1387,7 +1473,7 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
                 </div>
                 <div className={`text-[10px] tracking-[0.15em] uppercase font-bold mb-1 truncate ${m.read ? "text-muted-foreground" : "text-primary/80"}`}>{m.subject}</div>
                 <div className="text-xs text-muted-foreground font-light truncate">{m.body}</div>
-                {converted.has(m.id) && <div className="mt-1.5 flex items-center gap-1 text-[8px] tracking-[0.2em] uppercase text-emerald-600 font-bold"><CheckCheck className="w-2.5 h-2.5" /> Converti en lead</div>}
+                {converted.has(m.id) && <div className="mt-1.5 flex items-center gap-1 text-[8px] tracking-[0.2em] uppercase text-emerald-600 font-bold"><CheckCheck className="w-2.5 h-2.5" /> Converti en client</div>}
               </button>
             ))}
         </div>
@@ -1455,7 +1541,7 @@ function Messages({ messages, bookings, onMarkRead, onMarkAllRead, onDeleteMessa
                 </button>
                 <button onClick={() => convertToBooking(selected)} disabled={converted.has(selected.id)}
                   className={`flex items-center gap-2 px-4 py-3 border text-[10px] tracking-[0.25em] uppercase font-bold transition-colors ml-auto ${converted.has(selected.id) ? "border-emerald-200 text-emerald-600 bg-emerald-50 cursor-default" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>
-                  {converted.has(selected.id) ? <><CheckCheck className="w-3.5 h-3.5" /> Converti</> : <><Plus className="w-3.5 h-3.5" /> Créer lead</>}
+                  {converted.has(selected.id) ? <><CheckCheck className="w-3.5 h-3.5" /> Converti</> : <><Plus className="w-3.5 h-3.5" /> Créer client</>}
                 </button>
               </div>
             </div>
@@ -1494,7 +1580,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
       <div className="flex-1 min-w-0 space-y-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="display text-3xl text-foreground mb-1">Patients</h1>
+            <h1 className="display text-3xl text-foreground mb-1">Clients</h1>
             <p className="text-sm text-muted-foreground font-light">{patients.length} contact{patients.length > 1 ? "s" : ""}</p>
           </div>
           <div className="relative">
@@ -1507,7 +1593,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
           <table className="w-full min-w-[680px]">
             <thead>
               <tr className="border-b border-border bg-[hsl(var(--off))]">
-                {["Patient","Contact","Origine","Séjours","CA total","Tags","Statut"].map(h => (
+                {["Client","Contact","Origine","Séjours","CA total","Tags","Statut"].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">{h}</th>
                 ))}
               </tr>
@@ -1542,7 +1628,7 @@ function Patients({ bookings }: { bookings: Booking[] }) {
           <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 24 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="w-80 shrink-0 bg-background border border-border self-start sticky top-6">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Historique patient</span>
+              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Historique client</span>
               <button onClick={() => setSelected(null)} className="w-7 h-7 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><X className="w-3 h-3" /></button>
             </div>
             <div className="p-6 space-y-6 max-h-[calc(100vh-160px)] overflow-y-auto">
@@ -1584,6 +1670,7 @@ const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","A
 const DAYS_FR   = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 
 function CalendarTab({ bookings }: { bookings: Booking[] }) {
+  const practitioners = usePractitioners();
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -1623,8 +1710,8 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-white border border-border px-4 py-3 shadow-sm">
           <span className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Praticiens</span>
-          {DENTISTS.map(d => (
-            <div key={d.name} className="flex items-center gap-1.5">
+          {practitioners.map(d => (
+            <div key={d.id} className="flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${d.dot}`} />
               <span className="text-[10px] font-light text-foreground/70">{d.short}</span>
             </div>
@@ -1647,7 +1734,7 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
                   <div className={`w-6 h-6 flex items-center justify-center text-sm mb-1 ${isToday ? "bg-primary text-white display font-black" : "text-foreground/70 font-light"}`}>{day}</div>
                   <div className="space-y-0.5">
                     {dayBks.slice(0, 2).map(b => {
-                      const dm = dentistMeta(b.dentist);
+                      const dm = dentistMeta(practitioners, b.dentist);
                       return (
                         <div key={b.id} className={`flex items-center gap-1 text-[8px] font-bold px-1 py-0.5 ${STATUS_CFG[b.status].bg} ${STATUS_CFG[b.status].text}`}>
                           <span className={`w-1 h-1 rounded-full shrink-0 ${dm?.dot ?? "bg-foreground/30"}`} title={b.dentist || "Non assigné"} />
@@ -1700,15 +1787,18 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
 }
 
 // ─── DENTISTS WORKSPACE ───────────────────────────────────────────────────────
-function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
+function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking, onAddPractitioner, onRequestDeletePractitioner }: {
   bookings: Booking[]; lockedDentist?: string; callbacks: CRMCallbacks; onAddBooking: (b: Booking) => void;
+  onAddPractitioner?: (p: Practitioner) => void; onRequestDeletePractitioner?: (p: Dentist) => void;
 }) {
-  const [selected, setSelected] = useState<string>(lockedDentist ?? DENTISTS[0].name);
+  const practitioners = usePractitioners();
+  const [selected, setSelected] = useState<string>(lockedDentist ?? practitioners[0]?.name ?? "");
   const [adding, setAdding] = useState(false);
+  const [addingPractitioner, setAddingPractitioner] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
 
   // Aggregated stats per practitioner.
-  const stats = useMemo(() => DENTISTS.map(d => {
+  const stats = useMemo(() => practitioners.map(d => {
     const mine     = bookings.filter(b => b.dentist === d.name);
     const active   = mine.filter(b => !["Terminé","Annulé"].includes(b.status));
     const done     = mine.filter(b => b.status === "Terminé");
@@ -1722,21 +1812,40 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
       upcoming: upcoming.length,
       patients: new Set(mine.map(b => b.email)).size,
     };
-  }), [bookings, today]);
+  }), [bookings, today, practitioners]);
 
   const sel = stats.find(s => s.dentist.name === (lockedDentist ?? selected)) ?? stats[0];
-  const d = sel.dentist;
-  const initials = d.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase();
-
-  const selBookings = useMemo(() => bookings.filter(b => b.dentist === d.name), [bookings, d.name]);
+  const d = sel?.dentist;
+  const selBookings = useMemo(() => d ? bookings.filter(b => b.dentist === d.name) : [], [bookings, d]);
   const selUpcoming = useMemo(
     () => selBookings.filter(b => b.date >= today && b.status !== "Annulé").sort((a, b) => a.date.localeCompare(b.date)),
     [selBookings, today]
   );
-  const unassigned = bookings.filter(b => !dentistMeta(b.dentist)).length;
+  const unassigned = bookings.filter(b => !dentistMeta(practitioners, b.dentist)).length;
+
+  // No practitioner yet (all deleted) — offer to add one.
+  if (!sel || !d) {
+    return (
+      <div className="bg-white border border-border shadow-sm p-10 text-center space-y-4">
+        <p className="text-sm text-muted-foreground font-light">Aucun praticien enregistré.</p>
+        {!lockedDentist && onAddPractitioner && (
+          <>
+            <button onClick={() => setAddingPractitioner(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Nouveau praticien
+            </button>
+            <AnimatePresence>
+              {addingPractitioner && <NewPractitionerModal existing={practitioners} onAdd={onAddPractitioner} onClose={() => setAddingPractitioner(false)} />}
+            </AnimatePresence>
+          </>
+        )}
+      </div>
+    );
+  }
+  const initials = d.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase();
 
   const kpis = [
-    { label: "Leads actifs", value: String(sel.active),                          icon: Zap,          color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+    { label: "Clients actifs", value: String(sel.active),                          icon: Zap,          color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
     { label: "Pipeline",     value: `${sel.pipeline.toLocaleString("fr")} MAD`,  icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",   iconBg: "bg-amber-50" },
     { label: "CA réalisé",   value: `${sel.revenue.toLocaleString("fr")} MAD`,   icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500", iconBg: "bg-emerald-50" },
     { label: "RDV à venir",  value: String(sel.upcoming),                         icon: Calendar,     color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
@@ -1747,23 +1856,38 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
       {/* Left rail — practitioner cards (hidden when a dentist is locked to their own workspace) */}
       {!lockedDentist && (
       <div className="w-full xl:w-72 shrink-0 space-y-3">
-        <p className="text-sm text-muted-foreground font-light">
-          {DENTISTS.length} praticiens{unassigned > 0 ? ` · ${unassigned} non assigné${unassigned > 1 ? "s" : ""}` : ""}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground font-light">
+            {practitioners.length} praticien{practitioners.length > 1 ? "s" : ""}{unassigned > 0 ? ` · ${unassigned} non assigné${unassigned > 1 ? "s" : ""}` : ""}
+          </p>
+          {onAddPractitioner && (
+            <button onClick={() => setAddingPractitioner(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary text-[8px] tracking-[0.25em] uppercase font-bold hover:bg-primary hover:text-white transition-colors shrink-0">
+              <Plus className="w-3 h-3" /> Praticien
+            </button>
+          )}
+        </div>
         {stats.map(s => {
           const dd = s.dentist;
           const active = selected === dd.name;
           return (
-            <button key={dd.name} onClick={() => setSelected(dd.name)}
-              className={`w-full text-left bg-white border p-4 shadow-sm transition-all duration-200 ${active ? "border-primary ring-1 ring-primary/20" : "border-border hover:border-primary/40"}`}>
+            <button key={dd.id} onClick={() => setSelected(dd.name)}
+              className={`group w-full text-left bg-white border p-4 shadow-sm transition-all duration-200 ${active ? "border-primary ring-1 ring-primary/20" : "border-border hover:border-primary/40"}`}>
               <div className="flex items-center gap-3 mb-3">
                 <div className={`w-10 h-10 ${dd.bg} ${dd.text} flex items-center justify-center shrink-0`}>
                   <span className="display text-sm font-black">{dd.name.replace("Dr. ", "").split(" ").map(n => n[0]).join("").toUpperCase()}</span>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="display text-sm text-foreground truncate">{dd.name}</div>
                   <div className="text-[9px] text-muted-foreground font-light truncate">{dd.specialty}</div>
                 </div>
+                {onRequestDeletePractitioner && (
+                  <span role="button" tabIndex={0}
+                    onClick={e => { e.stopPropagation(); onRequestDeletePractitioner(dd); }}
+                    className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-red-500 transition-all shrink-0">
+                    <Trash2 className="w-3 h-3" />
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="bg-[hsl(var(--off))] py-1.5">
@@ -1798,11 +1922,11 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
           <div className="flex items-center gap-5 shrink-0">
             <div className="hidden sm:block text-right">
               <div className="display text-2xl text-foreground font-black">{sel.patients}</div>
-              <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">patient{sel.patients > 1 ? "s" : ""}</div>
+              <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">client{sel.patients > 1 ? "s" : ""}</div>
             </div>
             <button onClick={() => setAdding(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors shrink-0">
-              <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ajouter un patient</span>
+              <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ajouter un client</span>
             </button>
           </div>
         </div>
@@ -1852,15 +1976,109 @@ function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
           </div>
           <p className="text-[11px] text-muted-foreground font-light mb-4">Changez l'étape d'un dossier ou ouvrez une fiche pour ajouter notes, contacts et suivis.</p>
           {selBookings.length === 0
-            ? <div className="py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné — cliquez sur « Ajouter un patient » pour commencer.</div>
+            ? <div className="py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné — cliquez sur « Ajouter un client » pour commencer.</div>
             : <Pipeline bookings={selBookings} callbacks={callbacks} />}
         </div>
       </div>
 
       <AnimatePresence>
         {adding && <NewLeadModal lockedDentist={d.name} onAdd={onAddBooking} onClose={() => setAdding(false)} />}
+        {addingPractitioner && onAddPractitioner && (
+          <NewPractitionerModal existing={practitioners} onAdd={onAddPractitioner} onClose={() => setAddingPractitioner(false)} />
+        )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ─── NEW PRACTITIONER MODAL ───────────────────────────────────────────────────
+const BLANK_PRACTITIONER = { name: "", short: "", specialty: "", loginCode: "" };
+
+function NewPractitionerModal({ existing, onAdd, onClose }: { existing: Dentist[]; onAdd: (p: Practitioner) => void; onClose: () => void }) {
+  const [form, setForm] = useState({ ...BLANK_PRACTITIONER });
+  const set = (k: keyof typeof BLANK_PRACTITIONER, v: string) => setForm(f => ({ ...f, [k]: v }));
+  // Pick the first palette colour not already in use (cycles back round if all taken).
+  const usedColors = new Set(existing.map(d => d.color));
+  const nextColor = PALETTE_KEYS.find(k => !usedColors.has(k)) ?? PALETTE_KEYS[existing.length % PALETTE_KEYS.length];
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    if (!name) return;
+    const short = form.short.trim() || (name.startsWith("Dr.") ? `Dr. ${name.replace(/^Dr\.\s*/, "").split(" ").slice(-1)[0]}` : name);
+    onAdd({
+      id: `PR-${Date.now().toString(36).slice(-4).toUpperCase()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`,
+      name,
+      short,
+      specialty: form.specialty.trim(),
+      loginCode: form.loginCode.trim(),
+      color: nextColor,
+    });
+    onClose();
+  };
+
+  const codeTaken = existing.some(d => d.loginCode && d.loginCode.toLowerCase() === form.loginCode.trim().toLowerCase());
+  const c = COLOR_PALETTE[nextColor];
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-[100] backdrop-blur-sm"
+        style={{ background: "hsl(var(--ink) / 0.6)" }} />
+      <div className="fixed inset-0 z-[101] overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 py-10">
+          <motion.div initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.97 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-lg bg-background border border-border shadow-2xl">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-primary flex items-center justify-center"><Stethoscope className="w-3.5 h-3.5 text-white" /></div>
+                <div>
+                  <h2 className="display text-xl text-foreground">Nouveau praticien</h2>
+                  <p className="text-xs text-muted-foreground font-light">Ajout d'un membre de l'équipe soignante</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><X className="w-3.5 h-3.5" /></button>
+            </div>
+            <form onSubmit={submit} className="p-8 space-y-6">
+              <label className="block group">
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Nom complet</span>
+                <input required value={form.name} onChange={e => set("name", e.target.value)} placeholder="Dr. Amine Cherkaoui"
+                  className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+              </label>
+              <div className="grid grid-cols-2 gap-5">
+                <label className="block group">
+                  <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Nom court <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
+                  <input value={form.short} onChange={e => set("short", e.target.value)} placeholder="Dr. Cherkaoui"
+                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+                </label>
+                <label className="block group">
+                  <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Spécialité</span>
+                  <input value={form.specialty} onChange={e => set("specialty", e.target.value)} placeholder="Orthodontie"
+                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+                </label>
+              </div>
+              <label className="block group">
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Code de connexion (mot de passe praticien)</span>
+                <input value={form.loginCode} onChange={e => set("loginCode", e.target.value)} placeholder="amine2026"
+                  className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+                {codeTaken && <p className="text-red-500 text-[10px] tracking-[0.15em] uppercase font-bold mt-2 flex items-center gap-1.5"><AlertCircle className="w-3 h-3" /> Code déjà utilisé</p>}
+              </label>
+              <div className="flex items-center gap-3 bg-[hsl(var(--off))] border border-border px-4 py-3">
+                <div className={`w-7 h-7 ${c.bg} ${c.text} flex items-center justify-center shrink-0`}><span className={`w-2.5 h-2.5 rounded-full ${c.dot}`} /></div>
+                <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-muted-foreground">Couleur attribuée : {nextColor}</span>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={!form.name.trim() || codeTaken} className="flex-1 btn-primary !py-4 gap-2 disabled:opacity-50">
+                  <Plus className="w-4 h-4" /> Ajouter le praticien
+                </button>
+                <button type="button" onClick={onClose} className="px-6 py-4 border border-border text-[10px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">Annuler</button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -2052,7 +2270,7 @@ function CompaniesTab({ companies, bookings, onAdd, onUpdate, onRequestDelete }:
                       <div className="text-[10px] text-muted-foreground">{c.email}</div>
                     </td>
                     <td className="px-4 py-3.5"><span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200"><Percent className="w-2.5 h-2.5" /> {c.discount}%</span></td>
-                    <td className="px-4 py-3.5"><span className="display text-sm text-foreground">{s.total}</span> <span className="text-[9px] text-muted-foreground">({s.patients} pat.)</span></td>
+                    <td className="px-4 py-3.5"><span className="display text-sm text-foreground">{s.total}</span> <span className="text-[9px] text-muted-foreground">({s.patients} cli.)</span></td>
                     <td className="px-4 py-3.5"><span className={`display text-sm ${s.revenue > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{s.revenue > 0 ? `${s.revenue.toLocaleString("fr")} MAD` : "—"}</span></td>
                     <td className="px-4 py-3.5">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-[0.2em] uppercase font-bold border ${c.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-foreground/6 text-foreground/50 border-border"}`}>
@@ -2084,6 +2302,7 @@ function CompaniesTab({ companies, bookings, onAdd, onUpdate, onRequestDelete }:
 const MONTHS_SHORT = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
 
 function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Company[] }) {
+  const practitioners = usePractitioners();
   const net = useCallback((b: Booking) => netValue(b.value, discountFor(companies, b.companyId)), [companies]);
 
   const kpis = useMemo(() => {
@@ -2112,12 +2331,12 @@ function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Co
   const maxService = Math.max(...byService.map(([, s]) => s.revenue + s.pipeline), 1);
 
   // Par praticien.
-  const byDentist = useMemo(() => DENTISTS.map(d => {
+  const byDentist = useMemo(() => practitioners.map(d => {
     const mine = bookings.filter(b => b.dentist === d.name);
     const done = mine.filter(b => b.status === "Terminé");
     const active = mine.filter(b => !["Terminé","Annulé"].includes(b.status));
     return { dentist: d, count: mine.length, revenue: done.reduce((a, b) => a + net(b), 0), pipeline: active.reduce((a, b) => a + net(b), 0) };
-  }).sort((a, b) => b.revenue - a.revenue), [bookings, net]);
+  }).sort((a, b) => b.revenue - a.revenue), [bookings, net, practitioners]);
   const maxDentist = Math.max(...byDentist.map(d => d.revenue + d.pipeline), 1);
 
   // Évolution mensuelle — realised net per month, last 6 months ending this month.
@@ -2299,20 +2518,30 @@ export default function AdminDashboard() {
   const [bookings, setBookings]   = useState<Booking[]>([]);
   const [messages, setMessages]   = useState<Message[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [practitioners, setPractitioners] = useState<Dentist[]>(SEED_DENTISTS);
   const [loading, setLoading]     = useState(false);
   const [showNewLead, setShowNewLead] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirm, setConfirm]     = useState<ConfirmRequest | null>(null);
+  // Booking awaiting practitioner assignment (opened automatically on confirmation).
+  const [assignFor, setAssignFor] = useState<Booking | null>(null);
+
+  const loadPractitioners = useCallback(() => {
+    fetchPractitioners()
+      .then(ps => { if (ps.length) setPractitioners(ps.map(practitionerToDentist)); })
+      .catch(() => {/* table missing → keep seed list */});
+  }, []);
 
   // ── Initial fetch ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!session) return;
     setLoading(true);
+    loadPractitioners();
     Promise.all([fetchBookings(), fetchMessages(), fetchCompanies()])
       .then(([bks, msgs, cmps]) => { setBookings(bks); setMessages(msgs); setCompanies(cmps); })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [session]);
+  }, [session, loadPractitioners]);
 
   // ── Realtime subscriptions ─────────────────────────────────────────────────
   useEffect(() => {
@@ -2331,9 +2560,12 @@ export default function AdminDashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "companies" }, () => {
         fetchCompanies().then(setCompanies).catch(console.error);
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "practitioners" }, () => {
+        loadPractitioners();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [session]);
+  }, [session, loadPractitioners]);
 
   // ── CRM mutation callbacks ─────────────────────────────────────────────────
   const handleUpdateFields = useCallback((updated: Booking) => {
@@ -2343,12 +2575,46 @@ export default function AdminDashboard() {
 
   const handleUpdateStatus = useCallback((id: string, from: BookingStatus, to: BookingStatus) => {
     const ts = new Date().toISOString();
+    let target: Booking | null = null;
     setBookings(prev => prev.map(b => {
       if (b.id !== id) return b;
-      return { ...b, status: to, history: [...b.history, { ts, action: "Statut modifié", from, to }] };
+      const updated = { ...b, status: to, history: [...b.history, { ts, action: "Statut modifié", from, to }] };
+      target = updated;
+      return updated;
     }));
     changeBookingStatus(id, from, to).catch(console.error);
+    // On confirmation, the admin assigns the client to a practitioner.
+    if (to === "Confirmé" && target && !(target as Booking).dentist && session?.role === "admin") {
+      setAssignFor(target);
+    }
+  }, [session]);
+
+  const handleAssign = useCallback((booking: Booking, dentistName: string) => {
+    const updated = { ...booking, dentist: dentistName };
+    setBookings(prev => prev.map(b => b.id === booking.id ? updated : b));
+    updateBookingFields(updated).catch(console.error);
+    setAssignFor(null);
   }, []);
+
+  // ── Practitioners ─────────────────────────────────────────────────────────
+  const handleAddPractitioner = useCallback((p: Practitioner) => {
+    setPractitioners(prev => [...prev, practitionerToDentist(p)]);
+    createPractitioner(p).catch(console.error);
+  }, []);
+
+  const handleDeletePractitioner = useCallback((id: string) => {
+    setPractitioners(prev => prev.filter(d => d.id !== id));
+    apiDeletePractitioner(id).catch(console.error);
+  }, []);
+
+  const requestDeletePractitioner = useCallback((d: Dentist) => {
+    setConfirm({
+      title: "Supprimer ce praticien ?",
+      message: `${d.name} sera retiré de l'équipe. Les clients déjà assignés ne sont pas supprimés mais devront être réassignés.`,
+      confirmLabel: "Supprimer le praticien",
+      onConfirm: () => handleDeletePractitioner(d.id),
+    });
+  }, [handleDeletePractitioner]);
 
   const handleAddLog = useCallback((bookingId: string, entry: ContactEntry) => {
     setBookings(prev => prev.map(b =>
@@ -2405,9 +2671,9 @@ export default function AdminDashboard() {
   const requestDeleteBooking = useCallback((id: string) => {
     const b = bookings.find(x => x.id === id);
     setConfirm({
-      title: "Supprimer ce lead ?",
+      title: "Supprimer ce client ?",
       message: b ? `Le dossier de ${b.name} (${b.id}) sera définitivement supprimé. Cette action est irréversible.` : "Ce dossier sera définitivement supprimé. Cette action est irréversible.",
-      confirmLabel: "Supprimer le lead",
+      confirmLabel: "Supprimer le client",
       onConfirm: () => handleDeleteBooking(id),
     });
   }, [bookings, handleDeleteBooking]);
@@ -2449,10 +2715,11 @@ export default function AdminDashboard() {
 
   const TAB_LABELS: Record<Tab, string> = {
     overview: "Vue d'ensemble", calendar: "Calendrier", analytics: "Revenus",
-    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients", dentists: "Praticiens", companies: "Entreprises",
+    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Clients", dentists: "Praticiens", companies: "Entreprises",
   };
 
   return (
+    <PractitionersContext.Provider value={practitioners}>
     <CompaniesContext.Provider value={companies}>
     <div className="flex min-h-screen bg-[#f4f5f7]">
 
@@ -2517,7 +2784,7 @@ export default function AdminDashboard() {
             {!isDentist && (
               <button onClick={() => setShowNewLead(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
-                <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouveau patient</span>
+                <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouveau client</span>
               </button>
             )}
           </div>
@@ -2535,7 +2802,7 @@ export default function AdminDashboard() {
               {tab === "patients"  && <Patients  bookings={visibleBookings} />}
               {tab === "companies" && <CompaniesTab companies={companies} bookings={bookings} onAdd={handleAddCompany} onUpdate={handleUpdateCompany} onRequestDelete={requestDeleteCompany} />}
               {tab === "calendar"  && <CalendarTab bookings={visibleBookings} />}
-              {tab === "dentists"  && <DentistsTab bookings={visibleBookings} lockedDentist={isDentist ? session.dentist : undefined} callbacks={crmCallbacks} onAddBooking={(b) => handleAddBooking(b, false)} />}
+              {tab === "dentists"  && <DentistsTab bookings={visibleBookings} lockedDentist={isDentist ? session.dentist : undefined} callbacks={crmCallbacks} onAddBooking={(b) => handleAddBooking(b, false)} onAddPractitioner={isDentist ? undefined : handleAddPractitioner} onRequestDeletePractitioner={isDentist ? undefined : requestDeletePractitioner} />}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -2546,9 +2813,14 @@ export default function AdminDashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
+        {assignFor && <AssignPractitionerModal booking={assignFor} onAssign={handleAssign} onClose={() => setAssignFor(null)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {confirm && <ConfirmDialog req={confirm} onClose={() => setConfirm(null)} />}
       </AnimatePresence>
     </div>
     </CompaniesContext.Provider>
+    </PractitionersContext.Provider>
   );
 }

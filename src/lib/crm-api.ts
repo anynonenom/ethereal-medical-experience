@@ -29,6 +29,15 @@ export interface Message {
   subject: string; body: string; date: string; read: boolean;
 }
 
+export interface Practitioner {
+  id: string;
+  name: string;
+  short: string;
+  specialty: string;
+  loginCode: string;            // password the practitioner uses to log in
+  color: string;                // key into the dashboard colour palette
+}
+
 export type CompanyStatus = "Active" | "Inactive";
 export interface Company {
   id: string; name: string; contactName: string;
@@ -266,5 +275,44 @@ export async function updateCompany(c: Company): Promise<void> {
 
 export async function deleteCompany(id: string): Promise<void> {
   const { error } = await supabase.from("companies").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ─── PRACTITIONERS (praticiens) ───────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToPractitioner(row: any): Practitioner {
+  return {
+    id: row.id,
+    name: row.name,
+    short: row.short ?? "",
+    specialty: row.specialty ?? "",
+    loginCode: row.login_code ?? "",
+    color: row.color ?? "primary",
+  };
+}
+
+export async function fetchPractitioners(): Promise<Practitioner[]> {
+  const { data, error } = await supabase
+    .from("practitioners")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(rowToPractitioner);
+}
+
+export async function createPractitioner(p: Practitioner): Promise<void> {
+  const { error } = await supabase.from("practitioners").insert({
+    id: p.id,
+    name: p.name,
+    short: p.short,
+    specialty: p.specialty,
+    login_code: p.loginCode,
+    color: p.color,
+  });
+  if (error) throw error;
+}
+
+export async function deletePractitioner(id: string): Promise<void> {
+  const { error } = await supabase.from("practitioners").delete().eq("id", id);
   if (error) throw error;
 }
