@@ -117,13 +117,8 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* Right controls */}
+            {/* Right controls — CTA lives in the top bar to avoid duplication */}
             <div className="flex items-center gap-2">
-              <button onClick={openBooking}
-                className="hidden md:inline-flex btn-primary !py-2.5 !px-5 gap-2">
-                <Calendar className="w-3.5 h-3.5" /> {n.cta}
-              </button>
-
               <button onClick={() => setOpen(true)}
                 className="lg:hidden w-10 h-10 grid place-items-center border border-border/70 rounded-none transition-colors hover:border-primary"
                 aria-label="Menu">

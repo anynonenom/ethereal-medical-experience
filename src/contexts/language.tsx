@@ -27,7 +27,7 @@ export const T = {
       tourism: "Tourisme Médical",
       packs: "Packs",
       contact: "Contact",
-      cta: "PRENDRE RDV",
+      cta: "DEVIS GRATUIT",
       navLabel: "Navigation",
     },
 
@@ -191,7 +191,7 @@ export const T = {
       tourism: "Medical Tourism",
       packs: "Packs",
       contact: "Contact",
-      cta: "BOOK NOW",
+      cta: "FREE QUOTE",
       navLabel: "Navigation",
     },
 
