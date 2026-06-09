@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Bay — Guide du tableau de bord CRM</title>
+<style>
+  :root{
+    --ink:#0f1f24; --teal:#0d9488; --teal-deep:#0b5d57; --teal-soft:#e6f4f2;
+    --amber:#b45309; --amber-soft:#fef3e2; --emerald:#047857; --emerald-soft:#e7f6ef;
+    --red:#dc2626; --red-soft:#fdecec; --line:#e4e7e7; --muted:#6b7775; --off:#f7f9f9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:#fbfcfc;line-height:1.65;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px}
+  .serif{font-family:Georgia,"Times New Roman",serif}
+
+  /* Header */
+  header{background:linear-gradient(135deg,var(--ink) 0%,#16363d 100%);color:#fff;padding:64px 0 56px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.4em;
+    text-transform:uppercase;font-weight:700;color:#7fd6cc;margin-bottom:20px}
+  .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block}
+  header h1{font-size:clamp(30px,5vw,46px);line-height:1.1;font-weight:800;margin-bottom:14px}
+  header h1 em{font-style:italic;font-weight:400;color:#7fd6cc;font-family:Georgia,serif}
+  header p{color:#c3d2d0;max-width:560px;font-size:17px}
+  .meta{margin-top:26px;display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:#9fb2af;
+    letter-spacing:.15em;text-transform:uppercase;font-weight:600}
+
+  /* TOC */
+  .toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 28px;
+    margin:-32px auto 0;box-shadow:0 10px 40px rgba(15,31,36,.08);position:relative;z-index:2}
+  .toc h2{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;margin-bottom:16px}
+  .toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:8px 28px}
+  .toc li{counter-increment:t}
+  .toc a{text-decoration:none;color:var(--ink);font-size:14px;display:flex;gap:12px;
+    padding:6px 0;border-bottom:1px solid transparent;transition:.15s}
+  .toc a:hover{color:var(--teal)}
+  .toc a::before{content:counter(t,decimal-leading-zero);color:var(--teal);font-weight:800;
+    font-size:12px;min-width:24px}
+
+  /* Sections */
+  section{padding:48px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--teal);
+    font-weight:700;margin-bottom:10px}
+  h2.title{font-size:28px;font-weight:800;margin-bottom:8px;line-height:1.2}
+  h2.title .num{color:var(--line);font-weight:800;margin-right:10px}
+  .lead{color:var(--muted);font-size:17px;margin-bottom:28px;max-width:680px}
+  h3{font-size:18px;font-weight:700;margin:28px 0 12px}
+  p{margin-bottom:14px}
+  ul.clean{list-style:none;margin:0 0 16px}
+  ul.clean li{padding:8px 0 8px 28px;position:relative;border-bottom:1px solid var(--off)}
+  ul.clean li::before{content:"";position:absolute;left:4px;top:16px;width:8px;height:8px;
+    border-radius:50%;background:var(--teal)}
+  ul.clean li b{font-weight:700}
+
+  /* Steps */
+  .steps{counter-reset:s;margin:20px 0}
+  .step{counter-increment:s;display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--off)}
+  .step::before{content:counter(s);flex:0 0 38px;height:38px;background:var(--teal);color:#fff;
+    border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px}
+  .step .body h4{font-size:16px;font-weight:700;margin-bottom:4px}
+  .step .body p{margin:0;color:var(--muted);font-size:15px}
+
+  /* Pills / chips */
+  .chip{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;
+    letter-spacing:.04em;border:1px solid;vertical-align:middle}
+  .c-new{background:var(--teal-soft);color:var(--teal-deep);border-color:#a9ddd6}
+  .c-conf{background:var(--emerald-soft);color:var(--emerald);border-color:#a7d8c2}
+  .c-prog{background:var(--amber-soft);color:var(--amber);border-color:#f0d2a0}
+  .c-done{background:#eef0f0;color:var(--muted);border-color:var(--line)}
+  .c-cancel{background:var(--red-soft);color:var(--red);border-color:#f3bcbc}
+  .key{display:inline-block;background:var(--ink);color:#fff;padding:2px 9px;border-radius:6px;
+    font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;letter-spacing:.02em}
+
+  /* Callout */
+  .note{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;
+    padding:16px 20px;margin:22px 0;font-size:15px}
+  .note.warn{background:var(--amber-soft);border-color:var(--amber)}
+  .note.warn b,.note b{color:inherit}
+  .note .t{display:block;font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+    font-weight:800;margin-bottom:6px}
+  .note.warn .t{color:var(--amber)} .note .t{color:var(--teal-deep)}
+
+  /* Flow diagram */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:24px 0;
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .flow .node{flex:1;min-width:150px;padding:18px 16px;text-align:center;border-right:1px solid var(--line);
+    position:relative;background:#fff}
+  .flow .node:last-child{border-right:none}
+  .flow .node .lbl{font-weight:800;font-size:15px;margin-bottom:4px}
+  .flow .node .sub{font-size:12px;color:var(--muted)}
+  .flow .node .arrow{position:absolute;right:-9px;top:50%;transform:translateY(-50%);z-index:3;
+    width:18px;height:18px;background:#fff;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    rotate:-45deg}
+  .flow .node:last-child .arrow{display:none}
+
+  /* Role cards */
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}
+  .role{border:1px solid var(--line);border-radius:12px;padding:22px;background:#fff}
+  .role .h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .role .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:20px}
+  .role.admin .ic{background:var(--teal-soft)} .role.prat .ic{background:var(--amber-soft)}
+  .role h4{font-size:17px;font-weight:800}
+  .role .tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .role ul{list-style:none;font-size:14px}
+  .role ul li{padding:5px 0 5px 20px;position:relative;color:#384542}
+  .role ul li::before{content:"›";position:absolute;left:2px;color:var(--teal);font-weight:800}
+
+  table.tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px}
+  table.tbl th{background:var(--off);text-align:left;padding:11px 14px;font-size:11px;
+    letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)}
+  table.tbl td{padding:11px 14px;border-bottom:1px solid var(--off);vertical-align:top}
+  table.tbl tr:hover td{background:#fcfdfd}
+
+  footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:13px}
+  footer .logo{font-weight:800;color:var(--ink);letter-spacing:.1em}
+  @media(max-width:680px){.toc ol,.roles{grid-template-columns:1fr}}
+  @media print{header{background:var(--ink)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .toc{box-shadow:none} section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span> Medical Bay · CRM Administration</div>
+    <h1>Guide du tableau de bord <em>& de l'espace praticien</em></h1>
+    <p>Tout ce qu'il faut savoir pour gérer les clients, le pipeline commercial et l'équipe soignante de Medical Bay.</p>
+    <div class="meta">
+      <span>Accès · /admin</span>
+      <span>Rôles · Admin &amp; Praticien</span>
+      <span>Version · Juin 2026</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <h2>Sommaire</h2>
+    <ol>
+      <li><a href="#connexion">Connexion &amp; rôles</a></li>
+      <li><a href="#navigation">Navigation du tableau de bord</a></li>
+      <li><a href="#cycle">Le cycle d'un client</a></li>
+      <li><a href="#ajouter">Ajouter un client</a></li>
+      <li><a href="#fiche">La fiche client</a></li>
+      <li><a href="#assignation">Confirmer &amp; assigner</a></li>
+      <li><a href="#praticien">L'espace praticien</a></li>
+      <li><a href="#gerer-praticiens">Gérer les praticiens</a></li>
+      <li><a href="#entreprises">Entreprises &amp; conventions</a></li>
+      <li><a href="#messages">Messages &amp; rendez-vous</a></li>
+      <li><a href="#revenus">Calendrier &amp; revenus</a></li>
+      <li><a href="#faq">Questions fréquentes</a></li>
+    </ol>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<!-- 1 -->
+<section id="connexion">
+  <div class="kicker">Section 01</div>
+  <h2 class="title"><span class="num">01</span>Connexion &amp; rôles</h2>
+  <p class="lead">Le CRM est accessible depuis l'adresse <span class="key">/admin</span>. Un seul écran de connexion gère deux types d'accès, distingués automatiquement par le mot de passe saisi.</p>
+
+  <div class="roles">
+    <div class="role admin">
+      <div class="h"><div class="ic">🛡️</div><div><h4>Administrateur</h4><div class="tag">Accès complet</div></div></div>
+      <ul>
+        <li>Voit <b>tous</b> les clients, praticiens et statistiques</li>
+        <li>Confirme et assigne les clients</li>
+        <li>Gère l'équipe soignante &amp; les conventions B2B</li>
+        <li>Mot de passe : <span class="key">MB2026</span></li>
+      </ul>
+    </div>
+    <div class="role prat">
+      <div class="h"><div class="ic">🩺</div><div><h4>Praticien</h4><div class="tag">Espace personnel</div></div></div>
+      <ul>
+        <li>Voit <b>uniquement</b> ses propres clients assignés</li>
+        <li>Travaille son pipeline, ajoute notes &amp; suivis</li>
+        <li>Peut ajouter ses propres clients</li>
+        <li>Code de connexion personnel (ex. <span class="key">salma2026</span>)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Bon à savoir</span>
+    Les codes des praticiens sont enregistrés dans la base de données. Lorsqu'un nouvel praticien est créé (voir section&nbsp;08), son code de connexion fonctionne immédiatement — sans toucher au code de l'application.
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="navigation">
+  <div class="kicker">Section 02</div>
+  <h2 class="title"><span class="num">02</span>Navigation du tableau de bord</h2>
+  <p class="lead">Le menu latéral (à gauche) est organisé en deux familles. La barre du haut affiche la section en cours, la date, les notifications et le bouton <b>Nouveau client</b>.</p>
+
+  <h3>Tableau de bord <span style="color:var(--muted);font-weight:400;font-size:15px">— le pilotage</span></h3>
+  <ul class="clean">
+    <li><b>Vue d'ensemble</b> — chiffres clés, alertes de suivi, activité récente, pipeline résumé.</li>
+    <li><b>Revenus</b> — chiffre d'affaires par soin, par praticien et impact des conventions.</li>
+    <li><b>Calendrier</b> — vue mensuelle des rendez-vous, couleurs par praticien.</li>
+  </ul>
+
+  <h3>CRM <span style="color:var(--muted);font-weight:400;font-size:15px">— le travail quotidien</span></h3>
+  <ul class="clean">
+    <li><b>Pipeline</b> — vue kanban : on déplace chaque client d'une étape à l'autre.</li>
+    <li><b>Rendez-vous</b> — la liste complète, filtrable et exportable en CSV.</li>
+    <li><b>Messages</b> — les demandes reçues depuis le site web.</li>
+    <li><b>Clients</b> — l'annuaire : chaque contact et son historique de séjours.</li>
+    <li><b>Entreprises</b> — les conventions B2B et leurs remises.</li>
+    <li><b>Praticiens</b> — l'équipe soignante et leurs espaces de travail.</li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="cycle">
+  <div class="kicker">Section 03</div>
+  <h2 class="title"><span class="num">03</span>Le cycle d'un client</h2>
+  <p class="lead">Medical Bay agit comme une agence : on capte des clients, puis on les accompagne côté commercial. Chaque client suit cinq étapes, visibles comme des colonnes dans le <b>Pipeline</b>.</p>
+
+  <div class="flow">
+    <div class="node"><div class="lbl">Nouveau</div><div class="sub">Prospect reçu</div><div class="arrow"></div></div>
+    <div class="node"><div class="lbl">Confirmé</div><div class="sub">+ assignation</div><div class="arrow"></div></div>
+    <div class="node"><div class="lbl">En cours</div><div class="sub">Séjour / soin</div><div class="arrow"></div></div>
+    <div class="node"><div class="lbl">Terminé</div><div class="sub">Clôturé</div></div>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th style="width:140px">Étape</th><th>Ce qu'elle signifie</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip c-new">Nouveau</span></td><td>Le prospect vient d'arriver (site web ou ajout manuel). <b>Aucun praticien n'est encore assigné.</b></td></tr>
+      <tr><td><span class="chip c-conf">Confirmé</span></td><td>L'admin valide le client — une fenêtre s'ouvre pour <b>l'assigner à un praticien</b>.</td></tr>
+      <tr><td><span class="chip c-prog">En cours</span></td><td>Le séjour ou le soin est en cours de réalisation.</td></tr>
+      <tr><td><span class="chip c-done">Terminé</span></td><td>Le dossier est clôturé ; le chiffre d'affaires est comptabilisé.</td></tr>
+      <tr><td><span class="chip c-cancel">Annulé</span></td><td>Le client n'a pas donné suite ou a annulé.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="t">Règle importante</span>
+    L'assignation à un praticien <b>n'a lieu qu'une fois le client confirmé</b>. Un prospect au statut « Nouveau » reste volontairement sans praticien — on ne mobilise l'équipe que sur des dossiers validés.
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="ajouter">
+  <div class="kicker">Section 04</div>
+  <h2 class="title"><span class="num">04</span>Ajouter un client</h2>
+  <p class="lead">Un client peut entrer dans le CRM de deux manières.</p>
+
+  <div class="steps">
+    <div class="step"><div class="body"><h4>Depuis le site web</h4><p>Le visiteur remplit un formulaire → la demande arrive dans <b>Messages</b> → l'admin clique sur « Créer client » pour la convertir.</p></div></div>
+    <div class="step"><div class="body"><h4>Manuellement</h4><p>Cliquer sur <b>Nouveau client</b> (barre du haut ou menu) et remplir la fiche : prénom, nom, contact, soin souhaité, source, date, valeur estimée, éventuelle convention.</p></div></div>
+  </div>
+
+  <div class="note">
+    <span class="t">À retenir</span>
+    Dans les deux cas, le client est créé au statut <span class="chip c-new">Nouveau</span> et le champ praticien affiche « <i>Assigné après confirmation</i> ». L'assignation viendra plus tard.
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="fiche">
+  <div class="kicker">Section 05</div>
+  <h2 class="title"><span class="num">05</span>La fiche client</h2>
+  <p class="lead">Un clic sur n'importe quel client ouvre son panneau de détail, organisé en trois onglets.</p>
+  <ul class="clean">
+    <li><b>Fiche</b> — coordonnées, tags (VIP, Prioritaire, Urgent…), soin, source, praticien assigné, convention/entreprise, valeur estimée, rappel de suivi, notes internes et changement de statut.</li>
+    <li><b>Journal</b> — l'historique de contact : appel, e-mail, WhatsApp ou note. On peut écrire un e-mail et l'envoyer directement depuis l'onglet.</li>
+    <li><b>Historique</b> — la trace automatique de tous les changements de statut, horodatés.</li>
+  </ul>
+  <div class="note">
+    <span class="t">Suivi</span>
+    Définissez une <b>date de suivi</b> sur une fiche : les suivis en retard ou prévus aujourd'hui remontent automatiquement en alerte sur la Vue d'ensemble.
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="assignation">
+  <div class="kicker">Section 06</div>
+  <h2 class="title"><span class="num">06</span>Confirmer &amp; assigner</h2>
+  <p class="lead">C'est le cœur du flux commercial. Voici précisément ce qui se passe quand l'admin confirme un client.</p>
+
+  <div class="steps">
+    <div class="step"><div class="body"><h4>L'admin passe le client en « Confirmé »</h4><p>Depuis le pipeline (boutons rapides de la carte) ou depuis la fiche (menu Statut).</p></div></div>
+    <div class="step"><div class="body"><h4>Une fenêtre d'assignation s'ouvre automatiquement</h4><p>Elle liste tous les praticiens. L'admin choisit celui qui prendra le dossier, puis clique sur « Assigner le praticien ».</p></div></div>
+    <div class="step"><div class="body"><h4>Le client apparaît chez le praticien</h4><p>Dans l'espace du praticien, le dossier s'affiche dans « Mon pipeline » avec son étape — il sait immédiatement sur quoi travailler.</p></div></div>
+  </div>
+
+  <div class="note">
+    <span class="t">Astuce</span>
+    Vous pouvez aussi reporter l'assignation (« Plus tard ») ou changer le praticien à tout moment depuis la fiche, champ <b>Praticien assigné</b>.
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="praticien">
+  <div class="kicker">Section 07</div>
+  <h2 class="title"><span class="num">07</span>L'espace praticien</h2>
+  <p class="lead">Quand un praticien se connecte avec son code, il arrive sur un espace réduit à ses propres dossiers — il ne voit jamais les clients des autres.</p>
+  <ul class="clean">
+    <li><b>Mon espace</b> — ses indicateurs (clients actifs, pipeline, CA réalisé, RDV à venir) et son pipeline personnel.</li>
+    <li><b>Rendez-vous</b> — la liste de ses clients uniquement.</li>
+    <li><b>Calendrier</b> — ses rendez-vous à venir.</li>
+    <li><b>Clients</b> — l'annuaire de ses contacts.</li>
+    <li><b>Ajouter un client</b> — le praticien peut créer un client qui lui est <b>directement attribué</b>.</li>
+  </ul>
+</section>
+
+<!-- 8 -->
+<section id="gerer-praticiens">
+  <div class="kicker">Section 08</div>
+  <h2 class="title"><span class="num">08</span>Gérer les praticiens <span style="font-size:14px;color:var(--muted);font-weight:600">(admin)</span></h2>
+  <p class="lead">Dans la rubrique <b>Praticiens</b>, l'admin pilote l'équipe soignante.</p>
+
+  <div class="steps">
+    <div class="step"><div class="body"><h4>Ajouter un praticien</h4><p>Bouton <b>« + Praticien »</b> en haut de la liste. Renseignez : nom complet, nom court (optionnel), spécialité et un <b>code de connexion</b> (le mot de passe du praticien). Une couleur lui est attribuée automatiquement.</p></div></div>
+    <div class="step"><div class="body"><h4>Sélectionner un praticien</h4><p>Cliquez sur sa carte pour ouvrir son espace de travail et suivre ses dossiers.</p></div></div>
+    <div class="step"><div class="body"><h4>Supprimer un praticien</h4><p>Icône corbeille au survol de sa carte (avec confirmation). Ses clients déjà assignés ne sont pas supprimés — ils devront simplement être réassignés.</p></div></div>
+  </div>
+
+  <div class="note warn">
+    <span class="t">Prérequis technique</span>
+    Pour que les nouveaux praticiens soient <b>enregistrés durablement</b>, la table <span class="key">practitioners</span> doit exister dans Supabase (script <span class="key">supabase/schema.sql</span>). Sans elle, l'application fonctionne avec l'équipe par défaut, mais un praticien ajouté disparaît au rechargement.
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="entreprises">
+  <div class="kicker">Section 09</div>
+  <h2 class="title"><span class="num">09</span>Entreprises &amp; conventions</h2>
+  <p class="lead">La rubrique <b>Entreprises</b> gère les partenaires B2B (compagnies, mutuelles…) avec lesquels Medical Bay a une convention.</p>
+  <ul class="clean">
+    <li>Chaque entreprise possède une <b>remise</b> (en %) et un statut Active / Inactive.</li>
+    <li>En liant un client à une entreprise (sur sa fiche), la remise s'applique : la <b>valeur nette</b> est calculée automatiquement.</li>
+    <li>L'impact des conventions est visible dans la rubrique <b>Revenus</b>.</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section id="messages">
+  <div class="kicker">Section 10</div>
+  <h2 class="title"><span class="num">10</span>Messages &amp; rendez-vous</h2>
+  <ul class="clean">
+    <li><b>Messages</b> — les demandes du site web. On peut les marquer comme lues et les <b>convertir en client</b> en un clic.</li>
+    <li><b>Rendez-vous</b> — la liste complète des clients : filtres par statut et par tag, recherche, et <b>export CSV</b> pour Excel / comptabilité.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="revenus">
+  <div class="kicker">Section 11</div>
+  <h2 class="title"><span class="num">11</span>Calendrier &amp; revenus</h2>
+  <ul class="clean">
+    <li><b>Calendrier</b> — vue mensuelle ; chaque rendez-vous est repéré par la couleur de son praticien. Cliquez un jour pour voir le détail.</li>
+    <li><b>Revenus</b> — CA réalisé, pipeline potentiel, remises accordées, et répartition par soin et par praticien.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section id="faq" style="border-bottom:none">
+  <div class="kicker">Section 12</div>
+  <h2 class="title"><span class="num">12</span>Questions fréquentes</h2>
+
+  <h3>Pourquoi un nouveau client n'a-t-il pas de praticien ?</h3>
+  <p>C'est voulu : on n'assigne un praticien qu'au moment de la confirmation. Tant que le client est « Nouveau », il reste un prospect côté commercial.</p>
+
+  <h3>La fenêtre d'assignation ne s'est pas ouverte. Pourquoi ?</h3>
+  <p>Elle n'apparaît que pour l'<b>admin</b>, lorsqu'un client <b>sans praticien</b> passe en « Confirmé ». Si le client était déjà assigné (par exemple ajouté par un praticien), aucune fenêtre n'est nécessaire.</p>
+
+  <h3>Un praticien peut-il voir les clients des autres ?</h3>
+  <p>Non. Chaque praticien est strictement limité à ses propres dossiers.</p>
+
+  <h3>J'ai ajouté un praticien mais il a disparu après rechargement.</h3>
+  <p>La table <span class="key">practitioners</span> n'est probablement pas encore créée dans Supabase. Exécutez le script <span class="key">supabase/schema.sql</span> (section pratiens) dans l'éditeur SQL de Supabase.</p>
+
+  <h3>Comment exporter les données ?</h3>
+  <p>Dans <b>Rendez-vous</b>, bouton <b>Export CSV</b> — vous obtenez l'ensemble des clients dans un fichier exploitable.</p>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="logo">MEDICAL BAY</div>
+    <p style="margin-top:8px">Guide du tableau de bord CRM · Agadir, Maroc · Mis à jour en juin 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
