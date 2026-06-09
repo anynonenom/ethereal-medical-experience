@@ -166,7 +166,7 @@ export default function Navbar() {
               <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma</a>
               <a href="tel:+212668686800" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5" /> +212 668 68 68 00</a>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 {SOCIALS.map(({ Icon, href, label }) => (
                   <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label}
