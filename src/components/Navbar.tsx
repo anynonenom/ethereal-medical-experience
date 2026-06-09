@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useState } from "react";
 import { Menu, X, Calendar, Mail, Phone, Facebook, Instagram, Linkedin, MapPin } from "lucide-react";
@@ -18,9 +18,13 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { lang } = useLang();
   const { scrollY }             = useScroll();
+  const { pathname }            = useLocation();
   const n                       = T[lang].nav;
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 40));
+
+  // Transparent white header over the homepage hero (only at top, not scrolled).
+  const transparent = pathname === "/" && !scrolled;
 
   const links = [
     { to: "/",                       label: n.home    },
@@ -73,9 +77,11 @@ export default function Navbar() {
 
         {/* ── Main nav row ──────────────────────────────────────────────── */}
         <div className={`transition-all duration-500 ${
-          scrolled
-            ? "bg-background/95 backdrop-blur-xl border-b border-border/60 shadow-sm"
-            : "bg-background/80 backdrop-blur-md border-b border-border/20"
+          transparent
+            ? "bg-transparent border-b border-transparent"
+            : scrolled
+              ? "bg-background/95 backdrop-blur-xl border-b border-border/60 shadow-sm"
+              : "bg-background/80 backdrop-blur-md border-b border-border/20"
         }`}>
           <div className="container flex items-center justify-between h-[68px]">
 
@@ -86,10 +92,10 @@ export default function Navbar() {
                 <img src={logoMark} alt="Medical Bay" className="w-7 h-7 brightness-0 invert" />
               </motion.div>
               <div className="leading-none">
-                <div className="font-display font-black tracking-[0.18em] text-[12px] uppercase text-foreground">
+                <div className={`font-display font-black tracking-[0.18em] text-[12px] uppercase transition-colors ${transparent ? "text-white" : "text-foreground"}`}>
                   MEDICAL BAY
                 </div>
-                <div className="text-[8px] tracking-[0.4em] uppercase mt-0.5 font-bold text-muted-foreground">
+                <div className={`text-[8px] tracking-[0.4em] uppercase mt-0.5 font-bold transition-colors ${transparent ? "text-white/60" : "text-muted-foreground"}`}>
                   Agadir · Maroc
                 </div>
               </div>
@@ -101,7 +107,9 @@ export default function Navbar() {
                 <NavLink key={l.to} to={l.to}
                   className={({ isActive }) =>
                     `relative px-4 py-2.5 text-[10px] uppercase tracking-[0.26em] font-bold transition-colors duration-200 ${
-                      isActive ? "text-primary" : "text-foreground/55 hover:text-foreground"
+                      transparent
+                        ? (isActive ? "text-white" : "text-white/70 hover:text-white")
+                        : (isActive ? "text-primary" : "text-foreground/55 hover:text-foreground")
                     }`
                   }>
                   {({ isActive }) => (
@@ -120,9 +128,9 @@ export default function Navbar() {
             {/* Right controls — CTA lives in the top bar to avoid duplication */}
             <div className="flex items-center gap-2">
               <button onClick={() => setOpen(true)}
-                className="lg:hidden w-10 h-10 grid place-items-center border border-border/70 rounded-none transition-colors hover:border-primary"
+                className={`lg:hidden w-10 h-10 grid place-items-center border rounded-none transition-colors hover:border-primary ${transparent ? "border-white/40" : "border-border/70"}`}
                 aria-label="Menu">
-                <Menu className="w-4 h-4 text-foreground" />
+                <Menu className={`w-4 h-4 transition-colors ${transparent ? "text-white" : "text-foreground"}`} />
               </button>
             </div>
           </div>
