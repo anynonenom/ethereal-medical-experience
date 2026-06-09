@@ -23,7 +23,7 @@ const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/de
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
 const HERO_SLIDES = {
   fr: [
-    {
+    /*{
       img: transitionBg,
       badge: "Medical Bay · Agadir, Maroc",
       line1: "Votre sourire",
@@ -42,7 +42,7 @@ const HERO_SLIDES = {
       cta1: "DEVIS GRATUIT · 24H",
       cta2: "Voir les soins",
       ctaLink: "/dentisterie-esthetique",
-    },
+    },*/
     {
       img: agadirMarina,
       badge: "Tourisme Médical · Agadir",
@@ -75,7 +75,7 @@ const HERO_SLIDES = {
     },
   ],
   en: [
-    {
+    /*{
       img: transitionBg,
       badge: "Medical Bay · Agadir, Morocco",
       line1: "Your smile",
@@ -94,7 +94,7 @@ const HERO_SLIDES = {
       cta1: "FREE QUOTE · 24H",
       cta2: "View treatments",
       ctaLink: "/dentisterie-esthetique",
-    },
+    },*/
     {
       img: agadirMarina,
       badge: "Medical Tourism · Agadir",
