@@ -4,20 +4,18 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Star, Quote, Plus, Instagram, Heart, MessageCircle, Plane, Stethoscope, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "@/components/Layout";
 import agadirCoast from "@/assets/agadir-coast.png";
-import clinic from "@/assets/clinic-interior.jpg";
 import heroSmile from "@/assets/hero-smile.jpg";
 import rect3 from "@/assets/rectangle-3.webp";
 import rect4 from "@/assets/rectangle-4-2.webp";
 import transitionBg from "@/assets/transition-bg.jpg";
 import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
+import implantImg from "@/assets/IMPL.jpg";
+import blanchimentImg from "@/assets/BLACHIMENT.jpg";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
-const serviceImgs = [heroSmile, clinic,
-  "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800",
-  agadirCoast,
-];
+const serviceImgs = [heroSmile, implantImg, blanchimentImg, agadirCoast];
 const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/dentisterie-esthetique", "/tourisme-medical"];
 
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
