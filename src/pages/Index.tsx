@@ -179,11 +179,11 @@ function Hero() {
         />
       </AnimatePresence>
 
-      {/* Gradient overlays — lightened so more of the image shows through */}
+      {/* Gradient overlays — kept light; text legibility comes from text-shadow */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to right, hsl(var(--ink) / 0.62) 0%, hsl(var(--ink) / 0.3) 55%, hsl(var(--ink) / 0.05) 100%)" }} />
+        style={{ background: "linear-gradient(to right, hsl(var(--ink) / 0.42) 0%, hsl(var(--ink) / 0.16) 55%, transparent 100%)" }} />
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.4) 0%, transparent 45%)" }} />
+        style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.28) 0%, transparent 45%)" }} />
 
       {/* Badge, pinned to top, always below navbar */}
       <div className="absolute top-[88px] sm:top-[96px] md:top-[128px] left-0 right-0 container z-10">
@@ -211,7 +211,7 @@ function Hero() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-3xl w-full mt-8 md:mt-4"
           >
-            <h1 className="mb-4 sm:mb-6 md:mb-8">
+            <h1 className="mb-4 sm:mb-6 md:mb-8 [text-shadow:0_2px_28px_rgba(0,0,0,0.5)]">
               <span className="display block text-[clamp(36px,6vw,118px)] leading-[0.88] text-white">
                 {slide.line1}
               </span>
@@ -220,7 +220,7 @@ function Hero() {
               </span>
             </h1>
 
-            <p className="text-white/55 text-sm sm:text-base lg:text-xl font-light leading-relaxed max-w-sm mb-6 sm:mb-8 md:mb-12">
+            <p className="text-white/85 text-sm sm:text-base lg:text-xl font-light leading-relaxed max-w-sm mb-6 sm:mb-8 md:mb-12 [text-shadow:0_2px_16px_rgba(0,0,0,0.6)]">
               {slide.sub}
             </p>
 
