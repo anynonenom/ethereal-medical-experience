@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence }
 import { useRef, useState } from "react";
 import Layout from "@/components/Layout";
 import { Plane, Hotel, Building2, Stethoscope, ArrowRight, MapPin, CheckCircle2, Waves } from "lucide-react";
-import coast from "@/assets/agadir-coast.jpg";
+import coast from "@/assets/agadir-coast.png";
 import luxury from "@/assets/luxury-stay.jpg";
 import clinic from "@/assets/clinic-interior.jpg";
 import { openBooking } from "@/components/BookingModal";
