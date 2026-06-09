@@ -17,6 +17,8 @@ import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
 const serviceImgs = [heroSmile, implantImg, blanchimentImg, agadirCoast];
+// Per-image crop anchor for the service gallery (portrait frame) so subjects aren't cut off.
+const serviceImgPos = ["object-center", "object-center", "object-top", "object-center"];
 const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/dentisterie-esthetique", "/tourisme-medical"];
 
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
@@ -387,7 +389,7 @@ function Services() {
                   initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover" />
+                  className={`absolute inset-0 w-full h-full object-cover ${serviceImgPos[hovered]}`} />
               </AnimatePresence>
               <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))/60] to-transparent" />
               <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
@@ -606,33 +608,54 @@ function Destination() {
   const imgY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
 
   return (
-    <section ref={ref} className="relative h-[85vh] min-h-[560px] overflow-hidden border-b border-border">
-      <motion.div style={{ y: imgY }} className="absolute inset-0 z-0">
-        <img src={agadirMarina} alt="Agadir" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-[hsl(var(--ink))/45]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))] via-[hsl(var(--ink))/70] to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--ink))/95] via-[hsl(var(--ink))/45] to-transparent" />
-      </motion.div>
-      <div className="absolute inset-0 z-10 container flex flex-col justify-end pb-20 md:pb-28">
-        <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.85 }} className="max-w-2xl">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-8 h-px bg-primary" />
-            <span className="text-[10px] tracking-[0.55em] uppercase font-bold text-primary">{d.label}</span>
-          </div>
-          <h2 className="display text-[clamp(40px,6.5vw,96px)] leading-[0.9] text-white mb-10 [text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
-            {d.title}<br /><span className="serif-it text-primary">{d.titleEm}</span>
-          </h2>
-          <p className="text-white text-lg font-light leading-relaxed max-w-md mb-12 [text-shadow:0_2px_16px_rgba(0,0,0,0.7)]">{d.body}</p>
-          <div className="flex items-center gap-10">
-            {d.stats.map(([n, l]) => (
-              <div key={l}>
-                <div className="display text-2xl text-primary [text-shadow:0_2px_14px_rgba(0,0,0,0.6)]">{n}</div>
-                <div className="text-[9px] tracking-[0.3em] uppercase text-white/80 font-bold mt-1 [text-shadow:0_1px_10px_rgba(0,0,0,0.7)]">{l}</div>
+    <section ref={ref} className="relative bg-[hsl(var(--ink))] border-b border-border overflow-hidden">
+      {/* soft radial glow accent */}
+      <div className="absolute -top-1/3 -right-1/4 w-[60%] h-[120%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
+
+      <div className="container relative z-10 py-20 md:py-28">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+          {/* Content panel */}
+          <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.8 }} className="order-2 lg:order-1">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-8 h-px bg-primary" />
+              <span className="text-[10px] tracking-[0.55em] uppercase font-bold text-primary">{d.label}</span>
+            </div>
+            <h2 className="display text-[clamp(40px,5.5vw,80px)] leading-[0.95] text-white mb-8">
+              {d.title}<br /><span className="serif-it text-primary">{d.titleEm}</span>
+            </h2>
+            <p className="text-white/65 text-lg font-light leading-relaxed max-w-md mb-12">{d.body}</p>
+            <div className="grid grid-cols-3 gap-5 max-w-md">
+              {d.stats.map(([n, l]) => (
+                <div key={l} className="border-l border-white/15 pl-4">
+                  <div className="display text-3xl md:text-4xl text-primary mb-1.5">{n}</div>
+                  <div className="text-[9px] tracking-[0.25em] uppercase text-white/45 font-bold leading-tight">{l}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Framed image with parallax */}
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="order-1 lg:order-2 relative">
+            <div className="relative overflow-hidden shadow-2xl" style={{ aspectRatio: "4/5" }}>
+              <motion.img style={{ y: imgY }} src={agadirMarina} alt="Marina d'Agadir"
+                className="absolute -top-[8%] left-0 w-full h-[116%] object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))/55] via-transparent to-transparent" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
+              <div className="absolute bottom-6 left-6 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-white/80">Agadir, Maroc</span>
               </div>
-            ))}
-          </div>
-        </motion.div>
+            </div>
+            {/* decorative corner frame */}
+            <div className="absolute -bottom-5 -right-5 w-28 h-28 border-r-2 border-b-2 border-primary/40 hidden lg:block" />
+            <div className="absolute -top-5 -left-5 w-20 h-20 border-l-2 border-t-2 border-white/10 hidden lg:block" />
+          </motion.div>
+
+        </div>
       </div>
     </section>
   );
