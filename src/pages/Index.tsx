@@ -7,7 +7,8 @@ import agadirCoast from "@/assets/agadir-coast.png";
 import heroSmile from "@/assets/hero-smile.jpg";
 import rect3 from "@/assets/rectangle-3.webp";
 import rect4 from "@/assets/rectangle-4-2.webp";
-import transitionBg from "@/assets/transition-bg.jpg";
+import clinic from "@/assets/clinic-interior.jpg";
+import transitionBg from "@/assets/transition-bg.png";
 import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
 import implantImg from "@/assets/IMPL.jpg";
@@ -21,7 +22,7 @@ const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/de
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
 const HERO_SLIDES = {
   fr: [
-    /*{
+    {
       img: transitionBg,
       badge: "Medical Bay · Agadir, Maroc",
       line1: "Votre sourire",
@@ -31,7 +32,7 @@ const HERO_SLIDES = {
       cta2: "Découvrir le séjour",
       ctaLink: "/tourisme-medical",
     },
-    {
+    /*{
       img: clinic,
       badge: "Implantologie & Couronnes",
       line1: "Des résultats",
@@ -51,7 +52,7 @@ const HERO_SLIDES = {
       cta2: "En savoir plus",
       ctaLink: "/tourisme-medical",
     },
-    {
+    /*{
       img: rect4,
       badge: "Medical Bay · Accueil & Confort",
       line1: "Un cadre",
@@ -60,7 +61,7 @@ const HERO_SLIDES = {
       cta1: "DEVIS GRATUIT · 24H",
       cta2: "Découvrir la clinique",
       ctaLink: "/dentisterie-esthetique",
-    },
+    },*/
     {
       img: rect3,
       badge: "Medical Bay · Consultation",
@@ -73,7 +74,7 @@ const HERO_SLIDES = {
     },
   ],
   en: [
-    /*{
+    {
       img: transitionBg,
       badge: "Medical Bay · Agadir, Morocco",
       line1: "Your smile",
@@ -83,7 +84,7 @@ const HERO_SLIDES = {
       cta2: "Discover the stay",
       ctaLink: "/tourisme-medical",
     },
-    {
+    /*{
       img: clinic,
       badge: "Implantology & Crowns",
       line1: "Results that",
@@ -103,7 +104,7 @@ const HERO_SLIDES = {
       cta2: "Learn more",
       ctaLink: "/tourisme-medical",
     },
-    {
+    /*{
       img: rect4,
       badge: "Medical Bay · Reception",
       line1: "A world-class",
@@ -112,7 +113,7 @@ const HERO_SLIDES = {
       cta1: "FREE QUOTE · 24H",
       cta2: "Discover the clinic",
       ctaLink: "/dentisterie-esthetique",
-    },
+    },*/
     {
       img: rect3,
       badge: "Medical Bay · Consultation",
