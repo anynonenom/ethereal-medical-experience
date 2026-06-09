@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,23 +12,36 @@ import {
   Bell, BellOff, Kanban, Menu,
   Send, Copy, CheckCheck, UserPlus, Activity,
   RefreshCw, Loader2, Stethoscope,
+  Building2, Percent, PieChart, Briefcase, AlertTriangle,
 } from "lucide-react";
 import logoMark from "@/assets/medicalbay-logo-mark.png";
 import { supabase } from "@/lib/supabase";
 import { sendEmail } from "@/lib/email";
 import {
-  fetchBookings, fetchMessages,
+  fetchBookings, fetchMessages, fetchCompanies,
   createBooking, updateBookingFields, changeBookingStatus,
   deleteBooking as apiDeleteBooking, addContactLog,
   markMessageRead, markAllMessagesRead,
   deleteMessage as apiDeleteMessage,
+  createCompany, updateCompany, deleteCompany as apiDeleteCompany,
 } from "@/lib/crm-api";
 import type {
   Booking, Message, BookingStatus, ContactEntry, HistoryEntry, LogType, LeadSource,
+  Company, CompanyStatus,
 } from "@/lib/crm-api";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-type Tab = "overview" | "pipeline" | "bookings" | "messages" | "patients" | "calendar" | "dentists";
+type Tab = "overview" | "analytics" | "pipeline" | "bookings" | "messages" | "patients" | "calendar" | "dentists" | "companies";
+
+// ─── COMPANIES CONTEXT ────────────────────────────────────────────────────────
+// The partner-company list is read in many places (booking fiche, new-lead form,
+// analytics). A small context avoids threading it through every component.
+const CompaniesContext = createContext<Company[]>([]);
+const useCompanies = () => useContext(CompaniesContext);
+const companyMeta = (companies: Company[], id?: string) => companies.find(c => c.id === id);
+// Convention pricing: a booking linked to a company gets that company's discount.
+const discountFor = (companies: Company[], id?: string) => companyMeta(companies, id)?.discount ?? 0;
+const netValue = (value: number, discountPct: number) => Math.round(value * (1 - discountPct / 100));
 
 // ─── DENTISTS ─────────────────────────────────────────────────────────────────
 // Each booking is assigned to one practitioner. Colours are reused across the
@@ -107,8 +120,8 @@ const SERVICES = ["Smile Design complet","Facettes porcelaine E-max","Implantolo
 const SOURCES: LeadSource[] = ["Site web","WhatsApp","Instagram","Google","Facebook","Référence","Autre"];
 
 const SECTION_OF: Record<Tab, "dashboard" | "crm"> = {
-  overview: "dashboard", calendar: "dashboard",
-  pipeline: "crm", bookings: "crm", messages: "crm", patients: "crm", dentists: "crm",
+  overview: "dashboard", calendar: "dashboard", analytics: "dashboard",
+  pipeline: "crm", bookings: "crm", messages: "crm", patients: "crm", dentists: "crm", companies: "crm",
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -210,10 +223,11 @@ function LoginGate({ onLogin }: { onLogin: (s: Session) => void }) {
 }
 
 // ─── NEW LEAD MODAL ───────────────────────────────────────────────────────────
-const BLANK_FORM = { nom: "", prenom: "", email: "", phone: "", service: "Consultation générale", dentist: "", origin: "", date: "", source: "Site web" as LeadSource, value: "", notes: "" };
+const BLANK_FORM = { nom: "", prenom: "", email: "", phone: "", service: "Consultation générale", dentist: "", origin: "", date: "", source: "Site web" as LeadSource, value: "", notes: "", companyId: "" };
 
-function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose: () => void }) {
-  const [form, setForm] = useState(BLANK_FORM);
+function NewLeadModal({ onAdd, onClose, lockedDentist }: { onAdd: (b: Booking) => void; onClose: () => void; lockedDentist?: string }) {
+  const companies = useCompanies();
+  const [form, setForm] = useState({ ...BLANK_FORM, dentist: lockedDentist ?? "" });
   const [saving, setSaving] = useState(false);
   const set = (k: keyof typeof BLANK_FORM, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -230,6 +244,7 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
       status: "Nouveau", notes: form.notes, tags: [],
       source: form.source as LeadSource,
       value: Number(form.value) || SERVICE_REVENUE[form.service] || 0,
+      companyId: form.companyId || undefined,
       contactLog: [],
       history: [{ ts: new Date().toISOString(), action: "Lead créé manuellement" }],
     };
@@ -303,12 +318,26 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
                 </label>
                 <label className="block group">
                   <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Praticien assigné</span>
-                  <select value={form.dentist || dentistForService(form.service)} onChange={e => set("dentist", e.target.value)}
-                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
-                    {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
-                  </select>
+                  {lockedDentist ? (
+                    <div className="w-full mt-2 border-b border-border py-2.5 flex items-center"><DentistChip name={lockedDentist} /></div>
+                  ) : (
+                    <select value={form.dentist || dentistForService(form.service)} onChange={e => set("dentist", e.target.value)}
+                      className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
+                      {DENTISTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.specialty}</option>)}
+                    </select>
+                  )}
                 </label>
               </div>
+              <label className="block group">
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors flex items-center gap-1.5"><Building2 className="w-2.5 h-2.5" /> Entreprise / Convention <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
+                <select value={form.companyId} onChange={e => set("companyId", e.target.value)}
+                  className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
+                  <option value="">Aucune (patient direct)</option>
+                  {companies.filter(c => c.status === "Active").map(c => (
+                    <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>
+                  ))}
+                </select>
+              </label>
               <label className="block group">
                 <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Notes <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
                 <textarea rows={2} placeholder="Informations utiles…" value={form.notes} onChange={e => set("notes", e.target.value)}
@@ -328,17 +357,67 @@ function NewLeadModal({ onAdd, onClose }: { onAdd: (b: Booking) => void; onClose
   );
 }
 
+// ─── CONFIRM DIALOG ───────────────────────────────────────────────────────────
+// Shared confirmation modal — used before any destructive delete.
+export interface ConfirmRequest {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  onConfirm: () => void;
+}
+
+function ConfirmDialog({ req, onClose }: { req: ConfirmRequest; onClose: () => void }) {
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-[110] backdrop-blur-sm"
+        style={{ background: "hsl(var(--ink) / 0.6)" }} />
+      <div className="fixed inset-0 z-[111] overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0, y: 20, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-md bg-background border border-border shadow-2xl">
+            <div className="p-8">
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-11 h-11 bg-red-50 border border-red-200 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <h2 className="display text-xl text-foreground mb-1">{req.title}</h2>
+                  <p className="text-sm text-muted-foreground font-light leading-relaxed">{req.message}</p>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => { req.onConfirm(); onClose(); }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-3.5 text-[10px] tracking-[0.3em] uppercase font-bold hover:bg-red-600 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" /> {req.confirmLabel ?? "Supprimer"}
+                </button>
+                <button onClick={onClose}
+                  className="px-6 py-3.5 border border-border text-[10px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 const DASHBOARD_NAV = [
-  { id: "overview" as Tab, label: "Vue d'ensemble", icon: LayoutDashboard },
-  { id: "calendar" as Tab, label: "Calendrier",     icon: BarChart3 },
+  { id: "overview" as Tab,  label: "Vue d'ensemble", icon: LayoutDashboard },
+  { id: "analytics" as Tab, label: "Revenus",        icon: PieChart },
+  { id: "calendar" as Tab,  label: "Calendrier",     icon: BarChart3 },
 ];
 const CRM_NAV = [
-  { id: "pipeline" as Tab, label: "Pipeline",       icon: Kanban },
-  { id: "bookings" as Tab, label: "Rendez-vous",    icon: Calendar },
-  { id: "messages" as Tab, label: "Messages",       icon: MessageSquare },
-  { id: "patients" as Tab, label: "Patients",       icon: Users },
-  { id: "dentists" as Tab, label: "Praticiens",     icon: Stethoscope },
+  { id: "pipeline" as Tab,  label: "Pipeline",       icon: Kanban },
+  { id: "bookings" as Tab,  label: "Rendez-vous",    icon: Calendar },
+  { id: "messages" as Tab,  label: "Messages",       icon: MessageSquare },
+  { id: "patients" as Tab,  label: "Patients",       icon: Users },
+  { id: "companies" as Tab, label: "Entreprises",    icon: Building2 },
+  { id: "dentists" as Tab,  label: "Praticiens",     icon: Stethoscope },
 ];
 // Practitioner-scoped navigation — what a dentist sees once logged in.
 const DENTIST_NAV = [
@@ -697,6 +776,8 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
   const [logContent, setLogContent]     = useState("");
   const [activeSection, setActiveSection] = useState<"info" | "log" | "history">("info");
 
+  const companies = useCompanies();
+  const linkedCompany = companyMeta(companies, booking.companyId);
   const today = new Date().toISOString().slice(0, 10);
   const isOverdue = booking.followUp && booking.followUp < today;
 
@@ -707,6 +788,7 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
   const setFollowUp  = (date: string) => onUpdateFields({ ...booking, followUp: date || undefined });
   const setValue     = (v: number) => onUpdateFields({ ...booking, value: v });
   const setDentist   = (name: string) => onUpdateFields({ ...booking, dentist: name });
+  const setCompany   = (id: string) => onUpdateFields({ ...booking, companyId: id || undefined });
 
   const [emailSending, setEmailSending]   = useState(false);
   const [emailStatus, setEmailStatus]     = useState<"idle" | "ok" | "err">("idle");
@@ -815,11 +897,37 @@ function BookingDetail({ booking, onClose, onUpdateFields, onUpdateStatus, onAdd
               </select>
             </div>
 
+            {/* Entreprise / convention B2B */}
+            <div className="border-t border-border pt-4">
+              <div className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-2 flex items-center gap-1.5"><Building2 className="w-2.5 h-2.5" /> Entreprise / Convention</div>
+              {linkedCompany && (
+                <div className="mb-2 flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold border bg-primary/8 text-primary border-primary/25">
+                    <Building2 className="w-2.5 h-2.5" /> {linkedCompany.name}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <Percent className="w-2.5 h-2.5" /> -{linkedCompany.discount}%
+                  </span>
+                </div>
+              )}
+              <select value={booking.companyId ?? ""} onChange={e => setCompany(e.target.value)}
+                className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none cursor-pointer appearance-none">
+                <option value="">Aucune (patient direct)</option>
+                {companies.map(c => <option key={c.id} value={c.id}>{c.name} — remise {c.discount}%</option>)}
+              </select>
+            </div>
+
             {/* Value */}
             <div className="border-t border-border pt-4">
               <div className="text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground mb-1.5">Valeur estimée (MAD)</div>
               <input type="number" value={booking.value} onChange={e => setValue(Number(e.target.value))}
                 className="w-full bg-transparent border-b border-border py-2 outline-none focus:border-primary text-sm font-light text-foreground transition-colors rounded-none" />
+              {linkedCompany && linkedCompany.discount > 0 && (
+                <div className="mt-2 flex items-center justify-between text-[10px]">
+                  <span className="text-muted-foreground tracking-[0.15em] uppercase font-bold">Net après convention</span>
+                  <span className="display text-sm text-emerald-600 font-black">{netValue(booking.value, linkedCompany.discount).toLocaleString("fr")} MAD</span>
+                </div>
+              )}
             </div>
 
             {/* Follow-up */}
@@ -1592,8 +1700,11 @@ function CalendarTab({ bookings }: { bookings: Booking[] }) {
 }
 
 // ─── DENTISTS WORKSPACE ───────────────────────────────────────────────────────
-function DentistsTab({ bookings, lockedDentist }: { bookings: Booking[]; lockedDentist?: string }) {
+function DentistsTab({ bookings, lockedDentist, callbacks, onAddBooking }: {
+  bookings: Booking[]; lockedDentist?: string; callbacks: CRMCallbacks; onAddBooking: (b: Booking) => void;
+}) {
   const [selected, setSelected] = useState<string>(lockedDentist ?? DENTISTS[0].name);
+  const [adding, setAdding] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
 
   // Aggregated stats per practitioner.
@@ -1623,9 +1734,6 @@ function DentistsTab({ bookings, lockedDentist }: { bookings: Booking[]; lockedD
     [selBookings, today]
   );
   const unassigned = bookings.filter(b => !dentistMeta(b.dentist)).length;
-  const pipelineCols = (["Nouveau","Confirmé","En cours","Terminé"] as BookingStatus[])
-    .map(s => ({ label: s, count: selBookings.filter(b => b.status === s).length }));
-  const maxCol = Math.max(...pipelineCols.map(p => p.count), 1);
 
   const kpis = [
     { label: "Leads actifs", value: String(sel.active),                          icon: Zap,          color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
@@ -1687,9 +1795,15 @@ function DentistsTab({ bookings, lockedDentist }: { bookings: Booking[]; lockedD
               <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-muted-foreground">{d.specialty}</span>
             </div>
           </div>
-          <div className="hidden sm:block text-right shrink-0">
-            <div className="display text-2xl text-foreground font-black">{sel.patients}</div>
-            <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">patient{sel.patients > 1 ? "s" : ""}</div>
+          <div className="flex items-center gap-5 shrink-0">
+            <div className="hidden sm:block text-right">
+              <div className="display text-2xl text-foreground font-black">{sel.patients}</div>
+              <div className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground">patient{sel.patients > 1 ? "s" : ""}</div>
+            </div>
+            <button onClick={() => setAdding(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors shrink-0">
+              <UserPlus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Ajouter un patient</span>
+            </button>
           </div>
         </div>
 
@@ -1704,83 +1818,459 @@ function DentistsTab({ bookings, lockedDentist }: { bookings: Booking[]; lockedD
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_260px] gap-5">
-          {/* Upcoming appointments */}
-          <div className="bg-white border border-border shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-[#fafafa]">
-              <Calendar className="w-4 h-4 text-primary" />
-              <span className="display text-sm text-foreground">Prochains rendez-vous</span>
-            </div>
-            {selUpcoming.length === 0
-              ? <div className="px-6 py-10 text-center text-sm text-muted-foreground font-light">Aucun rendez-vous à venir</div>
-              : <div className="divide-y divide-border">
-                {selUpcoming.map(b => (
-                  <div key={b.id} className="flex items-center gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
-                    <div className="w-9 h-9 bg-primary/8 flex flex-col items-center justify-center shrink-0">
-                      <span className="display text-xs text-primary font-black leading-none">{new Date(b.date).getDate()}</span>
-                      <span className="text-[7px] uppercase text-primary/60 font-bold">{new Date(b.date).toLocaleDateString("fr-FR", { month: "short" })}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="display text-sm text-foreground truncate">{b.name}</div>
-                      <div className="text-[9px] text-muted-foreground truncate">{b.service}{b.value > 0 ? ` · ${b.value.toLocaleString("fr")} MAD` : ""}</div>
-                    </div>
-                    <StatusBadge status={b.status} />
-                  </div>
-                ))}
-              </div>
-            }
+        {/* Upcoming appointments */}
+        <div className="bg-white border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-[#fafafa]">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="display text-sm text-foreground">Prochains rendez-vous</span>
           </div>
-
-          {/* Pipeline breakdown */}
-          <div className="bg-white border border-border shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Kanban className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground">Pipeline</span>
-            </div>
-            <div className="space-y-3">
-              {pipelineCols.map(p => (
-                <div key={p.label} className="flex items-center gap-3">
-                  <div className="text-[9px] tracking-[0.1em] uppercase font-bold text-muted-foreground w-16 shrink-0">{p.label}</div>
-                  <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${(p.count / maxCol) * 100}%` }}
-                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className={`h-full ${STATUS_CFG[p.label].dot}`} />
+          {selUpcoming.length === 0
+            ? <div className="px-6 py-10 text-center text-sm text-muted-foreground font-light">Aucun rendez-vous à venir</div>
+            : <div className="divide-y divide-border">
+              {selUpcoming.map(b => (
+                <div key={b.id} className="flex items-center gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors">
+                  <div className="w-9 h-9 bg-primary/8 flex flex-col items-center justify-center shrink-0">
+                    <span className="display text-xs text-primary font-black leading-none">{new Date(b.date).getDate()}</span>
+                    <span className="text-[7px] uppercase text-primary/60 font-bold">{new Date(b.date).toLocaleDateString("fr-FR", { month: "short" })}</span>
                   </div>
-                  <div className="display text-sm text-foreground w-4 text-right shrink-0">{p.count}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="display text-sm text-foreground truncate">{b.name}</div>
+                    <div className="text-[9px] text-muted-foreground truncate">{b.service}{b.value > 0 ? ` · ${b.value.toLocaleString("fr")} MAD` : ""}</div>
+                  </div>
+                  <StatusBadge status={b.status} />
                 </div>
               ))}
             </div>
+          }
+        </div>
+
+        {/* Interactive pipeline — the practitioner works their own dossiers here */}
+        <div className="bg-white border border-border shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Kanban className="w-4 h-4 text-primary" />
+            <span className="display text-sm text-foreground">Mon pipeline · {selBookings.length} dossier{selBookings.length > 1 ? "s" : ""}</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground font-light mb-4">Changez l'étape d'un dossier ou ouvrez une fiche pour ajouter notes, contacts et suivis.</p>
+          {selBookings.length === 0
+            ? <div className="py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné — cliquez sur « Ajouter un patient » pour commencer.</div>
+            : <Pipeline bookings={selBookings} callbacks={callbacks} />}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {adding && <NewLeadModal lockedDentist={d.name} onAdd={onAddBooking} onClose={() => setAdding(false)} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── COMPANIES (B2B / CONVENTIONS) ────────────────────────────────────────────
+const newCompanyId = () => `CMP-${Date.now().toString(36).slice(-4).toUpperCase()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
+const BLANK_COMPANY: Company = { id: "", name: "", contactName: "", email: "", phone: "", sector: "", discount: 10, status: "Active", notes: "", signedAt: "" };
+
+function CompanyModal({ initial, onSave, onClose }: { initial: Company | null; onSave: (c: Company) => void; onClose: () => void }) {
+  const isEdit = !!initial;
+  const [form, setForm] = useState<Company>(initial ?? { ...BLANK_COMPANY });
+  const set = <K extends keyof Company>(k: K, v: Company[K]) => setForm(f => ({ ...f, [k]: v }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ ...form, id: form.id || newCompanyId(), name: form.name.trim() });
+    onClose();
+  };
+
+  const text = (label: string, key: keyof Company, type = "text", placeholder = "", required = false) => (
+    <label className="block group">
+      <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">{label}</span>
+      <input required={required} type={type} placeholder={placeholder}
+        value={(form[key] as string) ?? ""} onChange={e => set(key, e.target.value as Company[typeof key])}
+        className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none placeholder:text-foreground/25" />
+    </label>
+  );
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-[100] backdrop-blur-sm" style={{ background: "hsl(var(--ink) / 0.6)" }} />
+      <div className="fixed inset-0 z-[101] overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 py-10">
+          <motion.div initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.97 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-xl bg-background border border-border shadow-2xl">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-primary flex items-center justify-center"><Building2 className="w-3.5 h-3.5 text-white" /></div>
+                <h2 className="display text-xl text-foreground">{isEdit ? "Modifier l'entreprise" : "Nouvelle entreprise"}</h2>
+              </div>
+              <button onClick={onClose} className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"><X className="w-3.5 h-3.5" /></button>
+            </div>
+            <form onSubmit={submit} className="p-8 space-y-6">
+              {text("Nom de l'entreprise", "name", "text", "Royal Air Maroc", true)}
+              <div className="grid grid-cols-2 gap-5">
+                {text("Personne de contact", "contactName", "text", "Hicham Berrada")}
+                {text("Secteur", "sector", "text", "Aérien / Transport")}
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                {text("Email", "email", "email", "rh@entreprise.com")}
+                {text("Téléphone", "phone", "tel", "+212 5 22 00 00 00")}
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <label className="block group">
+                  <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Remise convention (%)</span>
+                  <input type="number" min={0} max={100} value={form.discount}
+                    onChange={e => set("discount", Math.max(0, Math.min(100, Number(e.target.value))))}
+                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none" />
+                </label>
+                <label className="block group">
+                  <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Statut</span>
+                  <select value={form.status} onChange={e => set("status", e.target.value as CompanyStatus)}
+                    className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light appearance-none rounded-none cursor-pointer">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </label>
+              </div>
+              <label className="block group">
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Date de signature</span>
+                <input type="date" value={form.signedAt ?? ""} onChange={e => set("signedAt", e.target.value)}
+                  className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light rounded-none" />
+              </label>
+              <label className="block group">
+                <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-muted-foreground group-focus-within:text-primary transition-colors">Notes / termes de la convention <span className="opacity-40 normal-case tracking-normal font-normal">(optionnel)</span></span>
+                <textarea rows={2} placeholder="Détails de l'accord…" value={form.notes} onChange={e => set("notes", e.target.value)}
+                  className="w-full mt-2 bg-transparent border-b border-border py-2.5 outline-none focus:border-primary transition-colors text-sm font-light resize-none rounded-none placeholder:text-foreground/25" />
+              </label>
+              <div className="flex gap-3 pt-2">
+                <button type="submit" className="flex-1 btn-primary !py-4 gap-2">
+                  {isEdit ? <><Save className="w-4 h-4" /> Enregistrer</> : <><Plus className="w-4 h-4" /> Ajouter l'entreprise</>}
+                </button>
+                <button type="button" onClick={onClose} className="px-6 py-4 border border-border text-[10px] tracking-[0.3em] uppercase font-bold text-muted-foreground hover:border-primary hover:text-primary transition-colors">Annuler</button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CompaniesTab({ companies, bookings, onAdd, onUpdate, onRequestDelete }: {
+  companies: Company[]; bookings: Booking[];
+  onAdd: (c: Company) => void; onUpdate: (c: Company) => void; onRequestDelete: (c: Company) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<Company | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  // Per-company performance: linked bookings, realised net revenue, discount granted.
+  const statsFor = (id: string) => {
+    const mine = bookings.filter(b => b.companyId === id);
+    const done = mine.filter(b => b.status === "Terminé");
+    const c = companies.find(x => x.id === id);
+    const disc = c?.discount ?? 0;
+    return {
+      total: mine.length,
+      patients: new Set(mine.map(b => b.email)).size,
+      revenue: done.reduce((a, b) => a + netValue(b.value, disc), 0),
+      granted: done.reduce((a, b) => a + (b.value - netValue(b.value, disc)), 0),
+    };
+  };
+
+  const filtered = useMemo(() => companies.filter(c => {
+    const q = search.toLowerCase();
+    return !q || c.name.toLowerCase().includes(q) || c.sector.toLowerCase().includes(q) || c.contactName.toLowerCase().includes(q);
+  }), [companies, search]);
+
+  const totals = useMemo(() => ({
+    active: companies.filter(c => c.status === "Active").length,
+    linked: bookings.filter(b => b.companyId).length,
+    revenue: companies.reduce((a, c) => a + statsFor(c.id).revenue, 0),
+  }), [companies, bookings]); // eslint-disable-line
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="display text-3xl text-foreground mb-1">Entreprises partenaires</h1>
+          <p className="text-sm text-muted-foreground font-light">{companies.length} convention{companies.length > 1 ? "s" : ""} B2B · {totals.active} active{totals.active > 1 ? "s" : ""}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
+              className="pl-9 pr-4 py-2 border border-border bg-background text-sm font-light outline-none focus:border-primary transition-colors w-44 rounded-none" />
+          </div>
+          <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-[9px] tracking-[0.3em] uppercase font-bold hover:bg-[hsl(var(--teal-deep))] transition-colors">
+            <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Nouvelle entreprise</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          { label: "Conventions actives", value: String(totals.active),                                icon: Briefcase,  color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+          { label: "Dossiers liés",       value: String(totals.linked),                                icon: Users,      color: "text-amber-600",   accent: "border-l-amber-400",   iconBg: "bg-amber-50" },
+          { label: "CA B2B réalisé",      value: `${totals.revenue.toLocaleString("fr")} MAD`,         icon: TrendingUp, color: "text-emerald-600", accent: "border-l-emerald-500", iconBg: "bg-emerald-50" },
+        ].map((s, i) => (
+          <div key={i} className={`bg-white border border-border border-l-4 ${s.accent} p-5 shadow-sm`}>
+            <div className={`w-9 h-9 ${s.iconBg} flex items-center justify-center mb-3`}><s.icon className={`w-4 h-4 ${s.color}`} /></div>
+            <div className={`display text-2xl font-black mb-0.5 ${s.color}`}>{s.value}</div>
+            <div className="text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Companies table */}
+      <div className="bg-white border border-border shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[820px]">
+          <thead>
+            <tr className="border-b-2 border-border bg-[#fafafa]">
+              {["Entreprise","Contact","Remise","Dossiers","CA réalisé","Statut",""].map(h => (
+                <th key={h} className="px-4 py-3.5 text-left text-[8px] tracking-[0.4em] uppercase font-black text-muted-foreground">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {filtered.length === 0
+              ? <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground font-light">Aucune entreprise</td></tr>
+              : filtered.map((c, idx) => {
+                const s = statsFor(c.id);
+                return (
+                  <tr key={c.id} className={idx % 2 === 0 ? "bg-white hover:bg-[#fafafa]" : "bg-[#fafafa]/50 hover:bg-[#f0f0f0]"}>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-primary/8 flex items-center justify-center shrink-0"><Building2 className="w-4 h-4 text-primary" /></div>
+                        <div>
+                          <div className="display text-sm text-foreground">{c.name}</div>
+                          <div className="text-[9px] text-muted-foreground">{c.sector || "—"}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="text-sm font-light text-foreground/70">{c.contactName || "—"}</div>
+                      <div className="text-[10px] text-muted-foreground">{c.email}</div>
+                    </td>
+                    <td className="px-4 py-3.5"><span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200"><Percent className="w-2.5 h-2.5" /> {c.discount}%</span></td>
+                    <td className="px-4 py-3.5"><span className="display text-sm text-foreground">{s.total}</span> <span className="text-[9px] text-muted-foreground">({s.patients} pat.)</span></td>
+                    <td className="px-4 py-3.5"><span className={`display text-sm ${s.revenue > 0 ? "text-emerald-600" : "text-muted-foreground/40"}`}>{s.revenue > 0 ? `${s.revenue.toLocaleString("fr")} MAD` : "—"}</span></td>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-[0.2em] uppercase font-bold border ${c.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-foreground/6 text-foreground/50 border-border"}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${c.status === "Active" ? "bg-emerald-500" : "bg-foreground/25"}`} /> {c.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setEditing(c)} className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-muted-foreground"><Edit3 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => onRequestDelete(c)} className="w-8 h-8 border border-border flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+
+      <AnimatePresence>
+        {adding && <CompanyModal initial={null} onSave={onAdd} onClose={() => setAdding(false)} />}
+        {editing && <CompanyModal initial={editing} onSave={onUpdate} onClose={() => setEditing(null)} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── ANALYTICS (REVENUS & PROGRESSION) ────────────────────────────────────────
+const MONTHS_SHORT = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
+
+function Analytics({ bookings, companies }: { bookings: Booking[]; companies: Company[] }) {
+  const net = useCallback((b: Booking) => netValue(b.value, discountFor(companies, b.companyId)), [companies]);
+
+  const kpis = useMemo(() => {
+    const done   = bookings.filter(b => b.status === "Terminé");
+    const active = bookings.filter(b => !["Terminé","Annulé"].includes(b.status));
+    const granted = done.reduce((a, b) => a + (b.value - net(b)), 0);
+    return {
+      revenue:  done.reduce((a, b) => a + net(b), 0),
+      pipeline: active.reduce((a, b) => a + net(b), 0),
+      granted,
+      acts:     done.length,
+    };
+  }, [bookings, net]);
+
+  // Par acte (service) — realised net + pipeline net + count.
+  const byService = useMemo(() => {
+    const map: Record<string, { count: number; revenue: number; pipeline: number }> = {};
+    bookings.forEach(b => {
+      if (!map[b.service]) map[b.service] = { count: 0, revenue: 0, pipeline: 0 };
+      map[b.service].count += 1;
+      if (b.status === "Terminé") map[b.service].revenue += net(b);
+      else if (b.status !== "Annulé") map[b.service].pipeline += net(b);
+    });
+    return Object.entries(map).sort((a, b) => (b[1].revenue + b[1].pipeline) - (a[1].revenue + a[1].pipeline));
+  }, [bookings, net]);
+  const maxService = Math.max(...byService.map(([, s]) => s.revenue + s.pipeline), 1);
+
+  // Par praticien.
+  const byDentist = useMemo(() => DENTISTS.map(d => {
+    const mine = bookings.filter(b => b.dentist === d.name);
+    const done = mine.filter(b => b.status === "Terminé");
+    const active = mine.filter(b => !["Terminé","Annulé"].includes(b.status));
+    return { dentist: d, count: mine.length, revenue: done.reduce((a, b) => a + net(b), 0), pipeline: active.reduce((a, b) => a + net(b), 0) };
+  }).sort((a, b) => b.revenue - a.revenue), [bookings, net]);
+  const maxDentist = Math.max(...byDentist.map(d => d.revenue + d.pipeline), 1);
+
+  // Évolution mensuelle — realised net per month, last 6 months ending this month.
+  const byMonth = useMemo(() => {
+    const map: Record<string, number> = {};
+    bookings.filter(b => b.status === "Terminé").forEach(b => {
+      const key = b.date.slice(0, 7); // YYYY-MM
+      map[key] = (map[key] ?? 0) + net(b);
+    });
+    const out: { key: string; label: string; value: number }[] = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      out.push({ key, label: MONTHS_SHORT[d.getMonth()], value: map[key] ?? 0 });
+    }
+    return out;
+  }, [bookings, net]);
+  const maxMonth = Math.max(...byMonth.map(m => m.value), 1);
+
+  // Par entreprise (B2B).
+  const byCompany = useMemo(() => companies.map(c => {
+    const mine = bookings.filter(b => b.companyId === c.id);
+    const done = mine.filter(b => b.status === "Terminé");
+    return { company: c, count: mine.length, revenue: done.reduce((a, b) => a + net(b), 0), granted: done.reduce((a, b) => a + (b.value - net(b)), 0) };
+  }).filter(x => x.count > 0).sort((a, b) => b.revenue - a.revenue), [bookings, companies, net]);
+  const maxCompany = Math.max(...byCompany.map(c => c.revenue), 1);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="display text-3xl text-foreground mb-1">Revenus & progression</h1>
+        <p className="text-sm text-muted-foreground font-light">Chiffre d'affaires net (remises conventions déduites)</p>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        {[
+          { label: "CA réalisé",       value: `${kpis.revenue.toLocaleString("fr")} MAD`,  sub: "soins terminés",    icon: CheckCircle2, color: "text-emerald-600", accent: "border-l-emerald-500", iconBg: "bg-emerald-50" },
+          { label: "Pipeline net",     value: `${kpis.pipeline.toLocaleString("fr")} MAD`, sub: "à venir",           icon: TrendingUp,   color: "text-amber-600",   accent: "border-l-amber-400",   iconBg: "bg-amber-50" },
+          { label: "Remises B2B",      value: `${kpis.granted.toLocaleString("fr")} MAD`,  sub: "conventions",       icon: Percent,      color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+          { label: "Actes terminés",   value: String(kpis.acts),                           sub: "total clôturés",    icon: Activity,     color: "text-primary",     accent: "border-l-primary",     iconBg: "bg-primary/10" },
+        ].map((s, i) => (
+          <div key={i} className={`bg-white border border-border border-l-4 ${s.accent} p-5 md:p-6 shadow-sm`}>
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-9 h-9 ${s.iconBg} flex items-center justify-center`}><s.icon className={`w-4 h-4 ${s.color}`} /></div>
+              <span className="text-[8px] tracking-[0.3em] uppercase font-bold text-muted-foreground/40">{s.sub}</span>
+            </div>
+            <div className={`display text-2xl md:text-3xl font-black mb-1 ${s.color}`}>{s.value}</div>
+            <div className="text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Évolution mensuelle */}
+      <div className="bg-white border border-border shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <BarChart3 className="w-4 h-4 text-primary" />
+          <span className="display text-sm text-foreground">Évolution du CA — 6 derniers mois</span>
+        </div>
+        <div className="flex items-end justify-between gap-3 h-44">
+          {byMonth.map(m => (
+            <div key={m.key} className="flex-1 flex flex-col items-center justify-end h-full gap-2">
+              <div className="text-[9px] font-bold text-foreground/70">{m.value > 0 ? `${(m.value / 1000).toFixed(1)}k` : "—"}</div>
+              <motion.div initial={{ height: 0 }} animate={{ height: `${(m.value / maxMonth) * 100}%` }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full bg-primary/80 min-h-[2px]" style={{ minHeight: m.value > 0 ? 4 : 2 }} />
+              <div className="text-[9px] tracking-[0.15em] uppercase font-bold text-muted-foreground">{m.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-5">
+        {/* Par acte */}
+        <div className="bg-white border border-border shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Stethoscope className="w-4 h-4 text-primary" />
+            <span className="display text-sm text-foreground">Revenus par acte</span>
+          </div>
+          <div className="space-y-3.5">
+            {byService.map(([svc, s]) => (
+              <div key={svc}>
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <span className="font-light text-foreground/70 text-xs truncate">{svc} <span className="text-muted-foreground/45">· {s.count}</span></span>
+                  <span className="display text-xs text-foreground font-black shrink-0">{(s.revenue + s.pipeline).toLocaleString("fr")} MAD</span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden flex">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(s.revenue / maxService) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-emerald-500" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(s.pipeline / maxService) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-amber-400/70" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-4 mt-5 pt-4 border-t border-border">
+            <span className="flex items-center gap-1.5 text-[9px] tracking-[0.15em] uppercase font-bold text-muted-foreground"><span className="w-2 h-2 bg-emerald-500" /> Réalisé</span>
+            <span className="flex items-center gap-1.5 text-[9px] tracking-[0.15em] uppercase font-bold text-muted-foreground"><span className="w-2 h-2 bg-amber-400/70" /> Pipeline</span>
           </div>
         </div>
 
-        {/* Full patient/lead list */}
-        <div className="bg-white border border-border shadow-sm overflow-hidden overflow-x-auto">
-          <div className="px-5 py-4 border-b border-border bg-[#fafafa] flex items-center gap-2">
+        {/* Par praticien */}
+        <div className="bg-white border border-border shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
             <Users className="w-4 h-4 text-primary" />
-            <span className="display text-sm text-foreground">Tous les dossiers · {selBookings.length}</span>
+            <span className="display text-sm text-foreground">Revenus par praticien</span>
           </div>
-          <table className="w-full min-w-[560px]">
-            <thead>
-              <tr className="border-b border-border bg-white">
-                {["Patient","Service","Date","Valeur","Statut"].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-[8px] tracking-[0.4em] uppercase font-bold text-muted-foreground">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {selBookings.length === 0
-                ? <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground font-light">Aucun dossier assigné</td></tr>
-                : selBookings.map(b => (
-                  <tr key={b.id} className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3"><div className="display text-sm text-foreground">{b.name}</div><div className="text-[9px] text-muted-foreground">{b.email}</div></td>
-                    <td className="px-4 py-3 text-sm font-light text-foreground/70 max-w-[150px] truncate">{b.service}</td>
-                    <td className="px-4 py-3 text-[10px] font-bold text-muted-foreground">{b.date}</td>
-                    <td className="px-4 py-3"><span className="display text-sm text-foreground font-black">{b.value > 0 ? `${b.value.toLocaleString("fr")} MAD` : <span className="text-muted-foreground/30 font-light">—</span>}</span></td>
-                    <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <div className="space-y-3.5">
+            {byDentist.map(d => (
+              <div key={d.dentist.name}>
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <span className="flex items-center gap-1.5 font-light text-foreground/70 text-xs truncate">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${d.dentist.dot}`} /> {d.dentist.short} <span className="text-muted-foreground/45">· {d.count}</span>
+                  </span>
+                  <span className="display text-xs text-foreground font-black shrink-0">{(d.revenue + d.pipeline).toLocaleString("fr")} MAD</span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden flex">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(d.revenue / maxDentist) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-emerald-500" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(d.pipeline / maxDentist) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-amber-400/70" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Par entreprise */}
+      <div className="bg-white border border-border shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <Building2 className="w-4 h-4 text-primary" />
+          <span className="display text-sm text-foreground">Revenus par entreprise partenaire</span>
+        </div>
+        {byCompany.length === 0
+          ? <div className="py-8 text-center text-sm text-muted-foreground font-light">Aucun dossier lié à une entreprise pour l'instant</div>
+          : <div className="space-y-4">
+            {byCompany.map(c => (
+              <div key={c.company.id}>
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <span className="font-light text-foreground/70 text-xs truncate flex items-center gap-1.5">
+                    <Building2 className="w-3 h-3 text-primary/60 shrink-0" /> {c.company.name}
+                    <span className="text-muted-foreground/45">· {c.count} dossier{c.count > 1 ? "s" : ""}</span>
+                  </span>
+                  <span className="shrink-0 flex items-center gap-3">
+                    <span className="text-[9px] text-amber-600 font-bold">−{c.granted.toLocaleString("fr")} remise</span>
+                    <span className="display text-xs text-emerald-600 font-black">{c.revenue.toLocaleString("fr")} MAD</span>
+                  </span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${(c.revenue / maxCompany) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-primary/60" />
+                </div>
+              </div>
+            ))}
+          </div>
+        }
       </div>
     </div>
   );
@@ -1808,16 +2298,18 @@ export default function AdminDashboard() {
   const [tab, setTab]             = useState<Tab>("overview");
   const [bookings, setBookings]   = useState<Booking[]>([]);
   const [messages, setMessages]   = useState<Message[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading]     = useState(false);
   const [showNewLead, setShowNewLead] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [confirm, setConfirm]     = useState<ConfirmRequest | null>(null);
 
   // ── Initial fetch ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!session) return;
     setLoading(true);
-    Promise.all([fetchBookings(), fetchMessages()])
-      .then(([bks, msgs]) => { setBookings(bks); setMessages(msgs); })
+    Promise.all([fetchBookings(), fetchMessages(), fetchCompanies()])
+      .then(([bks, msgs, cmps]) => { setBookings(bks); setMessages(msgs); setCompanies(cmps); })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [session]);
@@ -1835,6 +2327,9 @@ export default function AdminDashboard() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_log" }, () => {
         fetchBookings().then(setBookings).catch(console.error);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "companies" }, () => {
+        fetchCompanies().then(setCompanies).catch(console.error);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -1867,10 +2362,10 @@ export default function AdminDashboard() {
     apiDeleteBooking(id).catch(console.error);
   }, []);
 
-  const handleAddBooking = useCallback((b: Booking) => {
+  const handleAddBooking = useCallback((b: Booking, navigate = true) => {
     setBookings(prev => [b, ...prev]);
     createBooking(b).catch(console.error);
-    setTab("bookings");
+    if (navigate) setTab("bookings");
   }, []);
 
   const handleMarkRead = useCallback((id: string) => {
@@ -1888,11 +2383,59 @@ export default function AdminDashboard() {
     apiDeleteMessage(id).catch(console.error);
   }, []);
 
+  // ── Companies (B2B) ─────────────────────────────────────────────────────────
+  const handleAddCompany = useCallback((c: Company) => {
+    setCompanies(prev => [c, ...prev]);
+    createCompany(c).catch(console.error);
+  }, []);
+
+  const handleUpdateCompany = useCallback((c: Company) => {
+    setCompanies(prev => prev.map(x => x.id === c.id ? c : x));
+    updateCompany(c).catch(console.error);
+  }, []);
+
+  const handleDeleteCompany = useCallback((id: string) => {
+    setCompanies(prev => prev.filter(c => c.id !== id));
+    // Detach any bookings still linked to this company.
+    setBookings(prev => prev.map(b => b.companyId === id ? { ...b, companyId: undefined } : b));
+    apiDeleteCompany(id).catch(console.error);
+  }, []);
+
+  // ── Delete confirmations ────────────────────────────────────────────────────
+  const requestDeleteBooking = useCallback((id: string) => {
+    const b = bookings.find(x => x.id === id);
+    setConfirm({
+      title: "Supprimer ce lead ?",
+      message: b ? `Le dossier de ${b.name} (${b.id}) sera définitivement supprimé. Cette action est irréversible.` : "Ce dossier sera définitivement supprimé. Cette action est irréversible.",
+      confirmLabel: "Supprimer le lead",
+      onConfirm: () => handleDeleteBooking(id),
+    });
+  }, [bookings, handleDeleteBooking]);
+
+  const requestDeleteMessage = useCallback((id: string) => {
+    const m = messages.find(x => x.id === id);
+    setConfirm({
+      title: "Supprimer ce message ?",
+      message: m ? `Le message « ${m.subject} » de ${m.name} sera définitivement supprimé.` : "Ce message sera définitivement supprimé.",
+      confirmLabel: "Supprimer le message",
+      onConfirm: () => handleDeleteMessage(id),
+    });
+  }, [messages, handleDeleteMessage]);
+
+  const requestDeleteCompany = useCallback((c: Company) => {
+    setConfirm({
+      title: "Supprimer cette entreprise ?",
+      message: `La convention avec ${c.name} sera supprimée. Les dossiers liés seront détachés (sans suppression).`,
+      confirmLabel: "Supprimer l'entreprise",
+      onConfirm: () => handleDeleteCompany(c.id),
+    });
+  }, [handleDeleteCompany]);
+
   const crmCallbacks: CRMCallbacks = {
     onUpdateFields: handleUpdateFields,
     onUpdateStatus: handleUpdateStatus,
     onAddLog:       handleAddLog,
-    onDelete:       handleDeleteBooking,
+    onDelete:       requestDeleteBooking,
   };
 
   if (!session) return <LoginGate onLogin={(s) => { setSession(s); setTab(s.role === "dentist" ? "dentists" : "overview"); }} />;
@@ -1905,11 +2448,12 @@ export default function AdminDashboard() {
   const unread          = isDentist ? 0 : messages.filter(m => !m.read).length;
 
   const TAB_LABELS: Record<Tab, string> = {
-    overview: "Vue d'ensemble", calendar: "Calendrier",
-    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients", dentists: "Praticiens",
+    overview: "Vue d'ensemble", calendar: "Calendrier", analytics: "Revenus",
+    pipeline: "Pipeline", bookings: "Rendez-vous", messages: "Messages", patients: "Patients", dentists: "Praticiens", companies: "Entreprises",
   };
 
   return (
+    <CompaniesContext.Provider value={companies}>
     <div className="flex min-h-screen bg-[#f4f5f7]">
 
       {/* Desktop sidebar */}
@@ -1984,12 +2528,14 @@ export default function AdminDashboard() {
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}>
               {tab === "overview"  && <Overview  bookings={visibleBookings} messages={visibleMessages} setTab={setTab} />}
+              {tab === "analytics" && <Analytics bookings={visibleBookings} companies={companies} />}
               {tab === "pipeline"  && <Pipeline  bookings={visibleBookings} callbacks={crmCallbacks} />}
               {tab === "bookings"  && <Bookings  bookings={visibleBookings} callbacks={crmCallbacks} />}
-              {tab === "messages"  && <Messages  messages={visibleMessages} bookings={visibleBookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={handleDeleteMessage} onAddBooking={handleAddBooking} />}
+              {tab === "messages"  && <Messages  messages={visibleMessages} bookings={visibleBookings} onMarkRead={handleMarkRead} onMarkAllRead={handleMarkAllRead} onDeleteMessage={requestDeleteMessage} onAddBooking={handleAddBooking} />}
               {tab === "patients"  && <Patients  bookings={visibleBookings} />}
+              {tab === "companies" && <CompaniesTab companies={companies} bookings={bookings} onAdd={handleAddCompany} onUpdate={handleUpdateCompany} onRequestDelete={requestDeleteCompany} />}
               {tab === "calendar"  && <CalendarTab bookings={visibleBookings} />}
-              {tab === "dentists"  && <DentistsTab bookings={visibleBookings} lockedDentist={isDentist ? session.dentist : undefined} />}
+              {tab === "dentists"  && <DentistsTab bookings={visibleBookings} lockedDentist={isDentist ? session.dentist : undefined} callbacks={crmCallbacks} onAddBooking={(b) => handleAddBooking(b, false)} />}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -1998,6 +2544,11 @@ export default function AdminDashboard() {
       <AnimatePresence>
         {showNewLead && <NewLeadModal onAdd={handleAddBooking} onClose={() => setShowNewLead(false)} />}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {confirm && <ConfirmDialog req={confirm} onClose={() => setConfirm(null)} />}
+      </AnimatePresence>
     </div>
+    </CompaniesContext.Provider>
   );
 }

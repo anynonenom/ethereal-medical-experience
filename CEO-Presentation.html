@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Medical Bay — Rapport de développement site web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #2da08a;
+    --teal-dark: #1e7a68;
+    --ink: #0f1117;
+    --off: #f4f5f7;
+    --border: #e5e7eb;
+    --muted: #6b7280;
+    --amber: #d97706;
+    --emerald: #059669;
+    --red: #dc2626;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: #fff;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ─── COVER ───────────────────────────────── */
+  .cover {
+    background: var(--ink);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 64px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: 0.08;
+  }
+  .cover-top { display: flex; align-items: center; gap: 16px; }
+  .cover-logo {
+    width: 48px; height: 48px;
+    background: var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .cover-logo span {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900; font-size: 16px; color: #fff; letter-spacing: -1px;
+  }
+  .cover-brand { font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.5); }
+  .cover-mid { max-width: 700px; }
+  .cover-label {
+    font-size: 9px; letter-spacing: 0.55em; text-transform: uppercase;
+    font-weight: 800; color: var(--teal); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cover-label::before { content: ''; display: block; width: 32px; height: 1px; background: var(--teal); }
+  .cover h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 80px);
+    font-weight: 700; line-height: 0.9;
+    margin-bottom: 24px;
+  }
+  .cover h1 em { font-style: italic; color: var(--teal); }
+  .cover-desc { font-size: 15px; color: rgba(255,255,255,0.45); font-weight: 300; max-width: 480px; line-height: 1.7; }
+  .cover-bottom { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+  .cover-date { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.3); }
+  .cover-toc { display: flex; gap: 32px; flex-wrap: wrap; }
+  .cover-toc-item { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.2); }
+  .cover-toc-item span { color: var(--teal); margin-right: 8px; }
+
+  /* ─── PAGE WRAPPER ────────────────────────── */
+  .page { padding: 64px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 768px) { .page { padding: 32px 24px; } .cover { padding: 40px 24px; } }
+
+  /* ─── SECTION HEADER ─────────────────────── */
+  .section-header { margin-bottom: 48px; padding-top: 64px; }
+  .section-num {
+    font-size: 9px; letter-spacing: 0.55em; text-transform: uppercase; font-weight: 800;
+    color: var(--teal); display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .section-num::before { content: ''; display: block; width: 32px; height: 1px; background: var(--teal); }
+  .section-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 700; line-height: 0.9; letter-spacing: -0.02em;
+  }
+  .section-header h2 em { font-style: italic; color: var(--teal); }
+
+  /* ─── DIVIDER ─────────────────────────────── */
+  .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+  /* ─── CARDS ───────────────────────────────── */
+  .card {
+    background: var(--off); border: 1px solid var(--border);
+    padding: 28px 32px; margin-bottom: 20px;
+  }
+  .card-white { background: #fff; }
+  .card-teal { background: var(--teal); color: #fff; border-color: var(--teal-dark); }
+  .card-dark { background: var(--ink); color: #fff; border-color: #1e2230; }
+  .card h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.02em; margin-bottom: 10px;
+  }
+  .card p { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.7; }
+  .card-teal p, .card-dark p { color: rgba(255,255,255,0.6); }
+
+  /* ─── GRID ────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ─── STAT CARD ──────────────────────────── */
+  .stat-card {
+    background: #fff; border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    padding: 24px 28px;
+  }
+  .stat-card.amber { border-left-color: var(--amber); }
+  .stat-card.emerald { border-left-color: var(--emerald); }
+  .stat-card.red { border-left-color: var(--red); }
+  .stat-num {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 36px; font-weight: 900; color: var(--teal); line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card.amber .stat-num { color: var(--amber); }
+  .stat-card.emerald .stat-num { color: var(--emerald); }
+  .stat-label { font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+
+  /* ─── TAG ─────────────────────────────────── */
+  .tag {
+    display: inline-block; font-size: 8px; letter-spacing: 0.35em;
+    text-transform: uppercase; font-weight: 800;
+    padding: 4px 10px; border: 1px solid; margin-right: 6px; margin-bottom: 6px;
+  }
+  .tag-teal { color: var(--teal); border-color: rgba(45,160,138,0.3); background: rgba(45,160,138,0.06); }
+  .tag-amber { color: var(--amber); border-color: rgba(217,119,6,0.3); background: rgba(217,119,6,0.06); }
+  .tag-muted { color: var(--muted); border-color: var(--border); background: var(--off); }
+
+  /* ─── STEP ────────────────────────────────── */
+  .step { display: flex; gap: 20px; margin-bottom: 28px; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%; background: rgba(45,160,138,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 900; color: var(--teal); flex-shrink: 0; margin-top: 2px;
+  }
+  .step-body h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .step-body p { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.6; }
+
+  /* ─── TABLE ───────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+  th {
+    text-align: left; padding: 12px 16px;
+    font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; font-weight: 800;
+    background: var(--off); border-bottom: 2px solid var(--border); color: var(--muted);
+  }
+  td {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    font-size: 13px; font-weight: 300; vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(244,245,247,0.5); }
+  .check { color: var(--teal); font-weight: 700; }
+  .cross { color: #ccc; }
+
+  /* ─── FLOW ────────────────────────────────── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 32px 0; }
+  .flow-step {
+    background: #fff; border: 1px solid var(--border);
+    padding: 16px 20px; flex: 1; min-width: 140px;
+    text-align: center;
+  }
+  .flow-step .fs-num { font-size: 9px; font-weight: 900; color: var(--teal); letter-spacing: 0.3em; margin-bottom: 6px; }
+  .flow-step .fs-label { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .flow-step .fs-sub { font-size: 10px; color: var(--muted); font-weight: 300; margin-top: 3px; }
+  .flow-arrow {
+    width: 32px; flex-shrink: 0; text-align: center;
+    font-size: 16px; color: var(--teal); font-weight: 900;
+  }
+
+  /* ─── IMAGE SPEC ──────────────────────────── */
+  .img-spec {
+    border: 1px solid var(--border); background: #fff;
+    display: flex; gap: 0; margin-bottom: 12px; overflow: hidden;
+  }
+  .img-spec-num {
+    background: var(--teal); color: #fff;
+    padding: 20px 16px; font-size: 18px; font-weight: 900;
+    font-family: 'Montserrat', sans-serif; display: flex; align-items: center;
+    min-width: 48px; justify-content: center;
+  }
+  .img-spec-body { padding: 16px 20px; flex: 1; }
+  .img-spec-body h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .img-spec-body p { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.6; }
+  .img-spec-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .img-meta-item { font-size: 9px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); background: var(--off); padding: 3px 8px; }
+
+  /* ─── HIGHLIGHT BOX ──────────────────────── */
+  .highlight {
+    border-left: 4px solid var(--teal); background: rgba(45,160,138,0.05);
+    padding: 20px 24px; margin: 24px 0;
+  }
+  .highlight p { font-size: 13px; font-weight: 300; color: var(--ink); line-height: 1.7; }
+  .highlight strong { font-weight: 700; color: var(--teal); }
+
+  /* ─── PRINT ───────────────────────────────── */
+  @media print {
+    .cover { page-break-after: always; }
+    .section-header { page-break-before: avoid; }
+    .no-break { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ COVER -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-logo"><span>MB</span></div>
+    <div class="cover-brand">Medical Bay · Agadir, Maroc</div>
+  </div>
+
+  <div class="cover-mid">
+    <div class="cover-label">Rapport de développement</div>
+    <h1>Site web &amp;<br /><em>CRM intégré</em></h1>
+    <p class="cover-desc">
+      Présentation complète des fonctionnalités développées, du CRM de gestion des patients,
+      et des ressources restantes nécessaires au déploiement final du site.
+    </p>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-date">Mai 2026 · Version 1.0</div>
+    <div class="cover-toc">
+      <div class="cover-toc-item"><span>01</span>Modifications site</div>
+      <div class="cover-toc-item"><span>02</span>La page Packs</div>
+      <div class="cover-toc-item"><span>03</span>CRM & Dashboard</div>
+      <div class="cover-toc-item"><span>04</span>Images requises</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ SECTION 01 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">01 — Modifications apportées au site</div>
+    <h2>Ce qui a<br /><em>changé.</em></h2>
+  </div>
+
+  <p style="font-size:15px;font-weight:300;color:var(--muted);max-width:620px;line-height:1.8;margin-bottom:40px;">
+    Toutes les modifications ci-dessous ont été réalisées à partir du document PDF de recommandations
+    fourni. Chaque point a été implémenté et est visible en ligne.
+  </p>
+
+  <div class="grid-2">
+    <div class="card card-white no-break">
+      <div class="tag tag-teal">Contenu</div>
+      <h3>Descriptions des services</h3>
+      <p>
+        Les 4 descriptions de services de la page d'accueil (Dentisterie esthétique, Tourisme médical,
+        Prise en charge complète, Suivi personnalisé) ont été réécrites mot pour mot selon les formulations
+        officielles du document PDF.
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <div class="tag tag-teal">Contenu</div>
+      <h3>Année de fondation</h3>
+      <p>
+        L'année de fondation affichée dans le pied de page et les mentions légales a été corrigée
+        de <strong>2018</strong> à <strong>2025</strong>, conformément à la réalité de la société.
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <div class="tag tag-amber">Nouveau</div>
+      <h3>Page Packs — nouvelle section</h3>
+      <p>
+        Une page dédiée aux formules tout inclus a été créée et ajoutée à la navigation principale.
+        Elle intègre un tunnel de réservation en 3 étapes relié directement au CRM.
+        (Voir section 02 pour le détail.)
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <div class="tag tag-teal">Navigation</div>
+      <h3>Menu & Pied de page</h3>
+      <p>
+        Le lien "Packs" a été ajouté dans la barre de navigation principale (entre Tourisme Médical
+        et Contact) ainsi que dans le pied de page, sur toutes les versions du site (desktop et mobile).
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <div class="tag tag-teal">Technique</div>
+      <h3>Favicon — Logo dans l'onglet</h3>
+      <p>
+        Le logo Medical Bay (carré teal avec les initiales MB) apparaît désormais dans l'onglet
+        du navigateur sur tous les appareils — ordinateur, mobile et tablette.
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <div class="tag tag-teal">Technique</div>
+      <h3>Site 100 % responsive</h3>
+      <p>
+        L'intégralité du site (toutes les pages) et le tableau de bord admin ont été optimisés
+        pour fonctionner parfaitement sur smartphone, tablette et ordinateur.
+      </p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="highlight">
+    <p>
+      <strong>Note :</strong> 3 éléments visuels du site sont actuellement en attente de vos photos.
+      Les emplacements sont réservés avec des espaces correctement dimensionnés.
+      Voir la section 04 pour la liste complète des images requises.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ SECTION 02 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">02 — La page Packs</div>
+    <h2>Un tunnel de<br /><em>réservation.</em></h2>
+  </div>
+
+  <p style="font-size:15px;font-weight:300;color:var(--muted);max-width:620px;line-height:1.8;margin-bottom:40px;">
+    La page Packs n'est pas une simple page d'information. Elle est conçue comme un
+    <strong style="color:var(--ink);font-weight:600;">tunnel de conversion</strong> — elle guide le visiteur
+    étape par étape jusqu'à la soumission de sa demande, qui arrive immédiatement dans le CRM.
+  </p>
+
+  <!-- Flow -->
+  <div class="flow">
+    <div class="flow-step">
+      <div class="fs-num">01</div>
+      <div class="fs-label">Héro</div>
+      <div class="fs-sub">Accroche + stats clés</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">02</div>
+      <div class="fs-label">Sélection</div>
+      <div class="fs-sub">Choisir sa formule</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">03</div>
+      <div class="fs-label">Réservation</div>
+      <div class="fs-sub">Formulaire intégré</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:var(--teal);border-color:var(--teal-dark);">
+      <div class="fs-num" style="color:#fff;">✓</div>
+      <div class="fs-label" style="color:#fff;">CRM</div>
+      <div class="fs-sub" style="color:rgba(255,255,255,0.6);">Lead créé · Nouveau</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:24px;">Les 4 formules proposées</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Formule</th>
+        <th>Contenu principal</th>
+        <th>Hébergement</th>
+        <th>Durée</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Essentiel</strong></td>
+        <td>Consultation, blanchiment laser, détartrage</td>
+        <td>3 nuits · Hôtel 4★</td>
+        <td>~3 jours</td>
+      </tr>
+      <tr>
+        <td><strong>Sourire</strong> <span class="tag tag-teal" style="margin-left:6px;">Populaire</span></td>
+        <td>6 facettes Zircon/E-max + Smile Design numérique</td>
+        <td>5 nuits · Hôtel 5★</td>
+        <td>~5 jours</td>
+      </tr>
+      <tr>
+        <td><strong>Premium</strong></td>
+        <td>8–10 facettes premium + couronnes zirconium</td>
+        <td>7 nuits · Palace 5★</td>
+        <td>~7 jours</td>
+      </tr>
+      <tr>
+        <td><strong>Implants</strong></td>
+        <td>2–4 implants Nobel Biocare + couronnes incluses</td>
+        <td>7 nuits · Hôtel 5★</td>
+        <td>~7 jours</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="divider"></div>
+
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:24px;">Ce que contient le formulaire de réservation</h3>
+  <div class="grid-2">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Formule sélectionnée</h4>
+        <p>Pré-remplie selon le choix du visiteur. Il peut la changer directement depuis le formulaire.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Nom, prénom, email, WhatsApp</h4>
+        <p>Informations de contact complètes pour permettre un suivi immédiat par le coordinateur.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Message libre (optionnel)</h4>
+        <p>Dates souhaitées, questions, précisions sur le projet — enrichit le dossier dans le CRM.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Envoi → CRM automatique</h4>
+        <p>À la soumission, un dossier patient est créé dans le tableau de bord avec le statut <strong>Nouveau</strong>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ SECTION 03 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">03 — CRM & Tableau de bord</div>
+    <h2>Gérez chaque<br /><em>patient.</em></h2>
+  </div>
+
+  <p style="font-size:15px;font-weight:300;color:var(--muted);max-width:620px;line-height:1.8;margin-bottom:40px;">
+    Le tableau de bord est accessible depuis <strong style="color:var(--ink)">/admin</strong> (mot de passe : MB2026).
+    Il est protégé par un accès sécurisé et ne s'affiche pas aux visiteurs du site.
+    Il centralise en un seul endroit tous les leads, réservations, messages et statistiques.
+  </p>
+
+  <!-- Module cards -->
+  <div class="grid-2">
+
+    <div class="card card-white no-break" style="border-top:4px solid var(--teal);">
+      <div class="tag tag-teal">Module 1</div>
+      <h3>📊 Vue d'ensemble</h3>
+      <p style="margin-bottom:12px;">
+        La page d'accueil du dashboard. Elle affiche en temps réel :
+      </p>
+      <ul style="padding-left:18px;color:var(--muted);font-size:13px;font-weight:300;line-height:2;">
+        <li>Nombre total de leads</li>
+        <li>Valeur du pipeline actif (€)</li>
+        <li>Séjours terminés</li>
+        <li>Chiffre d'affaires réalisé</li>
+        <li>Rendez-vous de la semaine</li>
+        <li>Activité récente de l'équipe</li>
+        <li>Répartition par statut, source et soin</li>
+      </ul>
+    </div>
+
+    <div class="card card-white no-break" style="border-top:4px solid #8b5cf6;">
+      <div class="tag tag-muted">Module 2</div>
+      <h3>🗂 Pipeline (Kanban)</h3>
+      <p style="margin-bottom:12px;">
+        Vue tableau kanban avec 5 colonnes de statut :
+      </p>
+      <ul style="padding-left:18px;color:var(--muted);font-size:13px;font-weight:300;line-height:2;">
+        <li><strong style="color:var(--teal);">Nouveau</strong> — lead entrant non traité</li>
+        <li><strong style="color:#059669;">Confirmé</strong> — rendez-vous confirmé</li>
+        <li><strong style="color:#d97706;">En cours</strong> — séjour en cours</li>
+        <li><strong style="color:#6b7280;">Terminé</strong> — séjour clôturé</li>
+        <li><strong style="color:#dc2626;">Annulé</strong> — annulation</li>
+      </ul>
+      <p style="margin-top:12px;">
+        Un clic sur une carte ouvre la fiche complète du patient. On peut déplacer un lead
+        d'une colonne à l'autre en un clic.
+      </p>
+    </div>
+
+    <div class="card card-white no-break" style="border-top:4px solid var(--amber);">
+      <div class="tag tag-amber">Module 3</div>
+      <h3>📋 Rendez-vous</h3>
+      <p>
+        Liste complète de tous les leads avec filtres par statut, tag et recherche libre.
+        Chaque ligne affiche : nom, email, soin souhaité, date, valeur estimée, tags et statut.
+        Un clic ouvre la fiche patient complète sur le côté droit.
+      </p>
+      <p style="margin-top:10px;">
+        Bouton <strong>Export CSV</strong> pour télécharger la liste complète (compatible Excel).
+      </p>
+    </div>
+
+    <div class="card card-white no-break" style="border-top:4px solid #3b82f6;">
+      <div class="tag tag-muted">Module 4</div>
+      <h3>✉️ Messages</h3>
+      <p>
+        Boîte de réception des messages envoyés via le formulaire de contact général du site
+        (hors page Packs). Chaque message peut être :
+      </p>
+      <ul style="padding-left:18px;color:var(--muted);font-size:13px;font-weight:300;line-height:2;margin-top:8px;">
+        <li>Lu et marqué comme traité</li>
+        <li>Répondu par e-mail directement depuis le dashboard</li>
+        <li>Converti en dossier patient (→ Pipeline)</li>
+      </ul>
+      <div style="margin-top:12px;background:rgba(59,130,246,0.06);border-left:3px solid #3b82f6;padding:10px 14px;">
+        <p style="font-size:12px;color:#3b82f6;font-weight:600;">
+          Différence avec les Packs : les réservations depuis la page Packs arrivent directement
+          dans "Rendez-vous" (pipeline), pas dans Messages.
+        </p>
+      </div>
+    </div>
+
+    <div class="card card-white no-break" style="border-top:4px solid #059669;">
+      <div class="tag tag-muted">Module 5</div>
+      <h3>👥 Patients</h3>
+      <p>
+        Annuaire de tous les patients enregistrés dans le système.
+        Vue rapide : coordonnées, soin, valeur, statut, tags.
+        Recherche par nom ou email.
+      </p>
+    </div>
+
+    <div class="card card-white no-break" style="border-top:4px solid #6366f1;">
+      <div class="tag tag-muted">Module 6</div>
+      <h3>📅 Calendrier</h3>
+      <p>
+        Vue calendrier mensuelle qui affiche tous les rendez-vous planifiés.
+        Navigation mois par mois, indicateurs de charge par jour.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:24px;">La fiche patient — au cœur du CRM</h3>
+  <p style="font-size:13px;font-weight:300;color:var(--muted);margin-bottom:24px;line-height:1.8;">
+    Chaque dossier patient dispose de 3 onglets :
+  </p>
+
+  <div class="grid-3">
+    <div class="card card-white no-break">
+      <h3>Fiche</h3>
+      <p>
+        Toutes les infos : nom, email, téléphone, soin, origine, date, valeur estimée, source,
+        tags (VIP, Urgent, Prioritaire…), date de suivi planifié, notes libres.
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <h3>Journal de contact</h3>
+      <p>
+        Historique de tous les contacts : appel téléphonique, e-mail, WhatsApp ou note interne.
+        Possibilité d'envoyer un e-mail directement depuis le dashboard avec des modèles pré-rédigés.
+      </p>
+    </div>
+    <div class="card card-white no-break">
+      <h3>Historique des statuts</h3>
+      <p>
+        Chronologie complète des changements de statut du dossier — qui a changé quoi et quand.
+        Traçabilité totale du parcours patient.
+      </p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">Flux complet : du site au dentiste</h3>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="fs-num">Visiteur</div>
+      <div class="fs-label">Remplit le formulaire</div>
+      <div class="fs-sub">Page Packs ou Contact</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">Auto</div>
+      <div class="fs-label">Lead créé</div>
+      <div class="fs-sub">Statut : Nouveau</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">Admin</div>
+      <div class="fs-label">Coordinateur</div>
+      <div class="fs-sub">Rappel + devis</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">→</div>
+      <div class="fs-label">Confirmé</div>
+      <div class="fs-sub">Séjour planifié</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:var(--teal);border-color:var(--teal-dark);">
+      <div class="fs-num" style="color:#fff;">✓</div>
+      <div class="fs-label" style="color:#fff;">Terminé</div>
+      <div class="fs-sub" style="color:rgba(255,255,255,0.6);">CA comptabilisé</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ SECTION 04 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">04 — Images requises</div>
+    <h2>Ce qu'il<br /><em>manque.</em></h2>
+  </div>
+
+  <p style="font-size:15px;font-weight:300;color:var(--muted);max-width:620px;line-height:1.8;margin-bottom:40px;">
+    Trois zones du site nécessitent vos propres photos pour être finalisées.
+    Les emplacements sont déjà intégrés dans le code — il suffit de fournir les images
+    dans les formats indiqués ci-dessous. Les espaces sont actuellement tenus par des
+    photos neutres en attendant.
+  </p>
+
+  <!-- Zone A -->
+  <h3 style="font-size:14px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;color:var(--muted);">
+    Zone A — Page d'accueil · Section services
+  </h3>
+
+  <div class="img-spec">
+    <div class="img-spec-num">1</div>
+    <div class="img-spec-body">
+      <h4>Dentisterie esthétique</h4>
+      <p>Photo représentant un soin dentaire esthétique — sourire, cabinet dentaire moderne, ou résultat avant/après. Ton lumineux, ambiance médicale haut de gamme.</p>
+      <div class="img-meta-item">Format : 3:4 (portrait)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 800×1050 px</div>
+    </div>
+  </div>
+
+  <div class="img-spec">
+    <div class="img-spec-num">2</div>
+    <div class="img-spec-body">
+      <h4>Tourisme médical</h4>
+      <p>Photo évoquant le voyage médical — patient à l'aéroport, vue d'Agadir, hôtel 5 étoiles, ou consultation dans une clinique moderne. Ambiance voyage + soin.</p>
+      <div class="img-meta-item">Format : 3:4 (portrait)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 800×1050 px</div>
+    </div>
+  </div>
+
+  <div class="img-spec">
+    <div class="img-spec-num">3</div>
+    <div class="img-spec-body">
+      <h4>Prise en charge complète</h4>
+      <p>Photo illustrant l'accompagnement — coordinateur avec patient, transfert privé, accueil à l'hôtel. Chaleur humaine et professionnalisme.</p>
+      <div class="img-meta-item">Format : 3:4 (portrait)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 800×1050 px</div>
+    </div>
+  </div>
+
+  <div class="img-spec">
+    <div class="img-spec-num">4</div>
+    <div class="img-spec-body">
+      <h4>Suivi personnalisé</h4>
+      <p>Photo illustrant le suivi post-séjour — consultation de suivi, patient satisfait, ou communication avec l'équipe médicale. Relation de confiance durable.</p>
+      <div class="img-meta-item">Format : 3:4 (portrait)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 800×1050 px</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Zone B -->
+  <h3 style="font-size:14px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;color:var(--muted);">
+    Zone B — Page d'accueil · Grille Instagram "Notre quotidien"
+  </h3>
+
+  <div class="card card-white no-break">
+    <div class="tag tag-amber">6 photos</div>
+    <h3>Photos du quotidien Medical Bay</h3>
+    <p style="margin-bottom:16px;">
+      6 photos carrées qui alimentent la section "Notre quotidien" en bas de la page d'accueil —
+      l'équivalent d'un feed Instagram intégré au site. Elles doivent donner vie à l'univers
+      Medical Bay : l'équipe, la clinique, Agadir, les moments forts.
+    </p>
+    <p><strong style="font-weight:600;">Exemples de contenus :</strong></p>
+    <ul style="padding-left:18px;color:var(--muted);font-size:13px;font-weight:300;line-height:2;margin-top:8px;">
+      <li>L'équipe Medical Bay en consultation ou à l'accueil</li>
+      <li>La façade ou l'intérieur de la clinique partenaire</li>
+      <li>La corniche d'Agadir / vue de la ville</li>
+      <li>Un patient souriant (avec consentement)</li>
+      <li>Un moment de soin (équipement moderne)</li>
+      <li>Le coordinateur accompagnant un patient</li>
+    </ul>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="img-meta-item">Format : 1:1 (carré)</div>
+      <div class="img-meta-item">Résolution min : 600×600 px chaque</div>
+      <div class="img-meta-item">Quantité : 6 photos</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Zone C -->
+  <h3 style="font-size:14px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;color:var(--muted);">
+    Zone C — Page Dentisterie · Accordéon des soins
+  </h3>
+
+  <div class="img-spec">
+    <div class="img-spec-num" style="background:#6366f1;">I</div>
+    <div class="img-spec-body">
+      <h4>Implantologie</h4>
+      <p>Photo d'un implant dentaire, d'une radiographie panoramique 3D, ou d'un résultat implant+couronne. Technique, précise, rassurante.</p>
+      <div class="img-meta-item">Format : 16:9 ou 3:2 (paysage)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 1200×750 px</div>
+    </div>
+  </div>
+
+  <div class="img-spec">
+    <div class="img-spec-num" style="background:#8b5cf6;">P</div>
+    <div class="img-spec-body">
+      <h4>Prothèses dentaires</h4>
+      <p>Photo de prothèses sur mesure, couronne zirconium, ou bridge. Mise en valeur de la qualité artisanale et de la précision.</p>
+      <div class="img-meta-item">Format : 16:9 ou 3:2 (paysage)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 1200×750 px</div>
+    </div>
+  </div>
+
+  <div class="img-spec">
+    <div class="img-spec-num" style="background:#06b6d4;">A</div>
+    <div class="img-spec-body">
+      <h4>Aligneurs invisibles</h4>
+      <p>Photo d'aligneurs transparents (type Invisalign), ou d'une modélisation 3D de traitement orthodontique. Moderne, discret, technologique.</p>
+      <div class="img-meta-item">Format : 16:9 ou 3:2 (paysage)</div>
+      <div class="img-meta-item" style="margin-left:8px;">Résolution min : 1200×750 px</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Summary table -->
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">Récapitulatif</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Zone</th>
+        <th>Page</th>
+        <th>Quantité</th>
+        <th>Format</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A</strong> — Services accueil</td>
+        <td>Page d'accueil</td>
+        <td>4 photos</td>
+        <td>Portrait 3:4 · min 800×1050 px</td>
+      </tr>
+      <tr>
+        <td><strong>B</strong> — Grille "Notre quotidien"</td>
+        <td>Page d'accueil</td>
+        <td>6 photos</td>
+        <td>Carré 1:1 · min 600×600 px</td>
+      </tr>
+      <tr>
+        <td><strong>C</strong> — Accordéon soins</td>
+        <td>Page Dentisterie</td>
+        <td>3 photos</td>
+        <td>Paysage 16:9 · min 1200×750 px</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" style="font-weight:700;">TOTAL</td>
+        <td style="font-weight:700;color:var(--teal);">13 photos</td>
+        <td style="font-weight:300;color:var(--muted);">JPEG ou PNG, qualité web (max 2 Mo/photo)</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="highlight" style="margin-top:32px;">
+    <p>
+      <strong>Format de livraison recommandé :</strong> Un dossier ZIP avec les sous-dossiers
+      <code style="font-family:monospace;background:rgba(0,0,0,0.06);padding:2px 6px;font-size:12px;">zone-A/</code>,
+      <code style="font-family:monospace;background:rgba(0,0,0,0.06);padding:2px 6px;font-size:12px;">zone-B/</code>,
+      <code style="font-family:monospace;background:rgba(0,0,0,0.06);padding:2px 6px;font-size:12px;">zone-C/</code>
+      et les photos nommées clairement (ex. <code style="font-family:monospace;background:rgba(0,0,0,0.06);padding:2px 6px;font-size:12px;">A1-dentisterie.jpg</code>).
+      Une fois reçues, elles seront intégrées en moins d'une heure.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top:64px;padding-top:32px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:gap:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:32px;height:32px;background:var(--teal);display:flex;align-items:center;justify-content:center;">
+        <span style="font-family:Montserrat,sans-serif;font-weight:900;font-size:11px;color:#fff;letter-spacing:-0.5px;">MB</span>
+      </div>
+      <span style="font-size:9px;letter-spacing:0.4em;text-transform:uppercase;font-weight:700;color:var(--muted);">Medical Bay · Agadir, Maroc</span>
+    </div>
+    <span style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;font-weight:700;color:rgba(0,0,0,0.2);">Confidentiel · Mai 2026</span>
+  </div>
+</div>
+
+</body>
+</html>

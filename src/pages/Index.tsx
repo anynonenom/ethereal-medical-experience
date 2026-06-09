@@ -609,7 +609,7 @@ function Destination() {
   return (
     <section ref={ref} className="relative h-[85vh] min-h-[560px] overflow-hidden border-b border-border">
       <motion.div style={{ y: imgY }} className="absolute inset-0 z-0">
-        <img src={agadirCoast} alt="Agadir" className="w-full h-full object-cover" />
+        <img src={agadirMarina} alt="Agadir" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))/75] via-[hsl(var(--ink))/30] to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--ink))/65] to-transparent" />
       </motion.div>
