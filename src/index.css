@@ -22,7 +22,7 @@
     --gold:        44 100% 65%;   /* Stars */
 
     /* ── Semantic tokens – LIGHT ───────────────────── */
-    --background:          var(--cream);
+    --background:          0 0% 100%;
     --foreground:          var(--ink);
 
     --card:                0 0% 100%;
@@ -67,7 +67,7 @@
 
   /* Dark class mirrors light, theme toggle has no effect */
   .dark {
-    --background:          var(--cream);
+    --background:          0 0% 100%;
     --foreground:          var(--ink);
     --card:                0 0% 100%;
     --card-foreground:     var(--ink);

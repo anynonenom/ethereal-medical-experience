@@ -12,7 +12,7 @@ import transitionBg from "@/assets/transition-bg.png";
 import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
 import implantImg from "@/assets/IMPL.jpg";
-import blanchimentImg from "@/assets/blanchiment.png";
+import blanchimentImg from "@/assets/BLANCHIMENT-LASER.png";
 import smileMacro from "@/assets/smile-macro.jpg";
 import veneerMacro from "@/assets/veneer-macro.jpg";
 import teethDetail from "@/assets/teeth-detail.jpg";
