@@ -11,12 +11,12 @@ import clinic from "@/assets/clinic-interior.jpg";
 import transitionBg from "@/assets/transition-bg.png";
 import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
-import implantImg from "@/assets/IMPL.jpg";
+import implantImg from "@/assets/IMPL.png";
 import blanchimentImg from "@/assets/BLANCHIMENT-LASER.png";
 import smileMacro from "@/assets/smile-macro.jpg";
 import veneerMacro from "@/assets/veneer-macro.jpg";
 import teethDetail from "@/assets/teeth-detail.jpg";
-import smileHeroImg from "@/assets/smile-hero.jpg";
+import smileHeroImg from "@/assets/smile-hero.png";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
