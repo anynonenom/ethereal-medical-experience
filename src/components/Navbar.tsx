@@ -45,18 +45,18 @@ export default function Navbar() {
       >
         {/* ── Top utility bar (collapses on scroll) ─────────────────────── */}
         <motion.div
-          animate={{ height: scrolled ? 0 : 52, opacity: scrolled ? 0 : 1 }}
+          animate={{ height: scrolled ? 0 : 64, opacity: scrolled ? 0 : 1 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="overflow-hidden bg-primary text-white hidden md:block"
         >
-          <div className="container flex items-center justify-between h-[52px]">
-            <div className="flex items-center gap-5 text-[11px] font-medium tracking-wide">
-              <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors">
-                <Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma
+          <div className="container flex items-center justify-between h-[64px]">
+            <div className="flex items-center gap-6 text-[15px] font-bold tracking-wide">
+              <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2 text-white/95 hover:text-white transition-colors">
+                <Mail className="w-4 h-4" /> contact@medicalbay.ma
               </a>
-              <span className="w-px h-3.5 bg-white/30" />
-              <a href="tel:+212668686800" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors">
-                <Phone className="w-3.5 h-3.5" /> +212 668 68 68 00
+              <span className="w-px h-4 bg-white/30" />
+              <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white/95 hover:text-white transition-colors">
+                <Phone className="w-4 h-4" /> +212 668 68 68 00
               </a>
             </div>
             <div className="flex items-center gap-1">
@@ -80,7 +80,7 @@ export default function Navbar() {
           transparent
             ? "bg-transparent border-b border-transparent"
             : scrolled
-              ? "bg-background/95 backdrop-blur-xl border-b border-border/60 shadow-sm"
+              ? "bg-white/95 backdrop-blur-xl border-b border-border/60 shadow-sm"
               : "bg-background/80 backdrop-blur-md border-b border-border/20"
         }`}>
           <div className="container flex items-center justify-between h-[68px]">
@@ -172,7 +172,7 @@ export default function Navbar() {
           <div className="pt-6 border-t border-white/10 space-y-4">
             <div className="flex flex-col gap-2 text-[11px] text-white/60">
               <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma</a>
-              <a href="tel:+212668686800" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5" /> +212 668 68 68 00</a>
+              <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5" /> +212 668 68 68 00</a>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
