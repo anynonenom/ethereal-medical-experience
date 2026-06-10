@@ -219,7 +219,7 @@ function MiniTestimonials() {
       img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
     },
     {
-      name: "Amina K.", role: "Montréal, Canada", treatment: "Séjour médical", stars: 5,
+      name: "Soufiane N.", role: "Montréal, Canada", treatment: "Séjour médical", stars: 5,
       quote: "Medical Bay a effacé toutes mes craintes en 24h. Un séjour 5 étoiles, des soins de classe mondiale, et des économies considérables.",
       img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150",
     },

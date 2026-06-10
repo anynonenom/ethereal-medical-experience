@@ -16,7 +16,8 @@ import blanchimentImg from "@/assets/BLANCHIMENT-LASER.png";
 import smileMacro from "@/assets/smile-macro.jpg";
 import veneerMacro from "@/assets/veneer-macro.jpg";
 import teethDetail from "@/assets/teeth-detail.jpg";
-import smileHeroImg from "@/assets/smile-hero.png";
+import smileBefore from "@/assets/smile-hero-before.png";
+import smileAfter from "@/assets/smile-hero-after.png";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
@@ -26,8 +27,14 @@ const serviceImgPos = ["object-center", "object-center", "object-top", "object-c
 const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/dentisterie-esthetique", "/tourisme-medical"];
 
 // Before/After gallery — index-matched to T[lang].testimonials.cases.
-// NOTE: these reuse smile assets as a placeholder; swap in real patient before/after photos here.
-const caseImgs = [heroSmile, veneerMacro, smileMacro, teethDetail, smileHeroImg, blanchimentImg];
+const caseImgs: { before: string; after: string }[] = [
+  { before: smileBefore, after: smileAfter },       // Sophie M. — Facettes E-max
+  { before: smileMacro, after: veneerMacro },          // Thomas B. — Implantologie
+  { before: blanchimentImg, after: blanchimentImg },   // Maria C. — Blanchiment laser
+  { before: teethDetail, after: teethDetail },         // Pierre L. — Couronnes Zircone
+  { before: smileBefore, after: smileAfter },           // Soufiane N. — Smile Design complet
+  { before: smileMacro, after: veneerMacro },          // Soufiane N. — Facettes céramique
+];
 
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
 const HERO_SLIDES = {
@@ -420,9 +427,7 @@ function Services() {
 }
 
 // ─── BEFORE / AFTER comparison slider ────────────────────────────────────────
-const BEFORE_FILTER = "sepia(0.5) saturate(0.78) brightness(0.9) contrast(0.92)";
-
-function BeforeAfter({ src, beforeLabel, afterLabel }: { src: string; beforeLabel: string; afterLabel: string }) {
+function BeforeAfter({ beforeSrc, afterSrc, beforeLabel, afterLabel }: { beforeSrc: string; afterSrc: string; beforeLabel: string; afterLabel: string }) {
   const [pos, setPos] = useState(55);
   const [dragging, setDragging] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -447,11 +452,11 @@ function BeforeAfter({ src, beforeLabel, afterLabel }: { src: string; beforeLabe
       onTouchMove={(e) => move(e.touches[0].clientX)}
     >
       {/* AFTER — full frame */}
-      <img src={src} alt={afterLabel} draggable={false}
+      <img src={afterSrc} alt={afterLabel} draggable={false}
         className="absolute inset-0 w-full h-full object-cover" />
-      {/* BEFORE — clipped from the left, dulled to read as "before" */}
-      <img src={src} alt={beforeLabel} draggable={false}
-        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)`, filter: BEFORE_FILTER }}
+      {/* BEFORE — clipped from the left */}
+      <img src={beforeSrc} alt={beforeLabel} draggable={false}
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
         className="absolute inset-0 w-full h-full object-cover" />
 
       {/* Labels */}
@@ -511,7 +516,7 @@ function Testimonials() {
                 <motion.div key={current}
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.35 }} className="absolute inset-0">
-                  <BeforeAfter src={caseImgs[current]} beforeLabel={tm.beforeLabel} afterLabel={tm.afterLabel} />
+                  <BeforeAfter beforeSrc={caseImgs[current].before} afterSrc={caseImgs[current].after} beforeLabel={tm.beforeLabel} afterLabel={tm.afterLabel} />
                 </motion.div>
               </AnimatePresence>
               <div className="absolute top-0 left-0 right-0 h-1 bg-primary z-10 pointer-events-none" />
@@ -563,7 +568,7 @@ function Testimonials() {
             {cases.map((c, i) => (
               <button key={c.name} onClick={() => setCurrent(i)}
                 className={`group relative overflow-hidden aspect-square transition-all duration-300 ${i === current ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-55 hover:opacity-100"}`}>
-                <img src={caseImgs[i]} alt={c.name} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={caseImgs[i].after} alt={c.name} className="absolute inset-0 w-full h-full object-cover" />
                 <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.78) 0%, transparent 65%)" }} />
                 <div className="absolute bottom-2 left-2.5 right-2 text-left">
                   <div className="display text-xs text-white leading-tight">{c.name}</div>

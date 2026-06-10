@@ -88,8 +88,8 @@ export const T = {
         { name: "Thomas B.", location: "Bruxelles, Belgique",  treatment: "Implantologie" },
         { name: "Maria C.",  location: "Genève, Suisse",       treatment: "Blanchiment laser" },
         { name: "Pierre L.", location: "Lyon, France",         treatment: "Couronnes Zircone" },
-        { name: "Amina K.",  location: "Montréal, Canada",     treatment: "Smile Design complet" },
-        { name: "Lucas R.",  location: "Marseille, France",    treatment: "Facettes céramique" },
+        { name: "Soufiane N.",  location: "Montréal, Canada",     treatment: "Smile Design complet" },
+        { name: "Soufiane N.",  location: "Marseille, France",    treatment: "Facettes céramique" },
       ],
     },
 
@@ -219,8 +219,8 @@ export const T = {
         { name: "Thomas B.", location: "Brussels, Belgium",    treatment: "Implantology" },
         { name: "Maria C.",  location: "Geneva, Switzerland",  treatment: "Laser Whitening" },
         { name: "Pierre L.", location: "Lyon, France",         treatment: "Zirconia Crowns" },
-        { name: "Amina K.",  location: "Montreal, Canada",     treatment: "Full Smile Design" },
-        { name: "Lucas R.",  location: "Marseille, France",    treatment: "Ceramic Veneers" },
+        { name: "Soufiane N.",  location: "Montreal, Canada",     treatment: "Full Smile Design" },
+        { name: "Soufiane N.",  location: "Marseille, France",    treatment: "Ceramic Veneers" },
       ],
     },
 
