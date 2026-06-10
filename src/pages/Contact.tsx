@@ -141,7 +141,7 @@ function ContactFunnel() {
 
         <div className="space-y-12 mb-16">
           {[
-            { icon: Phone,  label: "TÉLÉPHONE",   value: "+212 668 68 68 00",     href: "tel:+212668686800" },
+            { icon: Phone,  label: "WHATSAPP",   value: "+212 668 68 68 00",     href: "https://api.whatsapp.com/send/?phone=212668686800" },
             { icon: Mail,   label: "E-MAIL",       value: "contact@medicalbay.ma", href: "mailto:contact@medicalbay.ma" },
             { icon: MapPin, label: "ADRESSE",      value: "Agadir Bay, Maroc",     href: undefined },
           ].map((c, i) => (

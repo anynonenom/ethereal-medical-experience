@@ -55,7 +55,7 @@ export default function Navbar() {
                 <Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma
               </a>
               <span className="w-px h-3.5 bg-white/30" />
-              <a href="tel:+212668686800" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors">
+              <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white/90 hover:text-white transition-colors">
                 <Phone className="w-3.5 h-3.5" /> +212 668 68 68 00
               </a>
             </div>
@@ -172,7 +172,7 @@ export default function Navbar() {
           <div className="pt-6 border-t border-white/10 space-y-4">
             <div className="flex flex-col gap-2 text-[11px] text-white/60">
               <a href="mailto:contact@medicalbay.ma" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5" /> contact@medicalbay.ma</a>
-              <a href="tel:+212668686800" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5" /> +212 668 68 68 00</a>
+              <a href="https://api.whatsapp.com/send/?phone=212668686800" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5" /> +212 668 68 68 00</a>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
