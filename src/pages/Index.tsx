@@ -13,6 +13,10 @@ import homepageImage from "@/assets/homepage-image.jpeg";
 import agadirMarina from "@/assets/image2.jpeg";
 import implantImg from "@/assets/IMPL.jpg";
 import blanchimentImg from "@/assets/BLANCHIMENT-LASER.png";
+import smileMacro from "@/assets/smile-macro.jpg";
+import veneerMacro from "@/assets/veneer-macro.jpg";
+import teethDetail from "@/assets/teeth-detail.jpg";
+import smileHeroImg from "@/assets/smile-hero.jpg";
 import { openBooking } from "@/components/BookingModal";
 import { useLang, T } from "@/contexts/language";
 
@@ -20,6 +24,10 @@ const serviceImgs = [heroSmile, implantImg, blanchimentImg, agadirCoast];
 // Per-image crop anchor for the service gallery (portrait frame) so subjects aren't cut off.
 const serviceImgPos = ["object-center", "object-center", "object-top", "object-center"];
 const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/dentisterie-esthetique", "/tourisme-medical"];
+
+// Before/After gallery — index-matched to T[lang].testimonials.cases.
+// NOTE: these reuse smile assets as a placeholder; swap in real patient before/after photos here.
+const caseImgs = [heroSmile, veneerMacro, smileMacro, teethDetail, smileHeroImg, blanchimentImg];
 
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
 const HERO_SLIDES = {
@@ -343,7 +351,7 @@ function Services() {
   const [hovered, setHovered] = useState(0);
 
   return (
-    <section className="bg-[hsl(var(--off))] py-16 md:py-24 border-b border-border">
+    <section className="bg-white py-16 md:py-24 border-b border-border">
       <div className="container">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div>
@@ -411,35 +419,75 @@ function Services() {
   );
 }
 
-// ─── TESTIMONIALS, carousel ──────────────────────────────────────────────────
+// ─── BEFORE / AFTER comparison slider ────────────────────────────────────────
+const BEFORE_FILTER = "sepia(0.5) saturate(0.78) brightness(0.9) contrast(0.92)";
+
+function BeforeAfter({ src, beforeLabel, afterLabel }: { src: string; beforeLabel: string; afterLabel: string }) {
+  const [pos, setPos] = useState(55);
+  const [dragging, setDragging] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const move = (clientX: number) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const p = ((clientX - rect.left) / rect.width) * 100;
+    setPos(Math.max(2, Math.min(98, p)));
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="relative w-full h-full overflow-hidden select-none cursor-ew-resize touch-none"
+      onMouseDown={(e) => { setDragging(true); move(e.clientX); }}
+      onMouseMove={(e) => dragging && move(e.clientX)}
+      onMouseUp={() => setDragging(false)}
+      onMouseLeave={() => setDragging(false)}
+      onTouchStart={(e) => move(e.touches[0].clientX)}
+      onTouchMove={(e) => move(e.touches[0].clientX)}
+    >
+      {/* AFTER — full frame */}
+      <img src={src} alt={afterLabel} draggable={false}
+        className="absolute inset-0 w-full h-full object-cover" />
+      {/* BEFORE — clipped from the left, dulled to read as "before" */}
+      <img src={src} alt={beforeLabel} draggable={false}
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)`, filter: BEFORE_FILTER }}
+        className="absolute inset-0 w-full h-full object-cover" />
+
+      {/* Labels */}
+      <span className="absolute top-4 left-4 text-[9px] tracking-[0.35em] uppercase font-bold text-white bg-black/45 backdrop-blur px-3 py-1.5 pointer-events-none">{beforeLabel}</span>
+      <span className="absolute top-4 right-4 text-[9px] tracking-[0.35em] uppercase font-bold text-[hsl(var(--ink))] bg-primary px-3 py-1.5 pointer-events-none">{afterLabel}</span>
+
+      {/* Divider + handle */}
+      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_12px_rgba(0,0,0,0.45)] pointer-events-none"
+        style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white shadow-lg grid place-items-center">
+          <div className="flex items-center text-primary">
+            <ChevronLeft className="w-3.5 h-3.5 -mr-0.5" />
+            <ChevronRight className="w-3.5 h-3.5 -ml-0.5" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NOTRE TRANSFORMATION — before/after gallery ─────────────────────────────
 function Testimonials() {
   const { lang } = useLang();
   const tm = T[lang].testimonials;
-  const items = tm.items;
-  const [[current, direction], setSlide] = useState<[number, number]>([0, 0]);
+  const cases = tm.cases;
+  const [current, setCurrent] = useState(0);
 
-  const go = (dir: number) => {
-    setSlide(([c]) => [(c + dir + items.length) % items.length, dir]);
-  };
-
-  const goTo = (i: number) => {
-    setSlide(([c]) => [i, i >= c ? 1 : -1]);
-  };
-
-  const textVariants = {
-    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 60 : -60 }),
-    center: { opacity: 1, x: 0 },
-    exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -60 : 60 }),
-  };
-
-  const item = items[current];
+  const go = (dir: number) => setCurrent((c) => (c + dir + cases.length) % cases.length);
+  const active = cases[current];
 
   return (
     <section className="bg-background py-16 md:py-24 border-b border-border overflow-hidden">
       <div className="container">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-16">
           <div>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-8 h-px bg-primary" />
@@ -448,84 +496,82 @@ function Testimonials() {
             <h2 className="display text-[clamp(38px,6vw,88px)] leading-[0.9] text-foreground">
               {tm.title} <span className="serif-it text-primary">{tm.titleEm}</span>
             </h2>
+            <p className="text-foreground/45 text-base md:text-lg font-light leading-relaxed max-w-md mt-5">{tm.sub}</p>
           </div>
-          <div className="flex items-center gap-3 self-start md:self-auto">
-            <div className="flex -space-x-3">
-              {items.slice(0, 4).map((t) => (
-                <img key={t.name} src={t.img} alt={t.name}
-                  className="w-10 h-10 rounded-full border-2 border-background object-cover" />
-              ))}
+          <span className="text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground self-start md:self-auto shrink-0">{tm.patientsLabel}</span>
+        </div>
+
+        {/* Featured comparison + thumbnail rail */}
+        <div className="grid lg:grid-cols-[1fr_300px] gap-6 lg:gap-8 items-start">
+
+          {/* Big interactive slider */}
+          <div>
+            <div className="relative w-full overflow-hidden shadow-2xl bg-[hsl(var(--ink))]" style={{ aspectRatio: "16/11" }}>
+              <AnimatePresence mode="wait">
+                <motion.div key={current}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.35 }} className="absolute inset-0">
+                  <BeforeAfter src={caseImgs[current]} beforeLabel={tm.beforeLabel} afterLabel={tm.afterLabel} />
+                </motion.div>
+              </AnimatePresence>
+              <div className="absolute top-0 left-0 right-0 h-1 bg-primary z-10 pointer-events-none" />
+
+              {/* Caption */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7 z-10 pointer-events-none"
+                style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.88) 0%, hsl(var(--ink) / 0.25) 50%, transparent 100%)" }}>
+                <AnimatePresence mode="wait">
+                  <motion.div key={`cap-${current}`}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-end justify-between gap-4">
+                    <div>
+                      <div className="text-[9px] tracking-[0.4em] uppercase font-bold text-primary mb-1.5">{active.treatment}</div>
+                      <div className="display text-2xl md:text-3xl text-white leading-none">{active.name}</div>
+                      <div className="text-[10px] tracking-[0.2em] uppercase text-white/55 font-bold mt-1.5">{active.location}</div>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase font-bold text-white/65">
+                      <span className="w-7 h-px bg-white/40" />{tm.hint}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
-            <span className="text-[9px] tracking-[0.3em] uppercase font-bold text-muted-foreground ml-1">
-              {lang === "fr" ? "1 500+ patients" : "1,500+ patients"}
-            </span>
+
+            {/* Controls under slider */}
+            <div className="mt-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {cases.map((_, i) => (
+                  <button key={i} onClick={() => setCurrent(i)} aria-label={`Cas ${i + 1}`}
+                    className={`h-[3px] transition-all duration-300 ${i === current ? "w-10 bg-primary" : "w-4 bg-border hover:bg-foreground/25"}`} />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => go(-1)} aria-label="Précédent"
+                  className="w-11 h-11 border border-border flex items-center justify-center text-foreground/40 hover:border-primary hover:text-primary transition-colors">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button onClick={() => go(1)} aria-label="Suivant"
+                  className="w-11 h-11 border border-border flex items-center justify-center text-foreground/40 hover:border-primary hover:text-primary transition-colors">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Carousel card */}
-        <div className="relative overflow-hidden">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={current}
-              custom={direction}
-              variants={textVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="grid md:grid-cols-[300px_1fr] border border-border bg-white"
-            >
-              {/* Left panel */}
-              <div className="bg-[hsl(var(--mist))] p-10 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-border">
-                <div>
-                  <div className="display text-[80px] leading-none text-primary/10 font-black select-none">
-                    0{current + 1}
-                  </div>
-                  <div className="flex gap-1 mt-4">
-                    {Array.from({ length: item.stars }).map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-gold text-gold" />
-                    ))}
-                  </div>
+          {/* Thumbnail rail — all 6 cases */}
+          <div className="grid grid-cols-3 lg:grid-cols-2 gap-3 content-start">
+            {cases.map((c, i) => (
+              <button key={c.name} onClick={() => setCurrent(i)}
+                className={`group relative overflow-hidden aspect-square transition-all duration-300 ${i === current ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-55 hover:opacity-100"}`}>
+                <img src={caseImgs[i]} alt={c.name} className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--ink) / 0.78) 0%, transparent 65%)" }} />
+                <div className="absolute bottom-2 left-2.5 right-2 text-left">
+                  <div className="display text-xs text-white leading-tight">{c.name}</div>
+                  <div className="text-[7px] tracking-[0.25em] uppercase text-white/60 font-bold mt-0.5 truncate">{c.treatment}</div>
                 </div>
-                <div>
-                  <img src={item.img} alt={item.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-primary/25 mb-5" />
-                  <div className="display text-xl text-foreground">{item.name}</div>
-                  <div className="text-[9px] tracking-[0.35em] uppercase text-muted-foreground font-bold mt-1">{item.role}</div>
-                  <div className="w-8 h-px bg-primary/40 my-3" />
-                  <div className="text-[9px] tracking-[0.25em] uppercase text-primary font-bold">{item.treatment}</div>
-                </div>
-              </div>
-
-              {/* Right panel, quote */}
-              <div className="p-10 md:p-14 lg:p-16 flex flex-col justify-center min-h-[320px]">
-                <Quote className="w-10 h-10 text-primary/15 mb-8" />
-                <blockquote className="serif-it text-[clamp(20px,2.4vw,30px)] leading-[1.5] text-foreground/80">
-                  "{item.quote}"
-                </blockquote>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Controls row */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {items.map((_, i) => (
-              <button key={i} onClick={() => goTo(i)}
-                className={`h-[3px] transition-all duration-300 ${i === current ? "w-10 bg-primary" : "w-4 bg-border hover:bg-foreground/25"}`}
-              />
+                {i === current && <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />}
+              </button>
             ))}
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => go(-1)}
-              className="w-11 h-11 border border-border flex items-center justify-center text-foreground/40 hover:border-primary hover:text-primary transition-colors">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button onClick={() => go(1)}
-              className="w-11 h-11 border border-border flex items-center justify-center text-foreground/40 hover:border-primary hover:text-primary transition-colors">
-              <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
@@ -534,7 +580,7 @@ function Testimonials() {
           viewport={{ once: true }} transition={{ delay: 0.3 }}
           className="mt-14 flex justify-center">
           <Link to="/contact" className="btn-primary group">
-            {lang === "fr" ? "REJOINDRE NOS PATIENTS" : "JOIN OUR PATIENTS"} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            {tm.cta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </motion.div>
       </div>
@@ -549,7 +595,7 @@ function Process() {
   const icons = [MessageCircle, Check, Plane, Stethoscope];
 
   return (
-    <section className="bg-[hsl(var(--off))] py-16 md:py-24 border-b border-border relative overflow-hidden">
+    <section className="bg-white py-16 md:py-24 border-b border-border relative overflow-hidden">
       <div className="container relative">
         <div className="grid lg:grid-cols-12 gap-10 mb-14">
           <div className="lg:col-span-5">
@@ -641,7 +687,7 @@ function Destination() {
             viewport={{ once: true }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="order-1 lg:order-2 relative">
             <div className="relative overflow-hidden shadow-2xl" style={{ aspectRatio: "4/5" }}>
-              <motion.img style={{ y: imgY }} src={agadirMarina} alt="Marina d'Agadir"
+              <motion.img style={{ y: imgY }} src={homepageImage} alt="Agadir, Maroc"
                 className="absolute -top-[8%] left-0 w-full h-[116%] object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--ink))/55] via-transparent to-transparent" />
               <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
@@ -679,7 +725,7 @@ function InstagramSection() {
   const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "-8%"]);
 
   return (
-    <div ref={ref} className="relative bg-[hsl(var(--off))]" style={{ minHeight: "120vh" }}>
+    <div ref={ref} className="relative bg-white" style={{ minHeight: "120vh" }}>
       <div className="sticky top-0 h-screen overflow-hidden flex flex-col border-b border-border">
         <div className="container pt-14 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6 shrink-0">
           <div>

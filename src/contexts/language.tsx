@@ -50,7 +50,7 @@ export const T = {
     manifesto: {
       label: "Notre promesse",
       quote: "L'excellence médicale n'est plus un privilège réservé aux capitales européennes.",
-      attribution: "Medical Bay, Agadir, fondé 2025",
+      attribution: "Medical Bay, Agadir, fondé 2024",
       stats: [
         { n: "70%", t: "moins cher qu'en France, Belgique ou Suisse" },
         { n: "5 j",  t: "pour un Smile Design complet et définitif" },
@@ -74,50 +74,22 @@ export const T = {
 
     // Testimonials
     testimonials: {
-      label: "Ils ont transformé leur sourire",
-      title: "Ce qu'ils",
-      titleEm: "disent.",
-      items: [
-        {
-          name: "Sophie M.",
-          role: "Paris, France",
-          treatment: "Smile Design complet",
-          stars: 5,
-          quote: "Je n'aurais jamais imaginé vivre une expérience aussi soignée à un tel prix. Mon sourire est enfin ce que j'ai toujours rêvé, naturel, lumineux, parfait. L'équipe de Medical Bay est d'un professionnalisme sans faille.",
-          img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Thomas B.",
-          role: "Bruxelles, Belgique",
-          treatment: "Implantologie",
-          stars: 5,
-          quote: "Trois implants posés en deux séances. En Belgique, on m'avait demandé 9 000 €. Ici, tout compris, hôtel, transferts, soins, j'en suis sorti à moins de 3 500 €. Et la qualité est irréprochable.",
-          img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Maria C.",
-          role: "Genève, Suisse",
-          treatment: "Facettes E-max",
-          stars: 5,
-          quote: "Agadir est une ville magnifique pour récupérer. Le fait que Medical Bay gère tout, de l'aéroport à l'hôtel, m'a permis de me concentrer uniquement sur ma transformation.",
-          img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Pierre L.",
-          role: "Lyon, France",
-          treatment: "Couronnes Zircone",
-          stars: 5,
-          quote: "Sceptique au départ, je suis rentré à Lyon avec un sourire que mes proches n'arrivent pas à distinguer du naturel. Le Dr. m'a expliqué chaque étape avec une patience exemplaire.",
-          img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Amina K.",
-          role: "Montréal, Canada",
-          treatment: "Séjour médical complet",
-          stars: 5,
-          quote: "Venue depuis Montréal, j'avais des doutes sur la logistique. Medical Bay a effacé toutes mes craintes en 24h. Un séjour 5 étoiles, des soins de classe mondiale, et des économies considérables.",
-          img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150",
-        },
+      label: "Avant / Après · Cas réels",
+      title: "Notre",
+      titleEm: "transformation.",
+      sub: "Glissez le curseur pour révéler chaque métamorphose. Des sourires réels, conçus et réalisés à Agadir.",
+      beforeLabel: "Avant",
+      afterLabel: "Après",
+      hint: "Glissez pour comparer",
+      patientsLabel: "1 500+ sourires transformés",
+      cta: "REJOINDRE NOS PATIENTS",
+      cases: [
+        { name: "Sophie M.", location: "Paris, France",        treatment: "Facettes E-max" },
+        { name: "Thomas B.", location: "Bruxelles, Belgique",  treatment: "Implantologie" },
+        { name: "Maria C.",  location: "Genève, Suisse",       treatment: "Blanchiment laser" },
+        { name: "Pierre L.", location: "Lyon, France",         treatment: "Couronnes Zircone" },
+        { name: "Amina K.",  location: "Montréal, Canada",     treatment: "Smile Design complet" },
+        { name: "Lucas R.",  location: "Marseille, France",    treatment: "Facettes céramique" },
       ],
     },
 
@@ -141,9 +113,9 @@ export const T = {
     // Destination
     destination: {
       label: "Destination",
-      title: "La guérison comme",
-      titleEm: "art de vivre.",
-      body: "300 jours de soleil, 10 km de plage, et des infrastructures médicales de classe mondiale. La convalescence devient un véritable luxe.",
+      title: "Le bien-être",
+      titleEm: "à ciel ouvert.",
+      body: "Entre océan et montagnes, Agadir conjugue douceur de vivre et excellence médicale. Un cadre d'exception pour récupérer en toute sérénité.",
       stats: [["3H", "depuis Paris"], ["300j", "de soleil"], ["5★", "hôtels"]],
     },
 
@@ -211,7 +183,7 @@ export const T = {
     manifesto: {
       label: "Our promise",
       quote: "Outstanding medical care is no longer a privilege reserved for European capitals.",
-      attribution: "Medical Bay, Agadir, established 2025",
+      attribution: "Medical Bay, Agadir, established 2024",
       stats: [
         { n: "70%",    t: "cheaper than France, Belgium or Switzerland" },
         { n: "5 days", t: "for a complete, lasting Smile Design" },
@@ -233,50 +205,22 @@ export const T = {
     },
 
     testimonials: {
-      label: "Real results, real people",
-      title: "What they",
-      titleEm: "say.",
-      items: [
-        {
-          name: "Sophie M.",
-          role: "Paris, France",
-          treatment: "Full Smile Design",
-          stars: 5,
-          quote: "I never imagined experiencing such meticulous care at this price point. My smile is finally everything I'd always dreamed of, natural, radiant, perfect. The Medical Bay team's professionalism is truly unmatched.",
-          img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Thomas B.",
-          role: "Brussels, Belgium",
-          treatment: "Implantology",
-          stars: 5,
-          quote: "Three implants, two sessions. In Belgium I was quoted €9,000. Here, everything included, hotel, transfers, full treatment, came to under €3,500. The quality is absolutely impeccable.",
-          img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Maria C.",
-          role: "Geneva, Switzerland",
-          treatment: "E-max Veneers",
-          stars: 5,
-          quote: "Agadir is a stunning city to recover in. The fact that Medical Bay handles everything, from the airport to the hotel, let me focus entirely on my transformation.",
-          img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Pierre L.",
-          role: "Lyon, France",
-          treatment: "Zirconia Crowns",
-          stars: 5,
-          quote: "I was skeptical at first. I came back to Lyon with a smile that no one, not even my dentist, can tell isn't natural. Every step was explained with patience and total transparency.",
-          img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150&h=150",
-        },
-        {
-          name: "Amina K.",
-          role: "Montreal, Canada",
-          treatment: "Full Medical Stay",
-          stars: 5,
-          quote: "Flying in from Montreal, I had concerns about logistics. Medical Bay erased every doubt within 24 hours. A five-star experience, world-class care, and savings I still can't quite believe.",
-          img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150",
-        },
+      label: "Before / After · Real cases",
+      title: "Our",
+      titleEm: "transformation.",
+      sub: "Drag the slider to reveal each transformation. Real smiles, designed and crafted in Agadir.",
+      beforeLabel: "Before",
+      afterLabel: "After",
+      hint: "Drag to compare",
+      patientsLabel: "1,500+ smiles transformed",
+      cta: "JOIN OUR PATIENTS",
+      cases: [
+        { name: "Sophie M.", location: "Paris, France",        treatment: "E-max Veneers" },
+        { name: "Thomas B.", location: "Brussels, Belgium",    treatment: "Implantology" },
+        { name: "Maria C.",  location: "Geneva, Switzerland",  treatment: "Laser Whitening" },
+        { name: "Pierre L.", location: "Lyon, France",         treatment: "Zirconia Crowns" },
+        { name: "Amina K.",  location: "Montreal, Canada",     treatment: "Full Smile Design" },
+        { name: "Lucas R.",  location: "Marseille, France",    treatment: "Ceramic Veneers" },
       ],
     },
 
@@ -298,9 +242,9 @@ export const T = {
 
     destination: {
       label: "Destination",
-      title: "Recovery as a",
-      titleEm: "way of living.",
-      body: "300 days of sunshine, 10 km of beach, and world-class medical infrastructure. Convalescence becomes a genuine luxury.",
+      title: "Well-being",
+      titleEm: "under open skies.",
+      body: "Between ocean and mountains, Agadir blends the art of living with medical excellence. An exceptional setting to recover in complete serenity.",
       stats: [["3H", "from Europe"], ["300d", "of sunshine"], ["5★", "hotels"]],
     },
 
