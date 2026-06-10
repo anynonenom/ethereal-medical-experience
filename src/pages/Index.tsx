@@ -28,12 +28,12 @@ const serviceHrefs = ["/dentisterie-esthetique", "/dentisterie-esthetique", "/de
 
 // Before/After gallery — index-matched to T[lang].testimonials.cases.
 const caseImgs: { before: string; after: string }[] = [
-  { before: smileBefore, after: smileAfter },       // Sophie M. — Facettes E-max
-  { before: smileMacro, after: veneerMacro },          // Thomas B. — Implantologie
+  { before: heroSmile, after: heroSmile },             // Sophie M. — Facettes E-max
+  { before: veneerMacro, after: smileMacro },           // Thomas B. — Implantologie
   { before: blanchimentImg, after: blanchimentImg },   // Maria C. — Blanchiment laser
-  { before: teethDetail, after: teethDetail },         // Pierre L. — Couronnes Zircone
+  { before: teethDetail, after: teethDetail },          // Pierre L. — Couronnes Zircone
   { before: smileBefore, after: smileAfter },           // Soufiane N. — Smile Design complet
-  { before: smileMacro, after: veneerMacro },          // Soufiane N. — Facettes céramique
+  { before: smileMacro, after: veneerMacro },           // Soufiane N. — Facettes céramique
 ];
 
 // ─── HERO SLIDES ──────────────────────────────────────────────────────────────
@@ -427,7 +427,10 @@ function Services() {
 }
 
 // ─── BEFORE / AFTER comparison slider ────────────────────────────────────────
+const BEFORE_FILTER = "sepia(0.5) saturate(0.78) brightness(0.9) contrast(0.92)";
+
 function BeforeAfter({ beforeSrc, afterSrc, beforeLabel, afterLabel }: { beforeSrc: string; afterSrc: string; beforeLabel: string; afterLabel: string }) {
+  const sameImg = beforeSrc === afterSrc;
   const [pos, setPos] = useState(55);
   const [dragging, setDragging] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -454,9 +457,9 @@ function BeforeAfter({ beforeSrc, afterSrc, beforeLabel, afterLabel }: { beforeS
       {/* AFTER — full frame */}
       <img src={afterSrc} alt={afterLabel} draggable={false}
         className="absolute inset-0 w-full h-full object-cover" />
-      {/* BEFORE — clipped from the left */}
+      {/* BEFORE — clipped from the left, dulled with filter when same image as after */}
       <img src={beforeSrc} alt={beforeLabel} draggable={false}
-        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)`, filter: sameImg ? BEFORE_FILTER : undefined }}
         className="absolute inset-0 w-full h-full object-cover" />
 
       {/* Labels */}
